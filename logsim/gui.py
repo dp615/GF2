@@ -312,6 +312,9 @@ class Gui(wx.Frame):
                     signals for each time step.
 
     on_text_box(self, event): Event handler for when the user enters text.
+
+    on_add_monitor_button(self, event): Event handler for when the user clicks
+                    the add_monitor button.
     """
 
     def __init__(self, title, path, names, devices, network, monitors):
@@ -342,35 +345,60 @@ class Gui(wx.Frame):
         self.monitors = monitors
 
         # Configure the widgets
-        self.text = wx.StaticText(self, wx.ID_ANY, "Cycles")
+        self.text_cycles = wx.StaticText(self, wx.ID_ANY, "Cycles to run:")
         self.spin = wx.SpinCtrl(self, wx.ID_ANY, "10")
-        self.spin_cont = wx.SpinCtrl(self, wx.ID_ANY, "3")
         self.run_button = wx.Button(self, wx.ID_ANY, "Run")
+
+        self.text_cont_cycles = wx.StaticText(self, wx.ID_ANY, "Continue:")
+        self.spin_cont = wx.SpinCtrl(self, wx.ID_ANY, "3")
         self.continue_button = wx.Button(self, wx.ID_ANY, "Continue")
+
+        self.text_switch_control = wx.StaticText(self, wx.ID_ANY, "Toggle switch:")
+
+        self.text_add_monitor = wx.StaticText(self, wx.ID_ANY, "Add monitored point:")
         self.text_box = wx.TextCtrl(self, wx.ID_ANY, "",
                                     style=wx.TE_PROCESS_ENTER)
+        self.add_monitor_button = wx.Button(self, wx.ID_ANY, "Add")
 
         # Bind events to widgets
         self.Bind(wx.EVT_MENU, self.on_menu)
         self.spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
         self.spin_cont.Bind(wx.EVT_SPINCTRL, self.on_spin_cont)
+
         self.run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
         self.continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
+        self.add_monitor_button.Bind(wx.EVT_BUTTON, self.on_add_monitor_button)
+
         self.text_box.Bind(wx.EVT_TEXT_ENTER, self.on_text_box)
 
         # Configure sizers for layout
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         side_sizer = wx.BoxSizer(wx.VERTICAL)
+        side_sizer1 = wx.BoxSizer(wx.VERTICAL)
+        side_sizer2 = wx.BoxSizer(wx.VERTICAL)
+        side_sizer3 = wx.BoxSizer(wx.VERTICAL)
+        side_sizer4 = wx.BoxSizer(wx.VERTICAL)
 
         main_sizer.Add(self.canvas, 5, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(side_sizer, 1, wx.ALL, 5)
+        side_sizer.Add(side_sizer1, 1, wx.ALL, 5)
+        side_sizer.Add(side_sizer2, 1, wx.ALL, 5)
+        side_sizer.Add(side_sizer3, 1, wx.ALL, 5)
+        side_sizer.Add(side_sizer4, 1, wx.ALL, 5)
 
-        side_sizer.Add(self.text, 1, wx.TOP, 10)
-        side_sizer.Add(self.spin, 1, wx.ALL, 5)
-        side_sizer.Add(self.spin_cont, 1, wx.ALL, 5)
-        side_sizer.Add(self.run_button, 1, wx.ALL, 5)
-        side_sizer.Add(self.continue_button, 1, wx.ALL, 5)
-        side_sizer.Add(self.text_box, 1, wx.ALL, 5)
+        side_sizer1.Add(self.text_cycles, 1, wx.TOP, 10)
+        side_sizer1.Add(self.spin, 1, wx.ALL, 5)
+        side_sizer1.Add(self.run_button, 1, wx.ALL, 5)
+
+        side_sizer2.Add(self.text_cont_cycles, 1, wx.ALL, 10)
+        side_sizer2.Add(self.spin_cont, 1, wx.ALL, 5)
+        side_sizer2.Add(self.continue_button, 1, wx.ALL, 5)
+
+        side_sizer3.Add(self.text_switch_control, 1, wx.ALL, 10)
+
+        side_sizer4.Add(self.text_add_monitor, 1, wx.ALL, 10)
+        side_sizer4.Add(self.text_box, 1, wx.ALL, 5)
+        side_sizer4.Add(self.add_monitor_button, 1, wx.ALL, 5)
 
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
@@ -428,3 +456,7 @@ class Gui(wx.Frame):
         text_box_value = self.text_box.GetValue()
         text = "".join(["New text box value: ", text_box_value])
         self.canvas.render(text)
+
+    def on_add_monitor_button(self, event):
+        """Handle the event when user clicks "add" """
+        pass
