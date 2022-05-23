@@ -40,6 +40,7 @@ class Names:
 
     def __init__(self):
         """Initialise names list."""
+        self.names=[]
         self.error_code_count = 0  # how many error codes have been declared
 
     def unique_error_codes(self, num_error_codes):
@@ -55,12 +56,19 @@ class Names:
 
         If the name string is not present in the names list, return None.
         """
+        if not isinstance(name_string,str):
+            raise TypeError('argument should be a string')
+        for i in range(len(self.names)):
+            if self.names[i]==name_string:
+                return i 
+        return None
 
     def lookup(self, name_string_list):
         """Return a list of name IDs for each name string in name_string_list.
 
         If the name string is not present in the names list, add it.
         """
+        
 
     def get_name_string(self, name_id):
         """Return the corresponding name string for name_id.
