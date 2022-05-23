@@ -70,7 +70,7 @@ class Names:
         """
         if not isinstance(name_string_list,list):
             raise TypeError('argument must be a list')
-        for i in range(n):
+        for i in range(len(name_string_list)):
             if not isinstance(name_string_list[i],str):
                 raise TypeError('elements of list must be strings ')
         output=[]
