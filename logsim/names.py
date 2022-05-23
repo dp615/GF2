@@ -68,7 +68,25 @@ class Names:
 
         If the name string is not present in the names list, add it.
         """
-        
+        if not isinstance(name_string_list,list):
+            raise TypeError('argument must be a list')
+        for i in range(n):
+            if not isinstance(name_string_list[i],str):
+                raise TypeError('elements of list must be strings ')
+        output=[]
+        for i in range(len(name_string_list)):
+            found=False
+            for j in range(len(self.names)):  # NB this works even when new string in list twice
+                if self.names[j]==name_string_list[i]:
+                    output.append(j)
+                    found=True
+            if found==False:
+                self.names.append(name_string_list[i])
+                output.append(len(self.names)-1)
+        return output
+
+
+
 
     def get_name_string(self, name_id):
         """Return the corresponding name string for name_id.
