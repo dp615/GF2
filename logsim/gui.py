@@ -36,7 +36,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     --------------
     init_gl(self): Configures the OpenGL context.
 
-    render(self, text): Handles all drawing operations.
+    render(self, text, time_step): Handles all drawing operations.
 
     on_paint(self, event): Handles the paint event.
 
@@ -54,6 +54,11 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                          attribList=[wxcanvas.WX_GL_RGBA,
                                      wxcanvas.WX_GL_DOUBLEBUFFER,
                                      wxcanvas.WX_GL_DEPTH_SIZE, 16, 0])
+
+        self.time_steps = 10
+
+        self.monitors = monitors
+        self.devices = devices
         GLUT.glutInit()
         self.init = False
         self.context = wxcanvas.GLContext(self)
@@ -87,13 +92,19 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glTranslated(self.pan_x, self.pan_y, 0.0)
         GL.glScaled(self.zoom, self.zoom, self.zoom)
 
-    def render(self, text):
+    def render(self, text, time_steps=None, add_time_steps=None):
         """Handle all drawing operations."""
         self.SetCurrent(self.context)
         if not self.init:
             # Configure the viewport, modelview and projection matrices
             self.init_gl()
             self.init = True
+
+        if time_steps:
+            self.time_steps = time_steps
+
+        if add_time_steps:
+            self.time_steps += add_time_steps
 
         # Clear everything
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
@@ -104,7 +115,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         # Draw a sample signal trace
         GL.glColor3f(0.0, 0.0, 1.0)  # signal trace is blue
         GL.glBegin(GL.GL_LINE_STRIP)
-        for i in range(10):
+        for i in range(self.time_steps):
             x = (i * 20) + 10
             x_next = (i * 20) + 30
             if i % 2 == 0:
@@ -131,7 +142,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         size = self.GetClientSize()
         text = "".join(["Canvas redrawn on paint event, size is ",
                         str(size.width), ", ", str(size.height)])
-        self.render(text)
+        self.render(text, 10)
 
     def on_size(self, event):
         """Handle the canvas resize event."""
@@ -186,7 +197,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             text = "".join(["Positive mouse wheel rotation. Zoom is now: ",
                             str(self.zoom)])
         if text:
-            self.render(text)
+            self.render(text, 10)
         else:
             self.Refresh()  # triggers the paint event
 
@@ -221,8 +232,14 @@ class Gui(wx.Frame):
     on_spin(self, event): Event handler for when the user changes the spin
                            control value.
 
+    on_spin(self, event): Event handler for when the user changes the second
+                           spin controller.
+
     on_run_button(self, event): Event handler for when the user clicks the run
-                                button.
+                                 button.
+
+    on_continue_button(self, event): Event handler for when the user clicks the
+                                      continue button.
 
     on_text_box(self, event): Event handler for when the user enters text.
     """
@@ -242,17 +259,28 @@ class Gui(wx.Frame):
         # Canvas for drawing signals
         self.canvas = MyGLCanvas(self, devices, monitors)
 
+        # Store inputs from logsim.py
+        self.path = path
+        self.names = names
+        self.devices = devices
+        self.network = network
+        self.monitors = monitors
+
         # Configure the widgets
         self.text = wx.StaticText(self, wx.ID_ANY, "Cycles")
         self.spin = wx.SpinCtrl(self, wx.ID_ANY, "10")
+        self.spin_cont = wx.SpinCtrl(self, wx.ID_ANY, "3")
         self.run_button = wx.Button(self, wx.ID_ANY, "Run")
+        self.continue_button = wx.Button(self, wx.ID_ANY, "Continue")
         self.text_box = wx.TextCtrl(self, wx.ID_ANY, "",
                                     style=wx.TE_PROCESS_ENTER)
 
         # Bind events to widgets
         self.Bind(wx.EVT_MENU, self.on_menu)
         self.spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
+        self.spin_cont.Bind(wx.EVT_SPINCTRL, self.on_spin_cont)
         self.run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
+        self.continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
         self.text_box.Bind(wx.EVT_TEXT_ENTER, self.on_text_box)
 
         # Configure sizers for layout
@@ -264,7 +292,9 @@ class Gui(wx.Frame):
 
         side_sizer.Add(self.text, 1, wx.TOP, 10)
         side_sizer.Add(self.spin, 1, wx.ALL, 5)
+        side_sizer.Add(self.spin_cont, 1, wx.ALL, 5)
         side_sizer.Add(self.run_button, 1, wx.ALL, 5)
+        side_sizer.Add(self.continue_button, 1, wx.ALL, 5)
         side_sizer.Add(self.text_box, 1, wx.ALL, 5)
 
         self.SetSizeHints(600, 600)
@@ -283,15 +313,29 @@ class Gui(wx.Frame):
         """Handle the event when the user changes the spin control value."""
         spin_value = self.spin.GetValue()
         text = "".join(["New spin control value: ", str(spin_value)])
-        self.canvas.render(text)
+        self.canvas.render(text)  #, spin_value)
+
+    def on_spin_cont(self, event):
+        """Handle the event when the user changes the spin control value."""
+        spin_value = self.spin_cont.GetValue()
+        text = "".join(["New continue spin control value: ", str(spin_value)])
+        self.canvas.render(text)  #, None, spin_value)
 
     def on_run_button(self, event):
         """Handle the event when the user clicks the run button."""
+        spin_value = self.spin.GetValue()
         text = "Run button pressed."
-        self.canvas.render(text)
+        self.canvas.render(text, spin_value)
+
+    def on_continue_button(self, event):
+        """Handle the event when the user clicks the continue button."""
+        spin_cont_value = self.spin_cont.GetValue()
+        text = "Continue button pressed."
+        self.canvas.render(text, None, spin_cont_value)
 
     def on_text_box(self, event):
         """Handle the event when the user enters text."""
+        spin_value = self.spin.GetValue()
         text_box_value = self.text_box.GetValue()
         text = "".join(["New text box value: ", text_box_value])
         self.canvas.render(text)
