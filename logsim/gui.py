@@ -36,7 +36,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     --------------
     init_gl(self): Configures the OpenGL context.
 
-    render(self, text, time_step): Handles all drawing operations.
+    render(self, text): Handles all drawing operations.
 
     on_paint(self, event): Handles the paint event.
 
@@ -55,10 +55,19 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                                      wxcanvas.WX_GL_DOUBLEBUFFER,
                                      wxcanvas.WX_GL_DEPTH_SIZE, 16, 0])
 
+        # Gain access to Gui Class parent's variables
+        self.parent = parent
+
+        # Initialise display value variables
         self.time_steps = 10
 
+        # Initialise store for monitors and devices
         self.monitors = monitors
         self.devices = devices
+
+        # Initialise canvas size variable
+        self.canvas_size = self.GetClientSize()
+
         GLUT.glutInit()
         self.init = False
         self.context = wxcanvas.GLContext(self)
@@ -92,7 +101,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glTranslated(self.pan_x, self.pan_y, 0.0)
         GL.glScaled(self.zoom, self.zoom, self.zoom)
 
-    def render(self, text, time_steps=None, add_time_steps=None):
+    def render_test(self, text, time_steps=None, add_time_steps=None):
         """Handle all drawing operations."""
         self.SetCurrent(self.context)
         if not self.init:
@@ -131,6 +140,58 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glFlush()
         self.SwapBuffers()
 
+    def render(self, text):
+        """Handle all drawing operations."""
+        self.SetCurrent(self.context)
+        self.canvas_size = self.GetClientSize()
+
+        if not self.init:
+            # Configure the viewport, modelview and projection matrices
+            self.init_gl()
+            self.init = True
+
+        if not self.parent.values:
+            self.parent.trace_names = ['N/A']
+            self.parent.values = [[]]
+            #raise ValueError("No parent values to display")
+
+
+        display_ys = [self.canvas_size[1] - 100 - 80*j for j in range(len(self.parent.values))]
+        display_x = 120
+
+        # Clear everything
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
+        #Draw title
+        title_text = "Monitored Signal Display"
+        self.render_text(title_text, 10, self.canvas_size[1]-20, title=True)
+
+        # Draw specified text at position (10, 10)
+        self.render_text(text, 10, 10)
+
+        for j in range(len(self.parent.trace_names)):
+            self.render_text(self.parent.trace_names[j], 10, display_ys[j]+5)
+
+            # Draw a sample signal trace
+            GL.glColor3f(0.0, 0.0, 1.0)  # signal trace is blue
+            GL.glBegin(GL.GL_LINE_STRIP)
+            for i in range(len(self.parent.values[0])):
+                x = (i * 20) + display_x
+                x_next = (i * 20) + display_x + 20
+                if self.parent.values[j][i]:
+                    y = display_ys[j] + 25
+                else:
+                    y = display_ys[j]
+
+                GL.glVertex2f(x, y)
+                GL.glVertex2f(x_next, y)
+            GL.glEnd()
+
+        # We have been drawing to the back buffer, flush the graphics pipeline
+        # and swap the back buffer to the front
+        GL.glFlush()
+        self.SwapBuffers()
+
     def on_paint(self, event):
         """Handle the paint event."""
         self.SetCurrent(self.context)
@@ -142,7 +203,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         size = self.GetClientSize()
         text = "".join(["Canvas redrawn on paint event, size is ",
                         str(size.width), ", ", str(size.height)])
-        self.render(text, 10)
+        self.render(text)
 
     def on_size(self, event):
         """Handle the canvas resize event."""
@@ -154,7 +215,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         """Handle mouse events."""
         text = ""
         # Calculate object coordinates of the mouse position
-        size = self.GetClientSize()
+        self.canvas_size = self.GetClientSize()
+        size = self.canvas_size
+
         ox = (event.GetX() - self.pan_x) / self.zoom
         oy = (size.height - event.GetY() - self.pan_y) / self.zoom
         old_zoom = self.zoom
@@ -197,15 +260,18 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             text = "".join(["Positive mouse wheel rotation. Zoom is now: ",
                             str(self.zoom)])
         if text:
-            self.render(text, 10)
+            self.render(text)
         else:
             self.Refresh()  # triggers the paint event
 
-    def render_text(self, text, x_pos, y_pos):
+    def render_text(self, text, x_pos, y_pos, title=False):
         """Handle text drawing operations."""
         GL.glColor3f(0.0, 0.0, 0.0)  # text is black
         GL.glRasterPos2f(x_pos, y_pos)
-        font = GLUT.GLUT_BITMAP_HELVETICA_12
+        if not title:
+            font = GLUT.GLUT_BITMAP_HELVETICA_12
+        else:
+            font = GLUT.GLUT_BITMAP_HELVETICA_18
 
         for character in text:
             if character == '\n':
@@ -241,6 +307,10 @@ class Gui(wx.Frame):
     on_continue_button(self, event): Event handler for when the user clicks the
                                       continue button.
 
+    run_network_and_get_values(self, time_steps): Executes the network for a
+                    given number of time steps and stores the monitored
+                    signals for each time step.
+
     on_text_box(self, event): Event handler for when the user enters text.
     """
 
@@ -258,6 +328,11 @@ class Gui(wx.Frame):
 
         # Canvas for drawing signals
         self.canvas = MyGLCanvas(self, devices, monitors)
+
+        # Store for monitored signals from network
+        self.values = None
+        self.trace_names = None
+        self.time_steps = 10
 
         # Store inputs from logsim.py
         self.path = path
@@ -313,25 +388,39 @@ class Gui(wx.Frame):
         """Handle the event when the user changes the spin control value."""
         spin_value = self.spin.GetValue()
         text = "".join(["New spin control value: ", str(spin_value)])
-        self.canvas.render(text)  #, spin_value)
+        self.canvas.render(text)
 
     def on_spin_cont(self, event):
         """Handle the event when the user changes the spin control value."""
         spin_value = self.spin_cont.GetValue()
         text = "".join(["New continue spin control value: ", str(spin_value)])
-        self.canvas.render(text)  #, None, spin_value)
+        self.canvas.render(text)
 
     def on_run_button(self, event):
         """Handle the event when the user clicks the run button."""
         spin_value = self.spin.GetValue()
-        text = "Run button pressed."
-        self.canvas.render(text, spin_value)
+
+        self.time_steps = spin_value
+        self.run_network_and_get_values(self.time_steps)
+
+        text = "Run button pressed. (self.time_steps=%d)"%self.time_steps
+        self.canvas.render(text)
 
     def on_continue_button(self, event):
         """Handle the event when the user clicks the continue button."""
         spin_cont_value = self.spin_cont.GetValue()
-        text = "Continue button pressed."
-        self.canvas.render(text, None, spin_cont_value)
+
+        self.time_steps += spin_cont_value
+        self.run_network_and_get_values(self.time_steps)
+
+        text = "Continue button pressed. (self.time_steps=%d)"%self.time_steps
+        self.canvas.render(text)
+
+    def run_network_and_get_values(self, time_steps):
+        """Run the network and get the monitored signal values"""
+        ## Test for now:
+        self.values = [[0, 0, 0, 1, 1, 1], [1, 1, 0, 0, 1, 0]]
+        self.trace_names = ['test 000111', 'test 110010']
 
     def on_text_box(self, event):
         """Handle the event when the user enters text."""
