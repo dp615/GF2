@@ -55,6 +55,7 @@ class Scanner:
         """Open specified file and initialise reserved words and IDs."""
         try:
             self.file = open(path, "r")
+            self.file.seek(0, 0)
         except cantOpenFile:
             sys.exit()
 
@@ -65,15 +66,41 @@ class Scanner:
 
         self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITOR", "MAIN_END","END"]
 
-        [self.DEVICES_ID, self.CONNECT_ID, self.MONITOR_ID,
+        [self.DEVICES_ID, self.CONNECT_ID, self.MONITOR_ID,self.MAIN_END_ID,
         self.END_ID] = self.names.lookup(self.keywords_list)
 
-        self.current_character = ""
-        
+        self.current_character = " "
+
+    def skip_spaces(self):
+        #skip white spaces
+        while self.current_character.isspace()==True:
+            self.advance()
+
+    def get_name(self):
+        name=''
+        while self.current_character.isalnum()==True:
+            name=name+self.current_character
+            self.advance()
+        self.advance()
+        return name
+
+
+    def get_number(self):
+        number=''
+        while self.current_character.isdigit()==True:
+            number=number+self.current_character
+            self.advance()
+        return int(number)
+
+
+    def advance(self):
+        self.current_character=self.file.read(1)   
+
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
 
         symbol = Symbol()
+        
         self.skip_spaces() # current character now not whitespace
         if self.current_character.isalpha(): # name
             name_string = self.get_name()
@@ -98,27 +125,5 @@ class Scanner:
         
         return symbol
 
-    def skip_spaces(self):
-        #skip white spaces
-        while self.current_character.isspace()==True:
-            self.advance()
 
-    def get_name(self):
-        name=''
-        while self.current_character.isalnum()==True:
-            name=name+self.current_character
-            self.advance()
-        self.advance()
-        return name
-
-
-    def get_number(self):
-        number=''
-        while self.current_character.isdigit()==True:
-            name=name+self.current_character
-            self.advance()
-        return int(number)
-
-
-    def advance(self):
-        self.current_character=self.file.read(1)
+        
