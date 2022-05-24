@@ -57,15 +57,6 @@ class Parser:
               ):
             self.next_symbol()
 
-    def add_device(self):
-        pass
-
-    def add_connection(self):
-        pass
-
-    def add_monitor(self):
-        pass
-
     def parse_inputlabel(self):
         self.next_symbol()
 
@@ -94,7 +85,7 @@ class Parser:
                 if self.current_symbol.type == self.scanner.NAMES:
                     self.next_symbol()
                     if self.current_symbol.type == self.scanner.SEMICOLON:
-                        self.add_device()
+                        self.next_symbol()
                         #Need to add ability to add a device here
                     else:
                         self.successful_parse = False
@@ -114,16 +105,21 @@ class Parser:
         if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.END_ID:
             self.next_symbol()
             return
+
+        elif self.current_symbol.type == self.scanner.EOF:
+            return
+
         else:
             self.successful_parse = False
             #SYNTAX ERROR MESSAGE (Unrecognised Device Type)
             self.next_scan_start()
+            self.parse_devices
 
     def parse_connections(self):
         while self.current_symbol.type == self.scanner.NAME:
             self.next_symbol()
             expect_dash = True
-            
+
             if self.current_symbol.type == self.scanner.DOT:
                 expect_dash = False
                 self.next_symbol()
@@ -144,7 +140,7 @@ class Parser:
                         self.next_symbol()
                         self.parse_inputlabel()
                         if self.current_symbol.type == self.scanner.SEMICOLON:
-                            self.add_connection()
+                            self.next_symbol()
                             #need to add ability to add connections
                         else:
                             self.successful_parse = False
@@ -169,13 +165,53 @@ class Parser:
             self.next_symbol()
             return
 
+        elif self.current_symbol.type == self.scanner.EOF:
+            return
+
         else:
             self.successful_parse = False
             #SYNTAX ERROR MESSAGE (Unrecognised Device Name)
             self.next_scan_start()
+            self.parse_connections()
 
     def parse_monitor(self):
-        pass
+        while self.current_symbol.type == self.scanner.NAME:
+            self.next_symbol()
+            expect_semicolon = True
+            if self.current_symbol.type == self.scanner.DOT:
+                expect_semicolon = False
+                self.next_symbol()
+                if (self.current_symbol.type == self.scanner.NAME 
+                    and self.current_symbol.id in self.dtype_output_ids):
+                    self.next_symbol()
+                    expect_semicolon = True
+                else:
+                    self.successful_parse = False
+                    self.next_scan_start()
+                    # SYNTAX ERROR (Invalid output label)
+            
+            if self.current_symbol.type == self.scanner.SEMICOLON and expect_semicolon:
+                self.next_symbol()
+                #Need to implement monitoring here
+            elif not expect_semicolon:
+                pass
+            else:
+                self.successful_parse = False
+                self.next_scan_start()
+                # SYNTAX ERROR (Expected semicolon)
+
+        if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.END_ID:
+            self.next_symbol()
+            return
+
+        elif self.current_symbol.type == self.scanner.EOF:
+            return
+
+        else:
+            self.successful_parse = False
+            #SYNTAX ERROR MESSAGE (Unrecognised Device Name)
+            self.next_scan_start()
+            self.parse_monitor()
 
     def parse_network(self):
         """Parse the circuit definition file."""
@@ -190,6 +226,11 @@ class Parser:
                     if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MONITOR_ID:
                         self.next_symbol()
                         self.parse_monitor()
+                        if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MAIN_END_ID:
+                            self.successful_parse = True
+                        else:
+                            self.successful_parse = False
+                            #SYNTAX ERROR MESSAGE (NO MAIN_END)
                     else:
                         self.successful_parse = False
                         #SYNTAX ERROR MESSAGE (NO MONITORS)
