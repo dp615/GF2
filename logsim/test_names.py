@@ -30,7 +30,7 @@ def test_names_query():
 
 def test_names_query_errors():
     names=Names()
-    names.lookup(['craft','arctic'])
+    names.lookup(['craft','arctic','town'])
     with pytest.raises(TypeError):
         names.lookup(1)
     with pytest.raises(TypeError):
@@ -38,6 +38,19 @@ def test_names_query_errors():
     with pytest.raises(TypeError):
         names.lookup(['cart',1.2])
 
+def test_names_get_string():
+    names=Names()
+    names.lookup(['craft','arctic','town'])
+    assert names.get_name_string(2)=='town'
+    assert names.get_name_string(0)=='craft'
+    assert names.get_name_string(3)==None
 
 
-    
+def test_names_get_string_errors():
+    names=Names()
+    with pytest.raises(TypeError):
+        names.get_name_string('goat')
+    with pytest.raises(TypeError):
+        names.get_name_string(1.2)  
+    with pytest.raises(ValueError):
+        names.get_name_string(-1)
