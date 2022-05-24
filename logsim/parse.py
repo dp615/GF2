@@ -66,70 +66,53 @@ class Parser:
     def add_monitor(self):
         pass
 
-    def valid_parameter(self,device_type_id,parameter):
-        return True
-
-    def valid_device_name(self,device_name_id):
-        return True
-
     def parse_devices(self):
-        while True:
+        while (
+                self.current_symbol.type == self.scanner.NAME 
+                and (self.current_symbol.id in self.devices.device_types 
+                or self.current_symbol.id in self.devices.gate_types)
+            ):
+
             self.next_symbol()
-            if (
-                    self.current_symbol.type == self.scanner.NAME 
-                    and (self.current_symbol.id in self.devices.device_types 
-                    or self.current_symbol.id in self.devices.gate_types)
-                ):
-                
-                device_type_id = int(self.current_symbol.id)
-                parameter = None
-
+            expect_equals = True
+            if self.current_symbol.type == self.scanner.COMMA:
+                expect_equals = False
                 self.next_symbol()
-                expect_equals = True
-                if self.current_symbol.type == self.scanner.COMMA:
-                    expect_equals = False
+                if self.current_symbol.type == self.scanner.NUMBER:
                     self.next_symbol()
-                    if self.current_symbol.type == self.scanner.NUMBER:
-                        parameter = int(self.current_symbol.id)
-                        if not self.valid_parameter(device_type_id,parameter):
-                            self.successful_parse = False
-                            # SEMANTIC ERROR (Invalid parameter for device)
-                        else:
-                            self.next_symbol()
-                            expect_equals = True
-                    else:
-                        self.successful_parse = False
-                        #SYNTAX ERROR (Expected a number here)
-
-                if self.current_symbol.type == self.scanner.EQUALS and expect_equals == True:
-                    self.next_symbol()
-                    if self.current_symbol.type == self.scanner.NAMES:
-                        device_name_id = int(self.current_symbol.id)
-                        if not self.valid_device_name_id(device_name_id):
-                            self.successful_parse = False
-                            # SEMANTIC ERROR (Invalid device name (same as existing device name or device type))
-                        else:
-                            self.next_symbol()
-                            if self.current_symbol.type == self.scanner.SEMICOLON:
-                                self.add_device()
-                                #Need to add ability to add a device here
-                            else:
-                                self.successful_parse = False
-                                #SUNTAX ERROR MESSAGE (Expected a semicolon)
-                    else:
-                        self.successful_parse = False
-                        #SYNTAX ERROR MESSAGE (Expected an alphanumeric string for device name)
+                    expect_equals = True
                 else:
                     self.successful_parse = False
-                    #SYNTAX ERROR MESSAGE (Expected equals sign here)     
-                               
-            elif self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.END_ID:
-                return
-            elif self.current_symbol.type == self.scanner.EOF:
-                return
+                    #SYNTAX ERROR (Expected a number here)
+                    self.next_scan_start()
+
+            if self.current_symbol.type == self.scanner.EQUALS and expect_equals == True:
+                self.next_symbol()
+                if self.current_symbol.type == self.scanner.NAMES:
+                    self.next_symbol()
+                    if self.current_symbol.type == self.scanner.SEMICOLON:
+                        self.add_device()
+                        #Need to add ability to add a device here
+                    else:
+                        self.successful_parse = False
+                        #SUNTAX ERROR MESSAGE (Expected a semicolon)
+                        self.next_scan_start()
+                else:
+                    self.successful_parse = False
+                    #SYNTAX ERROR MESSAGE (Expected an alphanumeric string for device name)
+                    self.next_scan_start()
             else:
                 self.successful_parse = False
-                #SYNTAX ERROR MESSAGE (Unrecognised Device Type)
+                #SYNTAX ERROR MESSAGE (Expected equals sign here)     
+                self.next_scan_start()
+                            
+        if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.END_ID:
+            self.next_symbol()
+            return
+        else:
+            self.successful_parse = False
+            #SYNTAX ERROR MESSAGE (Unrecognised Device Type)
+            self.next_scan_start()
 
     def parse_connections(self):
         pass
@@ -142,14 +125,14 @@ class Parser:
         if False:
             self.next_symbol()
             if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.DEVICES_ID:
-                self.parse_devices()
                 self.next_symbol()
+                self.parse_devices()
                 if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.CONNECT_ID:
-                    self.parse_connections()
                     self.next_symbol()
+                    self.parse_connections()
                     if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MONITOR_ID:
-                        self.parse_monitor()
                         self.next_symbol()
+                        self.parse_monitor()
                     else:
                         self.successful_parse = False
                         #SYNTAX ERROR MESSAGE (NO MONITORS)
