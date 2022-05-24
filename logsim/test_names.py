@@ -7,6 +7,7 @@ def test_names_lookup():
     assert names.lookup(['craft','arctic'])==[0,1]
     assert names.lookup(['arctic','town','craft'])==[1,2,0]
     assert names.lookup(['craft'])==[0]
+    assert names.lookup(['panic','craft','panic'])==[3,0,3]
 
 
 
