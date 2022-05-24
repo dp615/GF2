@@ -66,6 +66,9 @@ class Parser:
     def add_monitor(self):
         pass
 
+    def parse_inputlabel(self):
+        self.next_symbol()
+
     def parse_devices(self):
         while (
                 self.current_symbol.type == self.scanner.NAME 
@@ -86,7 +89,7 @@ class Parser:
                     #SYNTAX ERROR (Expected a number here)
                     self.next_scan_start()
 
-            if self.current_symbol.type == self.scanner.EQUALS and expect_equals == True:
+            if self.current_symbol.type == self.scanner.EQUALS and expect_equals:
                 self.next_symbol()
                 if self.current_symbol.type == self.scanner.NAMES:
                     self.next_symbol()
@@ -101,6 +104,8 @@ class Parser:
                     self.successful_parse = False
                     #SYNTAX ERROR MESSAGE (Expected an alphanumeric string for device name)
                     self.next_scan_start()
+            elif not expect_equals:
+                pass
             else:
                 self.successful_parse = False
                 #SYNTAX ERROR MESSAGE (Expected equals sign here)     
@@ -115,7 +120,59 @@ class Parser:
             self.next_scan_start()
 
     def parse_connections(self):
-        pass
+        while self.current_symbol.type == self.scanner.NAME:
+            self.next_symbol()
+            expect_dash = True
+            
+            if self.current_symbol.type == self.scanner.DOT:
+                expect_dash = False
+                self.next_symbol()
+                if (self.current_symbol.type == self.scanner.NAME 
+                    and self.current_symbol.id in self.dtype_output_ids):
+                    self.next_symbol()
+                    expect_dash = True
+                else:
+                    self.successful_parse = False
+                    self.next_scan_start()
+                    # SYNTAX ERROR (Invalid output label)
+
+            if self.current_symbol.type == self.scanner.DASH and expect_dash:
+                self.next_symbol()
+                if self.current_symbol.type == self.scanner.NAME:
+                    self.next_symbol()
+                    if self.current_symbol.type == self.scanner.DOT:
+                        self.next_symbol()
+                        self.parse_inputlabel()
+                        if self.current_symbol.type == self.scanner.SEMICOLON:
+                            self.add_connection()
+                            #need to add ability to add connections
+                        else:
+                            self.successful_parse = False
+                            self.next_scan_start()
+                            # SYNTAX ERROR (Expected a semicolon here) 
+                    else:
+                        self.successful_parse = False
+                        self.next_scan_start()
+                        # SYNTAX ERROR (Expected a dot here)
+                else:
+                    self.successful_parse = False
+                    self.next_scan_start()
+                    # SYNTAX ERROR (Invalid device name)
+            elif not expect_dash:
+                pass
+            else:
+                self.successful_parse = False
+                self.next_scan_start()
+                # SYNTAX ERROR (Expected dash)
+
+        if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.END_ID:
+            self.next_symbol()
+            return
+
+        else:
+            self.successful_parse = False
+            #SYNTAX ERROR MESSAGE (Unrecognised Device Name)
+            self.next_scan_start()
 
     def parse_monitor(self):
         pass
