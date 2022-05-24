@@ -71,9 +71,12 @@ class Scanner:
 
         self.current_character = " "
 
-    def skip_spaces(self):
-        #skip white spaces
-        while self.current_character.isspace()==True:
+    def skip_spaces_and_comments(self):
+        #skip white spaces and comments
+        no_of_hashtags=0
+        while self.current_character.isspace()==True or no_of_hashtags %2 != 0 or self.current_character=='#':
+            if self.current_character=='#':
+                no_of_hashtags+=1
             self.advance()
 
     def get_name(self):
@@ -100,7 +103,7 @@ class Scanner:
 
         symbol = Symbol()
         
-        self.skip_spaces() # current character now not whitespace
+        self.skip_spaces_and_comments() # current character now not whitespace
         if self.current_character.isalpha(): # name
             name_string = self.get_name()
             if name_string in self.keywords_list:
@@ -129,6 +132,9 @@ class Scanner:
             self.advance()
         
         return symbol
+
+    #def print_location():
+        #print(f.readline())
 
 
         

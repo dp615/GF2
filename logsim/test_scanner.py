@@ -15,9 +15,3 @@ def test_scanner():
         counter+=1
 
 
-
-
-'''
-self.COMMA, self.SEMICOLON, self.EQUALS,self.DASH
-        self.KEYWORD, self.NUMBER, self.NAME, self.EOF
-        '''
