@@ -27,6 +27,8 @@ class Symbol:
         """Initialise symbol properties."""
         self.type = None
         self.id = None
+        self.line=None
+        self.position=None
 
 
 class Scanner:
@@ -52,11 +54,59 @@ class Scanner:
     def __init__(self, path, names):
         """Open specified file and initialise reserved words and IDs."""
         try:
-            f = open(path, "r")
-            return f
+            self.file = open(path, "r")
         except cantOpenFile:
-            print("An error occurred when trying to open the file")
             sys.exit()
+
+        self.names = names
+
+        self.symbol_type_list = [self.COMMA, self.SEMICOLON, self.EQUALS,
+        self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(7)
+
+        self.keywords_list = ["DEVICES", "CONNECT", "MONITOR", "END"]
+
+        [self.DEVICES_ID, self.CONNECT_ID, self.MONITOR_ID,
+        self.END_ID] = self.names.lookup(self.keywords_list)
+
+        self.current_character = ""
         
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
+
+        symbol = Symbol()
+        self.skip_spaces() # current character now not whitespace
+        if self.current_character.isalpha(): # name
+            name_string = self.get_name()
+            if name_string in self.keywords_list:
+                symbol.type = self.KEYWORD
+            else:
+                symbol.type = self.NAME
+                [symbol.id] = self.names.lookup([name_string])
+        elif self.current_character.isdigit(): # number
+            symbol.id = self.get_number()
+            symbol.type = self.NUMBER
+        elif self.current_character == "=": # punctuation
+            symbol.type = self.EQUALS
+            self.advance()
+        elif self.current_character == ",":
+            symbol.type =self.COMMA
+            self.advance()
+        elif self.current_character == "": # end of file
+            symbol.type = self.EOF
+        else: # not a valid character
+            self.advance()
+        
+        return symbol
+
+    def skip_spaces(self):
+        #skip white spaces
+        self.current_character=self.file.read(1)
+        while self.current_character.isspace()==True:
+            self.current_character=self_file.read(1)
+
+    def get_name(self):
+
+    def get_number(self):
+
+    def advance(self):
+        self.current_character=self.file.read(1)
