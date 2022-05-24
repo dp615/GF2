@@ -63,7 +63,7 @@ class Scanner:
         self.symbol_type_list = [self.COMMA, self.SEMICOLON, self.EQUALS,
         self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(7)
 
-        self.keywords_list = ["DEVICES", "CONNECT", "MONITOR", "END"]
+        self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITOR", "MAIN_END","END"]
 
         [self.DEVICES_ID, self.CONNECT_ID, self.MONITOR_ID,
         self.END_ID] = self.names.lookup(self.keywords_list)
@@ -108,6 +108,7 @@ class Scanner:
         while self.current_character.isalnum()==True:
             name=name+self.current_character
             self.advance()
+        self.advance()
         return name
 
 
