@@ -81,7 +81,6 @@ class Scanner:
         while self.current_character.isalnum()==True:
             name=name+self.current_character
             self.advance()
-        self.advance()
         return name
 
 
@@ -117,6 +116,9 @@ class Scanner:
             self.advance()
         elif self.current_character == ",":
             symbol.type =self.COMMA
+            self.advance()
+        elif self.current_character == ";":
+            symbol.type =self.SEMICOLON
             self.advance()
         elif self.current_character == "": # end of file
             symbol.type = self.EOF
