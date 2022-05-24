@@ -100,13 +100,24 @@ class Scanner:
 
     def skip_spaces(self):
         #skip white spaces
-        self.current_character=self.file.read(1)
         while self.current_character.isspace()==True:
-            self.current_character=self_file.read(1)
+            self.advance()
 
     def get_name(self):
+        name=''
+        while self.current_character.isalnum()==True:
+            name=name+self.current_character
+            self.advance()
+        return name
+
 
     def get_number(self):
+        number=''
+        while self.current_character.isdigit()==True:
+            name=name+self.current_character
+            self.advance()
+        return int(number)
+
 
     def advance(self):
         self.current_character=self.file.read(1)
