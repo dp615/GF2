@@ -18,4 +18,26 @@ def test_names_lookup_errors():
         names.lookup([1.2])
     with pytest.raises(TypeError):
         names.lookup(['cart',1.2])
+
+
+def test_names_query():
+    names=Names()
+    names.lookup(['craft','arctic'])
+    names.lookup(['arctic','town','craft'])
+    names.lookup(['craft'])
+    assert names.query('arctic')==1
+    assert names.query('ladel')==None
+
+def test_names_query_errors():
+    names=Names()
+    names.lookup(['craft','arctic'])
+    with pytest.raises(TypeError):
+        names.lookup(1)
+    with pytest.raises(TypeError):
+        names.lookup([1.2])
+    with pytest.raises(TypeError):
+        names.lookup(['cart',1.2])
+
+
+
     
