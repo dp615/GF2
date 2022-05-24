@@ -1,2 +1,2 @@
 ;damp,art1 1-2=
-five barter-w DEVICES
+five barter-five DEVICES
