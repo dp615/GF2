@@ -43,7 +43,7 @@ class Parser:
 
         self.current_symbol = None
         self.successful_parse = True
-
+        self.parse_completion = [False, False, False]
 
     def next_symbol(self):
         self.current_symbol = self.scanner.get_symbol()
@@ -54,10 +54,11 @@ class Parser:
             self.next_symbol()
             error = True
         if error:
-            #SYNTAX ERROR (extra semicolons added)
+            #SYNTAX WARNING (extra semicolons added)
+            pass
 
     def repeated_keyword(self):
-
+        pass
 
     def next_scan_start(self, in_block = True):
         safe_start = False
@@ -71,6 +72,25 @@ class Parser:
             elif self.current_symbol.type == self.scanner.KEYWORD:
                 if self.current_symbol.id == self.scanner.END_ID and not in_block:
                     self.next_symbol()
+                elif not in_block:
+                    if self.current_symbol.id == self.scanner.DEVICES_ID:
+                        if self.parse_completion[0]:
+                            safe_start = True
+                        else:
+                            pass
+                            #SYNTAX WARNING (DEVICES ALREADY CALLED)
+                    elif self.current_symbol.id == self.scanner.CONNECT_ID:
+                        if self.parse_completion[1]:
+                            safe_start = True
+                        else:
+                            pass
+                            #SYNTAX WARNING (CONNECTIONS ALREADY CALLED)
+                    elif self.current_symbol.id == self.scanner.MONITOR_ID:
+                        if not self.parse_completion[2]:
+                            safe_start = True
+                        else:
+                            pass
+                            #SYNTAX WARNING (MONITOR ALREADY CALLED)
                 else:
                     safe_start = True
                     self.next_symbol()
@@ -258,8 +278,11 @@ class Parser:
                 self.parse_devices()
             else:
                 self.successful_parse = False
-                #SYNTAX ERROR MESSAGE (NO DEVICES)
-                self.next_scan_start(keyword = True)
+                #SYNTAX ERROR MESSAGE (EXPECTED DEVICES)
+                self.next_scan_start(in_block = False)
+                if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.DEVICES_ID:
+                    self.next_symbol()
+                    self.parse_devices()
             return self.successful_parse
 
             if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.CONNECT_ID:
@@ -267,14 +290,22 @@ class Parser:
                 self.parse_connections()
             else:
                 self.successful_parse = False
-                #SYNTAX ERROR MESSAGE (NO CONNECTIONS)
+                #SYNTAX ERROR MESSAGE (EXPECTED CONNECTIONS)
+                self.next_scan_start(in_block = False)
+                if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.CONNECT_ID:
+                    self.next_symbol()
+                    self.parse_connections()
 
             if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MONITOR_ID:
                 self.next_symbol()
                 self.parse_monitor()
             else:
                 self.successful_parse = False
-                #SYNTAX ERROR MESSAGE (NO MONITORS)
+                #SYNTAX ERROR MESSAGE (EXPECTED MONITORS)
+                self.next_scan_start(in_block = False)
+                if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MONITOR_ID:
+                    self.next_symbol()
+                    self.parse_monitor()
 
             if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MAIN_END_ID:
                 self.successful_parse = True
