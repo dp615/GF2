@@ -48,14 +48,35 @@ class Parser:
     def next_symbol(self):
         self.current_symbol = self.scanner.get_symbol()
 
-    def next_scan_start(self):
-        while not (
-                self.current_symbol.type == self.scanner.SEMICOLON 
-                or self.current_symbol.type == self.scanner.EOF
-                or (self.current_symbol.type == self.scanner.KEYWORD
-                and self.current_symbol.id == self.scanner.END_ID)
-              ):
+    def repeated_semicolon(self):
+        error = False
+        while self.current_symbol.type == self.scanner.SEMICOLON:
             self.next_symbol()
+            error = True
+        if error:
+            #SYNTAX ERROR (extra semicolons added)
+
+    def repeated_keyword(self):
+
+
+    def next_scan_start(self, in_block = True):
+        safe_start = False
+        while not safe_start:
+            if self.current_symbol.type == self.scanner.SEMICOLON and in_block:
+                self.next_symbol()
+                self.repeated_semicolon()
+                safe_start = True
+            elif self.current_symbol.type == self.scanner.EOF:
+                safe_start = True
+            elif self.current_symbol.type == self.scanner.KEYWORD:
+                if self.current_symbol.id == self.scanner.END_ID and not in_block:
+                    self.next_symbol()
+                else:
+                    safe_start = True
+                    self.next_symbol()
+            else:
+                self.next_symbol()
+        return
 
     def parse_inputlabel(self):
         self.next_symbol()
@@ -102,9 +123,14 @@ class Parser:
                 #SYNTAX ERROR MESSAGE (Expected equals sign here)     
                 self.next_scan_start()
                             
-        if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.END_ID:
-            self.next_symbol()
-            return
+        if self.current_symbol.type == self.scanner.KEYWORD:
+            if self.current_symbol.id == self.scanner.END_ID:
+                self.next_symbol()
+                return
+            else:
+                self.successful_parse = False
+                #SYNTAX ERROR MESSAGE (Expected END after devices)
+                return
 
         elif self.current_symbol.type == self.scanner.EOF:
             return
@@ -161,9 +187,14 @@ class Parser:
                 self.next_scan_start()
                 # SYNTAX ERROR (Expected dash)
 
-        if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.END_ID:
-            self.next_symbol()
-            return
+        if self.current_symbol.type == self.scanner.KEYWORD:
+            if self.current_symbol.id == self.scanner.END_ID:
+                self.next_symbol()
+                return
+            else:
+                self.successful_parse = False
+                #SYNTAX ERROR MESSAGE (Expected END after devices)
+                return
 
         elif self.current_symbol.type == self.scanner.EOF:
             return
@@ -200,9 +231,14 @@ class Parser:
                 self.next_scan_start()
                 # SYNTAX ERROR (Expected semicolon)
 
-        if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.END_ID:
-            self.next_symbol()
-            return
+        if self.current_symbol.type == self.scanner.KEYWORD:
+            if self.current_symbol.id == self.scanner.END_ID:
+                self.next_symbol()
+                return
+            else:
+                self.successful_parse = False
+                #SYNTAX ERROR MESSAGE (Expected END after devices)
+                return
 
         elif self.current_symbol.type == self.scanner.EOF:
             return
@@ -220,27 +256,32 @@ class Parser:
             if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.DEVICES_ID:
                 self.next_symbol()
                 self.parse_devices()
-                if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.CONNECT_ID:
-                    self.next_symbol()
-                    self.parse_connections()
-                    if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MONITOR_ID:
-                        self.next_symbol()
-                        self.parse_monitor()
-                        if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MAIN_END_ID:
-                            self.successful_parse = True
-                        else:
-                            self.successful_parse = False
-                            #SYNTAX ERROR MESSAGE (NO MAIN_END)
-                    else:
-                        self.successful_parse = False
-                        #SYNTAX ERROR MESSAGE (NO MONITORS)
-                else:
-                    self.successful_parse = False
-                    #SYNTAX ERROR MESSAGE (NO CONNECTIONS)
             else:
                 self.successful_parse = False
                 #SYNTAX ERROR MESSAGE (NO DEVICES)
+                self.next_scan_start(keyword = True)
             return self.successful_parse
+
+            if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.CONNECT_ID:
+                self.next_symbol()
+                self.parse_connections()
+            else:
+                self.successful_parse = False
+                #SYNTAX ERROR MESSAGE (NO CONNECTIONS)
+
+            if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MONITOR_ID:
+                self.next_symbol()
+                self.parse_monitor()
+            else:
+                self.successful_parse = False
+                #SYNTAX ERROR MESSAGE (NO MONITORS)
+
+            if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MAIN_END_ID:
+                self.successful_parse = True
+            else:
+                self.successful_parse = False
+                #SYNTAX ERROR MESSAGE (NO MAIN_END)
+
 
         # For now just return True, so that userint and gui can run in the
         # skeleton code. When complete, should return False when there are
