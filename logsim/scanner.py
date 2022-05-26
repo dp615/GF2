@@ -62,7 +62,7 @@ class Scanner:
         self.names = names
 
         self.symbol_type_list = [self.COMMA, self.SEMICOLON, self.EQUALS, self.DASH,
-        self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(8)
+        self.KEYWORD, self.NUMBER, self.NAME, self.DOT, self.EOF] = range(9)
 
         self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITOR", "MAIN_END","END"]
 
@@ -135,6 +135,9 @@ class Scanner:
             self.advance()
         elif self.current_character == "-":
             symbol.type =self.DASH
+            self.advance()
+        elif self.current_character == ".":
+            symbol.type =self.DOT
             self.advance()
         elif self.current_character == "": # end of file
             symbol.type = self.EOF
