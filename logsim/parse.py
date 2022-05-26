@@ -33,7 +33,7 @@ class Parser:
     parse_network(self): Parses the circuit definition file.
     """
 
-    def __init__(self, names, devices, network, monitors, scanner):
+    def __init__(self, names, devices, network, monitors, scanner, test = False):
         """Initialise constants."""
         self.names = names
         self.devices = devices
@@ -43,6 +43,7 @@ class Parser:
 
         self.current_symbol = None
         self.parse_completion = [False, False, False]
+        self.test = test
 
         self.ERROR_ID = [self.EXTRA_SEMICOLON, self.EXTRA_DEVICES, self.EXTRA_CONNECT,
             self.EXTRA_MONITOR, self.NO_NUMBER, self.NO_SEMICOLON, self.INVALID_DEVICENAME,
@@ -58,118 +59,133 @@ class Parser:
 
     def display_error(self,error_id):
         if error_id == self.EXTRA_SEMICOLON:
-            print("SYNTAX ERROR", error_id,': Extra semicolons added')
-            self.inline_error_message()
+            print("SYNTAX ERROR: Extra semicolons added")
+            if not self.test:
+                self.inline_error_message()
             self.error_count += 1
 
         elif error_id == self.EXTRA_DEVICES:
-            print("SYNTAX ERROR", error_id,': DEVICES already called')
-            self.inline_error_message()
+            print("SYNTAX ERROR : DEVICES already called")
+            if not self.test:
+                self.inline_error_message()
             self.error_count += 1
             self.next_symbol()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.EXTRA_CONNECT:
-            print("SYNTAX ERROR", error_id,': CONNECTIONS already Called')
-            self.inline_error_message()
+            print("SYNTAX ERROR : CONNECTIONS already Called")
+            if not self.test:
+                self.inline_error_message()
             self.error_count += 1
             self.next_symbol()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.EXTRA_MONITOR:
-            print("SYNTAX ERROR", error_id,': MONITOR already called')
-            self.inline_error_message()
+            print("SYNTAX ERROR : MONITOR already called")
+            if not self.test:
+                self.inline_error_message()
             self.error_count += 1
             self.next_symbol()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.NO_NUMBER:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Not a number")
-            self.inline_error_message()
+            print("SYNTAX ERROR : Not a number")
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.NO_SEMICOLON:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Expected a semicolon here")
-            self.inline_error_message()
+            print("SYNTAX ERROR : Expected a semicolon here")
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.INVALID_DEVICENAME:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Not a valid device name")
-            self.inline_error_message()
+            print("SYNTAX ERROR : Not a valid device name")
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.NO_EQUALS:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Expected an equals sign here")
-            self.inline_error_message()
+            print("SYNTAX ERROR : Expected an equals sign here")
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.NO_END:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Expected an 'END' statement")
-            self.inline_error_message()
+            print("SYNTAX ERROR : Expected an 'END' statement")
+            if not self.test:
+                self.inline_error_message()
 
         elif error_id == self.INVALID_DEVICETYPE:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Not a valid supported device type")
-            self.inline_error_message()
+            print("SYNTAX ERROR : Not a valid supported device type")
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.INVALID_OUTPUTLABEL:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Not a valid type of output label")
-            self.inline_error_message()
+            print("SYNTAX ERROR : Not a valid type of output label")
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.NO_DOT:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Expected a dot here")
-            self.inline_error_message()
+            print("SYNTAX ERROR : Expected a dot here")
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.NO_DASH:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Expected a dash here")
-            self.inline_error_message()
+            print("SYNTAX ERROR : Expected a dash here")
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.EXPECT_DEVICES:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Expected a 'DEVICES' statement here")
-            self.inline_error_message()
+            print("SYNTAX ERROR : Expected a 'DEVICES' statement here")
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.EXPECT_CONNECT:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Expected a 'CONNECTIONS' statement here")
-            self.inline_error_message()
+            print("SYNTAX ERROR : Expected a 'CONNECTIONS' statement here")
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.EXPECT_MONITOR:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Expected a 'MONITOR' statement here")
+            print("SYNTAX ERROR : Expected a 'MONITOR' statement here")
             self.inline_error_message()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.NO_MAIN_END:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Expected a 'MAIN_END' statement here")
+            print("SYNTAX ERROR : Expected a 'MAIN_END' statement here")
             self.inline_error_message()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.NOT_EXPECT_END:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Unexpected 'END' statement")
+            print("SYNTAX ERROR : Unexpected 'END' statement")
             self.inline_error_message()
             self.next_symbol()
             self.next_scan_start()
 
         elif error_id == self.INVALID_INPUTLABEL:
             self.error_count += 1
-            print("SYNTAX ERROR", error_id, ": Invalid input label")
+            print("SYNTAX ERROR : Invalid input label")
             self.inline_error_message()
             self.next_scan_start()
 
