@@ -7,14 +7,14 @@ OR, 2 = G8;
 END
 
 CONNECTIONS
-A0.Q - G1 ;
-A1 - G4 ;
-B0 - G1 ;
-B1.Q - G4 ;
-G2 - G5 ;
-G4.Q_BAR - G5 ;
-G6 - G8 ;
-G7 - G8 ;
+A0.Q - G1.I1 ;
+A1 - G4.I1 ;
+B0 - G1.I1 ;
+B1.Q - G4.I1 ;
+G2 - G5.I1 ;
+G4.Q_BAR - G5.I1 ;
+G6 - G8.I1 ;
+G7 - G8.I1 ;
 END
 
 CONNECTIONS
