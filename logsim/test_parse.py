@@ -33,7 +33,7 @@ def test_parser(capsys):
 
     for i in range (19):
         if i not in [1,2,3]:
-            file_path = "parser_tests\parser_test_file".join(str(i+1),".txt")
+            file_path = "parser_tests\parser_test_file".join([str(i+1),".txt"])
             scanner=Scanner(file_path,names)
             parser = Parser(names, devices, network, monitors, scanner)
             parser.parse_network()
