@@ -16,7 +16,7 @@ from names import Names
 from devices import Devices
 from network import Network
 from monitors import Monitors
-from scanner import Scanner
+#from scanner import Scanner
 from parse import Parser
 
 
@@ -35,6 +35,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     Public methods
     --------------
     init_gl(self): Configures the OpenGL context.
+
+    render_graph_axes(self, x, y): Draws graph axes.
+
+    render_trace(self, x, y, values, name): Draws signal output.
 
     render(self, text): Handles all drawing operations.
 
@@ -65,6 +69,12 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.monitors = monitors
         self.devices = devices
 
+        # Set colour palette
+        self.bkgd_colour = (0.3, 0.3, 0.3)
+        self.line_colour = (0.9, 0.9, 0.5)
+        self.text_colour = (0.9, 0.9, 0.9)
+        self.axes_colour = (0.9, 0.9, 0.9)
+
         # Initialise canvas size variable
         self.canvas_size = self.GetClientSize()
 
@@ -91,7 +101,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         size = self.GetClientSize()
         self.SetCurrent(self.context)
         GL.glDrawBuffer(GL.GL_BACK)
-        GL.glClearColor(1.0, 1.0, 1.0, 0.0)
         GL.glViewport(0, 0, size.width, size.height)
         GL.glMatrixMode(GL.GL_PROJECTION)
         GL.glLoadIdentity()
@@ -101,44 +110,51 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glTranslated(self.pan_x, self.pan_y, 0.0)
         GL.glScaled(self.zoom, self.zoom, self.zoom)
 
-    def render_test(self, text, time_steps=None, add_time_steps=None):
-        """Handle all drawing operations."""
-        self.SetCurrent(self.context)
-        if not self.init:
-            # Configure the viewport, modelview and projection matrices
-            self.init_gl()
-            self.init = True
-
-        if time_steps:
-            self.time_steps = time_steps
-
-        if add_time_steps:
-            self.time_steps += add_time_steps
-
-        # Clear everything
+        # Set background colour
+        GL.glClearColor(self.bkgd_colour[0], self.bkgd_colour[1],
+                        self.bkgd_colour[2], 0.0)
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-        # Draw specified text at position (10, 10)
-        self.render_text(text, 10, 10)
+    def render_graph_axes(self, x, y):
+        """Draw axis for a given signal output"""
 
-        # Draw a sample signal trace
-        GL.glColor3f(0.0, 0.0, 1.0)  # signal trace is blue
+        time_step_no = len(self.parent.values[0])
+        GL.glColor3f(self.axes_colour[0], self.axes_colour[1],
+                     self.axes_colour[2])  # signal trace is blue
+
         GL.glBegin(GL.GL_LINE_STRIP)
-        for i in range(self.time_steps):
-            x = (i * 20) + 10
-            x_next = (i * 20) + 30
-            if i % 2 == 0:
-                y = 75
-            else:
-                y = 100
-            GL.glVertex2f(x, y)
-            GL.glVertex2f(x_next, y)
+        GL.glVertex2f(x - 4, y + 29)
+        GL.glVertex2f(x - 4, y - 4)
+        GL.glVertex2f(x + 4 + (time_step_no * 20), y - 4)
         GL.glEnd()
-
-        # We have been drawing to the back buffer, flush the graphics pipeline
-        # and swap the back buffer to the front
         GL.glFlush()
-        self.SwapBuffers()
+
+        for i in range(time_step_no + 1):
+            self.render_text(str(i), x-4 + (20 * i), y-16)
+
+        self.render_text('0', x-14, y-6)
+        self.render_text('1', x-14, y+19)
+
+    def render_trace(self, x, y, values, name):
+        """Draw a signal output trace"""
+
+        self.render_text(name, 10, y + 5)
+        GL.glColor3f(self.line_colour[0], self.line_colour[1],
+                     self.line_colour[2])
+
+        GL.glBegin(GL.GL_LINE_STRIP)
+        for i in range(len(values)):
+            x0 = (i * 20) + x
+            x1 = (i * 20) + x + 20
+            if values[i]:
+                y0 = y + 25
+            else:
+                y0 = y
+
+            GL.glVertex2f(x0, y0)
+            GL.glVertex2f(x1, y0)
+        GL.glEnd()
+        GL.glFlush()
 
     def render(self, text):
         """Handle all drawing operations."""
@@ -153,42 +169,26 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         if not self.parent.values:
             self.parent.trace_names = ['N/A']
             self.parent.values = [[]]
-            #raise ValueError("No parent values to display")
-
 
         display_ys = [self.canvas_size[1] - 100 - 80*j for j in range(len(self.parent.values))]
         display_x = 120
+        signal_no = len(self.parent.trace_names)
 
         # Clear everything
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-        #Draw title
+        # Draw title
         title_text = "Monitored Signal Display"
         self.render_text(title_text, 10, self.canvas_size[1]-20, title=True)
 
         # Draw specified text at position (10, 10)
         self.render_text(text, 10, 10)
 
-        for j in range(len(self.parent.trace_names)):
-            self.render_text(self.parent.trace_names[j], 10, display_ys[j]+5)
+        for j in range(signal_no):
+            self.render_trace(display_x, display_ys[j], self.parent.values[j],
+                              self.parent.trace_names[j])
+            self.render_graph_axes(display_x, display_ys[j])
 
-            # Draw a sample signal trace
-            GL.glColor3f(0.0, 0.0, 1.0)  # signal trace is blue
-            GL.glBegin(GL.GL_LINE_STRIP)
-            for i in range(len(self.parent.values[0])):
-                x = (i * 20) + display_x
-                x_next = (i * 20) + display_x + 20
-                if self.parent.values[j][i]:
-                    y = display_ys[j] + 25
-                else:
-                    y = display_ys[j]
-
-                GL.glVertex2f(x, y)
-                GL.glVertex2f(x_next, y)
-            GL.glEnd()
-
-        # We have been drawing to the back buffer, flush the graphics pipeline
-        # and swap the back buffer to the front
         GL.glFlush()
         self.SwapBuffers()
 
@@ -266,7 +266,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def render_text(self, text, x_pos, y_pos, title=False):
         """Handle text drawing operations."""
-        GL.glColor3f(0.0, 0.0, 0.0)  # text is black
+        GL.glColor3f(self.text_colour[0], self.text_colour[1],
+                     self.text_colour[2])  # text is black
         GL.glRasterPos2f(x_pos, y_pos)
         if not title:
             font = GLUT.GLUT_BITMAP_HELVETICA_12
@@ -460,3 +461,9 @@ class Gui(wx.Frame):
     def on_add_monitor_button(self, event):
         """Handle the event when user clicks "add" """
         pass
+
+path, names, devices, network, monitors = None, None, None, None, None
+app = wx.App()
+gui = Gui("Logic Simulator", path, names, devices, network, monitors)
+gui.Show(True)
+app.MainLoop()
