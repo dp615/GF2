@@ -16,7 +16,7 @@ from names import Names
 from devices import Devices
 from network import Network
 from monitors import Monitors
-from scanner import Scanner
+#from scanner import Scanner
 from parse import Parser
 
 
@@ -65,6 +65,11 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.monitors = monitors
         self.devices = devices
 
+        # Set colour palette
+        self.bkgd_colour = (0.3, 0.3, 0.3)
+        self.line_colour = (0.9, 0.9, 0.5)
+        self.text_colour = (0.9, 0.9, 0.9)
+
         # Initialise canvas size variable
         self.canvas_size = self.GetClientSize()
 
@@ -91,7 +96,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         size = self.GetClientSize()
         self.SetCurrent(self.context)
         GL.glDrawBuffer(GL.GL_BACK)
-        GL.glClearColor(1.0, 1.0, 1.0, 0.0)
         GL.glViewport(0, 0, size.width, size.height)
         GL.glMatrixMode(GL.GL_PROJECTION)
         GL.glLoadIdentity()
@@ -100,6 +104,11 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glLoadIdentity()
         GL.glTranslated(self.pan_x, self.pan_y, 0.0)
         GL.glScaled(self.zoom, self.zoom, self.zoom)
+
+        # Set background colour
+        GL.glClearColor(self.bkgd_colour[0], self.bkgd_colour[1],
+                        self.bkgd_colour[2], 0.0)
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
     def render_test(self, text, time_steps=None, add_time_steps=None):
         """Handle all drawing operations."""
@@ -155,14 +164,13 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.parent.values = [[]]
             #raise ValueError("No parent values to display")
 
-
         display_ys = [self.canvas_size[1] - 100 - 80*j for j in range(len(self.parent.values))]
         display_x = 120
 
         # Clear everything
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-        #Draw title
+        # Draw title
         title_text = "Monitored Signal Display"
         self.render_text(title_text, 10, self.canvas_size[1]-20, title=True)
 
@@ -173,7 +181,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.render_text(self.parent.trace_names[j], 10, display_ys[j]+5)
 
             # Draw a sample signal trace
-            GL.glColor3f(0.0, 0.0, 1.0)  # signal trace is blue
+            GL.glColor3f(self.line_colour[0], self.line_colour[1],
+                         self.line_colour[2])  # signal trace is blue
             GL.glBegin(GL.GL_LINE_STRIP)
             for i in range(len(self.parent.values[0])):
                 x = (i * 20) + display_x
@@ -266,7 +275,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def render_text(self, text, x_pos, y_pos, title=False):
         """Handle text drawing operations."""
-        GL.glColor3f(0.0, 0.0, 0.0)  # text is black
+        GL.glColor3f(self.text_colour[0], self.text_colour[1],
+                     self.text_colour[2])  # text is black
         GL.glRasterPos2f(x_pos, y_pos)
         if not title:
             font = GLUT.GLUT_BITMAP_HELVETICA_12
@@ -460,3 +470,9 @@ class Gui(wx.Frame):
     def on_add_monitor_button(self, event):
         """Handle the event when user clicks "add" """
         pass
+
+path, names, devices, network, monitors = None, None, None, None, None
+app = wx.App()
+gui = Gui("Logic Simulator", path, names, devices, network, monitors)
+gui.Show(True)
+app.MainLoop()
