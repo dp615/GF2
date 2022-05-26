@@ -42,110 +42,135 @@ class Parser:
         self.scanner = scanner
 
         self.current_symbol = None
-        self.successful_parse = True
         self.parse_completion = [False, False, False]
 
-        self.WARNING_ID = [self.EXTRA_SEMICOLON, self.EXTRA_DEVICES, self.EXTRA_CONNECT,
-            self.EXTRA_MONITOR] = self.names.unique_error_codes(4)
-
-        self.ERROR_ID = [self.NO_NUMBER, self.NO_SEMICOLON, self.INVALID_DEVICENAME,
+        self.ERROR_ID = [self.EXTRA_SEMICOLON, self.EXTRA_DEVICES, self.EXTRA_CONNECT,
+            self.EXTRA_MONITOR, self.NO_NUMBER, self.NO_SEMICOLON, self.INVALID_DEVICENAME,
             self.NO_EQUALS, self.NO_END, self.INVALID_DEVICETYPE, self.INVALID_OUTPUTLABEL,
             self.NO_DOT, self.NO_DASH, self.EXPECT_DEVICES, self.EXPECT_CONNECT,
-            self.EXPECT_MONITOR, self.NO_MAIN_END,self.NOT_EXPECT_END] = self.names.unique_error_codes(14)
+            self.EXPECT_MONITOR, self.NO_MAIN_END,self.NOT_EXPECT_END, self.INVALID_INPUTLABEL] = self.names.unique_error_codes(19)
 
         self.error_count = 0
 
     # To be completed function to display line with caret pointing to error 
-    def inline_error_message(error_symbol):
-        pass
+    def inline_error_message(self):
+        self.scanner.print_location(self.current_symbol.line,self.current_symbol.position_in_line)
 
     def display_error(self,error_id):
         if error_id == self.EXTRA_SEMICOLON:
-            print("SYNTAX WARNING", error_id,': Extra semicolons added')
+            print("SYNTAX ERROR", error_id,': Extra semicolons added')
+            self.inline_error_message()
+            self.error_count += 1
 
         elif error_id == self.EXTRA_DEVICES:
-            print("SYNTAX WARNING", error_id,': DEVICES already called')
+            print("SYNTAX ERROR", error_id,': DEVICES already called')
+            self.inline_error_message()
+            self.error_count += 1
             self.next_symbol()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.EXTRA_CONNECT:
-            print("SYNTAX WARNING", error_id,': CONNECTIONS already Called')
+            print("SYNTAX ERROR", error_id,': CONNECTIONS already Called')
+            self.inline_error_message()
+            self.error_count += 1
             self.next_symbol()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.EXTRA_MONITOR:
-            print("SYNTAX WARNING", error_id,': MONITOR already called')
+            print("SYNTAX ERROR", error_id,': MONITOR already called')
+            self.inline_error_message()
+            self.error_count += 1
             self.next_symbol()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.NO_NUMBER:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Not a number")
+            self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.NO_SEMICOLON:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Expected a semicolon here")
+            self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.INVALID_DEVICENAME:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Not a valid device name")
+            self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.NO_EQUALS:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Expected an equals sign here")
+            self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.NO_END:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Expected an 'END' statement")
+            self.inline_error_message()
 
         elif error_id == self.INVALID_DEVICETYPE:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Not a valid supported device type")
+            self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.INVALID_OUTPUTLABEL:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Not a valid type of output label")
+            self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.NO_DOT:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Expected a dot here")
+            self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.NO_DASH:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Expected a dash here")
+            self.inline_error_message()
             self.next_scan_start()
 
         elif error_id == self.EXPECT_DEVICES:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Expected a 'DEVICES' statement here")
+            self.inline_error_message()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.EXPECT_CONNECT:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Expected a 'CONNECTIONS' statement here")
+            self.inline_error_message()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.EXPECT_MONITOR:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Expected a 'MONITOR' statement here")
+            self.inline_error_message()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.NO_MAIN_END:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Expected a 'MAIN_END' statement here")
+            self.inline_error_message()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.NOT_EXPECT_END:
             self.error_count += 1
             print("SYNTAX ERROR", error_id, ": Unexpected 'END' statement")
+            self.inline_error_message()
             self.next_symbol()
+            self.next_scan_start()
+
+        elif error_id == self.INVALID_INPUTLABEL:
+            self.error_count += 1
+            print("SYNTAX ERROR", error_id, ": Invalid input label")
+            self.inline_error_message()
             self.next_scan_start()
 
         else:
@@ -206,9 +231,12 @@ class Parser:
                 self.next_symbol()
         return
 
-    #To be completed function to parse inputlabel
     def parse_inputlabel(self):
-        self.next_symbol()
+        if self.current_symbol.type == self.scanner.NAME:
+            self.next_symbol()
+        else:
+            #SYNTAX WARNING (INVALID INPUTLABEL ALREADY CALLED) IMPLEMENTED
+            self.display_error(self.INVALID_INPUTLABEL)
 
     def parse_devices(self):
         self.parse_completion[0] = True
@@ -369,53 +397,51 @@ class Parser:
 
     def parse_network(self):
         """Parse the circuit definition file."""
-        if False:
+        self.next_symbol()
+        if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.DEVICES_ID:
             self.next_symbol()
+            self.parse_devices()
+        else:
+            #SYNTAX ERROR MESSAGE (EXPECTED DEVICES) IMPLEMENTED
+            self.display_error(self.EXPECT_DEVICES)
             if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.DEVICES_ID:
                 self.next_symbol()
                 self.parse_devices()
-            else:
-                #SYNTAX ERROR MESSAGE (EXPECTED DEVICES) IMPLEMENTED
-                self.display_error(self.EXPECT_DEVICES)
-                if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.DEVICES_ID:
-                    self.next_symbol()
-                    self.parse_devices()
-            return self.successful_parse
 
+        if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.CONNECT_ID:
+            self.next_symbol()
+            self.parse_connections()
+        else:
+            #SYNTAX ERROR MESSAGE (EXPECTED CONNECTIONS) IMPLEMENTED
+            self.display_error(self.EXPECT_CONNECT)
             if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.CONNECT_ID:
                 self.next_symbol()
                 self.parse_connections()
-            else:
-                #SYNTAX ERROR MESSAGE (EXPECTED CONNECTIONS) IMPLEMENTED
-                self.display_error(self.EXPECT_CONNECT)
-                if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.CONNECT_ID:
-                    self.next_symbol()
-                    self.parse_connections()
 
+        if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MONITOR_ID:
+            self.next_symbol()
+            self.parse_monitor()
+        else:
+            #SYNTAX ERROR MESSAGE (EXPECTED MONITORS) IMPLEMENTED
+            self.display_error(self.EXPECT_MONITOR)
             if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MONITOR_ID:
                 self.next_symbol()
                 self.parse_monitor()
-            else:
-                #SYNTAX ERROR MESSAGE (EXPECTED MONITORS) IMPLEMENTED
-                self.display_error(self.EXPECT_MONITOR)
-                if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MONITOR_ID:
-                    self.next_symbol()
-                    self.parse_monitor()
 
-            if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MAIN_END_ID:
-                self.successful_parse = True
-            else:
-                self.successful_parse = False
-                #SYNTAX ERROR MESSAGE (NO MAIN_END)
-                self.display_error(self.NO)
-            
-            if self.error_count > 0:
-                return False
-            else:
-                return True
+        if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.MAIN_END_ID:
+            self.successful_parse = True
+        else:
+            self.successful_parse = False
+            #SYNTAX ERROR MESSAGE (NO MAIN_END)
+            self.display_error(self.NO)
+        
+        if self.error_count > 0:
+            return False
+        else:
+            return True
 
 
-        # For now just return True, so that userint and gui can run in the
+        '''# For now just return True, so that userint and gui can run in the
         # skeleton code. When complete, should return False when there are
         # errors in the circuit definition file.
-        return True
+        return True'''
