@@ -103,7 +103,6 @@ class Scanner:
         self.position+=1
         self.position_in_line+=1
         if self.current_character=='\n':
-            print('here')
             self.line+=1
             self.position_in_line=0 
             
