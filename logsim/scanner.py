@@ -28,7 +28,7 @@ class Symbol:
         self.type = None
         self.id = None
         self.line=None
-        self.position=None
+        self.position_in_line=None
 
 
 class Scanner:
@@ -72,6 +72,7 @@ class Scanner:
         self.current_character = " "
         self.position=0
         self.line=0
+        self.position_in_line=0
 
     def skip_spaces_and_comments(self):
         #skip white spaces and comments
@@ -100,10 +101,12 @@ class Scanner:
     def advance(self):
         self.current_character=self.file.read(1)  
         self.position+=1
+        self.position_in_line+=1
         if self.current_character=='\n':
             print('here')
             self.line+=1
-            self.position=0 
+            self.position_in_line=0 
+            
 
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
@@ -137,23 +140,18 @@ class Scanner:
             symbol.type = self.EOF
         else: # not a valid character
             self.advance()
-        symbol.position=self.position
+        symbol.position_in_line=self.position_in_line
         symbol.line=self.line
         return symbol
 
-    def print_location(self):
-        print(self.file.readlines(0))
+    def print_location(self,line,position_on_line):
+        self.file.seek(0,0)
+        print(self.file.readlines()[line])
         string=''
-        for i in range(self.position):
+        for i in range(position_on_line):
             string=string+' '
         string=string+'^'
         print(string)
+        self.file.seek(self.position)
 
 
-
-from names import *   
-names=Names()
-scanner=Scanner(r'scanner_test_file.txt',names)
-for i in range(10):
-    scanner.get_symbol()
-scanner.print_location()
