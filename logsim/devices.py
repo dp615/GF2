@@ -224,6 +224,16 @@ class Devices:
             device.switch_state = signal
             return True
 
+    def get_switch_value(self, device_id):
+        """Get the value of a given switch"""
+        device = self.get_device(device_id)
+        if device is None:
+            return False
+        elif device.device_kind != self.SWITCH:
+            return False
+        else:
+            return device.switch_state
+
     def make_switch(self, device_id, initial_state):
         """Make a switch device and set its initial state."""
         self.add_device(device_id, self.SWITCH)

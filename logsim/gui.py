@@ -62,9 +62,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         # Gain access to Gui Class parent's variables
         self.parent = parent
 
-        # Initialise display value variables
-        self.time_steps = 10
-
         # Initialise store for help_text, monitors and devices
         self.monitors = monitors
         self.devices = devices
@@ -376,6 +373,11 @@ class Gui(wx.Frame):
         self.network = network
         self.monitors = monitors
 
+        self.switch_ids = self.devices.find_devices(self.devices.SWITCH)
+        self.switch_names = [self.names.get_name_string(i) for i in self.switch_ids]
+        self.switch_values = [self.devices.get_switch_value(i) for i in self.switch_ids]
+        self.sig_mons, self.sig_n_mons = self.monitors.get_signal_names()
+
         # Toolbar setup
         toolbar = self.CreateToolBar()
         myimage = wx.ArtProvider.GetBitmap(wx.ART_NEW, wx.ART_TOOLBAR)
@@ -393,56 +395,71 @@ class Gui(wx.Frame):
         self.spin = wx.SpinCtrl(self, wx.ID_ANY, "10")
         self.run_button = wx.Button(self, wx.ID_ANY, "Run")
 
-        self.text_cont_cycles = wx.StaticText(self, wx.ID_ANY, "Continue:")
-        self.spin_cont = wx.SpinCtrl(self, wx.ID_ANY, "3")
+        #self.text_cont_cycles = wx.StaticText(self, wx.ID_ANY, "Continue:")
+        #self.spin_cont = wx.SpinCtrl(self, wx.ID_ANY, "3")
         self.continue_button = wx.Button(self, wx.ID_ANY, "Continue")
 
-        self.text_switch_control = wx.StaticText(self, wx.ID_ANY, "Toggle switch:")
+        self.text_switch_control = wx.StaticText(self, wx.ID_ANY, "Switch On:")
+        #self.text_switch_set = wx.StaticText(self, wx.ID_ANY, "On?:")
+        self.switch_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>", choices=['test1', 'test2'])
+        self.switch_set = wx.CheckBox(self, wx.ID_ANY)
 
-        self.text_add_monitor = wx.StaticText(self, wx.ID_ANY, "Add monitored point:")
-        self.text_box = wx.TextCtrl(self, wx.ID_ANY, "",
-                                    style=wx.TE_PROCESS_ENTER)
+        self.text_add_monitor = wx.StaticText(self, wx.ID_ANY, "Signal Monitors:")
+        #self.text_box = wx.TextCtrl(self, wx.ID_ANY, "",
+        #                            style=wx.TE_PROCESS_ENTER)
         self.add_monitor_button = wx.Button(self, wx.ID_ANY, "Add")
+        self.remove_monitor_button = wx.Button(self, wx.ID_ANY, "Remove")
+        self.add_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>", choices=['test1', 'test2'])
+        self.remove_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>", choices=['test1', 'test2'])
 
         # Bind events to widgets
         self.Bind(wx.EVT_MENU, self.on_menu)
         self.spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
-        self.spin_cont.Bind(wx.EVT_SPINCTRL, self.on_spin_cont)
+        #self.spin_cont.Bind(wx.EVT_SPINCTRL, self.on_spin_cont)
 
         self.run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
         self.continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
         self.add_monitor_button.Bind(wx.EVT_BUTTON, self.on_add_monitor_button)
+        self.remove_monitor_button.Bind(wx.EVT_BUTTON, self.on_remove_monitor_button)
+        self.switch_choice.Bind(wx.EVT_BUTTON, self.on_switch_choice)
+        self.switch_set.Bind(wx.EVT_BUTTON, self.on_switch_set)
 
-        self.text_box.Bind(wx.EVT_TEXT_ENTER, self.on_text_box)
+        #self.text_box.Bind(wx.EVT_TEXT_ENTER, self.on_text_box)
 
         # Configure sizers for layout
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         side_sizer = wx.BoxSizer(wx.VERTICAL)
-        side_sizer1 = wx.BoxSizer(wx.VERTICAL)
-        side_sizer2 = wx.BoxSizer(wx.VERTICAL)
-        side_sizer3 = wx.BoxSizer(wx.VERTICAL)
-        side_sizer4 = wx.BoxSizer(wx.VERTICAL)
+        side_sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        side_sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        side_sizer3 = wx.BoxSizer(wx.HORIZONTAL)
+        side_sizer4 = wx.BoxSizer(wx.HORIZONTAL)
 
         main_sizer.Add(self.canvas, 5, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(side_sizer, 1, wx.ALL, 5)
+
+        side_sizer.Add(self.text_cycles, 1, wx.TOP, 10)
+        side_sizer.Add(self.spin, 1, wx.ALL, 5)
+        side_sizer.Add(side_sizer3, 1, wx.ALL, 5)
+        side_sizer3.Add(self.run_button, 1, wx.ALL, 5)
+
+        #side_sizer.Add(self.text_cont_cycles, 1, wx.ALL, 10)
+        #side_sizer.Add(self.spin_cont, 1, wx.ALL, 5)
+        side_sizer3.Add(self.continue_button, 1, wx.ALL, 5)
+
+        side_sizer.Add(self.text_switch_control, 1, wx.ALL, 10)
+        side_sizer.Add(side_sizer4, 1, wx.ALL, 5)
+        side_sizer4.Add(self.switch_choice, 1, wx.ALL, 5)
+        #side_sizer4.Add(self.text_switch_set, 1, wx.ALL, 5)
+        side_sizer4.Add(self.switch_set, 1, wx.ALL, 5)
+
+        side_sizer.Add(self.text_add_monitor, 1, wx.ALL, 10)
         side_sizer.Add(side_sizer1, 1, wx.ALL, 5)
         side_sizer.Add(side_sizer2, 1, wx.ALL, 5)
-        side_sizer.Add(side_sizer3, 1, wx.ALL, 5)
-        side_sizer.Add(side_sizer4, 1, wx.ALL, 5)
-
-        side_sizer1.Add(self.text_cycles, 1, wx.TOP, 10)
-        side_sizer1.Add(self.spin, 1, wx.ALL, 5)
-        side_sizer1.Add(self.run_button, 1, wx.ALL, 5)
-
-        side_sizer2.Add(self.text_cont_cycles, 1, wx.ALL, 10)
-        side_sizer2.Add(self.spin_cont, 1, wx.ALL, 5)
-        side_sizer2.Add(self.continue_button, 1, wx.ALL, 5)
-
-        side_sizer3.Add(self.text_switch_control, 1, wx.ALL, 10)
-
-        side_sizer4.Add(self.text_add_monitor, 1, wx.ALL, 10)
-        side_sizer4.Add(self.text_box, 1, wx.ALL, 5)
-        side_sizer4.Add(self.add_monitor_button, 1, wx.ALL, 5)
+        #side_sizer.Add(self.text_box, 1, wx.ALL, 5)
+        side_sizer1.Add(self.add_monitor_choice, 1, wx.ALL, 5)
+        side_sizer1.Add(self.add_monitor_button, 1, wx.ALL, 5)
+        side_sizer2.Add(self.remove_monitor_choice, 1, wx.ALL, 5)
+        side_sizer2.Add(self.remove_monitor_button, 1, wx.ALL, 5)
 
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
@@ -479,6 +496,17 @@ class Gui(wx.Frame):
             wx.MessageBox("Logic Simulator\nCreated by Mojisola Agboola\n2017",
                           "About Logsim", wx.ICON_INFORMATION | wx.OK)
 
+    def on_switch_choice(self):
+        sw_name = self.switch_choice.GetValue()
+        sw_val = self.switch_ids[self.switch_choice.index(sw_name)]
+        if sw_val == 'HIGH':
+            self.switch_set.SetValue(1)
+        else:
+            self.switch_set.SetValue(0)
+
+    def on_switch_set(self):
+        pass
+
     def on_spin(self, event):
         """Handle the event when the user changes the spin control value."""
         spin_value = self.spin.GetValue()
@@ -503,7 +531,7 @@ class Gui(wx.Frame):
 
     def on_continue_button(self, event):
         """Handle the event when the user clicks the continue button."""
-        spin_cont_value = self.spin_cont.GetValue()
+        spin_cont_value = self.spin.GetValue()
 
         self.time_steps += spin_cont_value
         self.run_network_and_get_values(self.time_steps)
@@ -517,14 +545,14 @@ class Gui(wx.Frame):
         self.values = [[0, 0, 0, 1, 1, 1], [1, 1, 0, 0, 1, 0]]
         self.trace_names = ['test 000111', 'test 110010']
 
-    def run_network_and_get_values_real(self, time_steps):
+    def run_network_and_get_values_real(self):
         """Run the network and get the monitored signal values"""
 
         # Add return False / True (deal with faulty execution)
 
         self.devices.cold_startup()
         self.monitors.reset_monitors()
-        for i in range(time_steps):
+        for i in range(self.time_steps):
             if not self.network.execute_network():
                 break
             self.monitors.record_signals()
@@ -544,7 +572,23 @@ class Gui(wx.Frame):
 
     def on_add_monitor_button(self, event):
         """Handle the event when user clicks "add" """
-        pass
+        self.canvas.render('Add: '+str(self.add_monitor_choice.GetValue()))
+        return ''  # While no network stuff
+        device_id = None
+        output_id = None
+        self.monitors.make_monitor(device_id, output_id)
+        self.run_network_and_get_values()
+        self.canvas.render('')
+
+    def on_remove_monitor_button(self, event):
+        """Handle the event when user clicks "add" """
+        self.canvas.render('Remove: '+str(self.remove_monitor_choice.GetValue()))
+        return ''  # While no network stuff
+        device_id = None
+        output_id = None
+        self.monitors.remove_monitor(device_id, output_id)
+        self.run_network_and_get_values()
+        self.canvas.render('')
 
 
 path = None
