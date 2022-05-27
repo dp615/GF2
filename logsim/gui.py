@@ -16,7 +16,7 @@ from names import Names
 from devices import Devices
 from network import Network
 from monitors import Monitors
-#from scanner import Scanner
+from scanner import Scanner
 from parse import Parser
 
 
@@ -65,9 +65,11 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         # Initialise display value variables
         self.time_steps = 10
 
-        # Initialise store for monitors and devices
+        # Initialise store for help_text, monitors and devices
         self.monitors = monitors
         self.devices = devices
+        self.help_text = []
+        self.help_screen = False
 
         # Set colour palette
         self.bkgd_colour = (0.3, 0.3, 0.3)
@@ -130,10 +132,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glFlush()
 
         for i in range(time_step_no + 1):
-            self.render_text(str(i), x-4 + (20 * i), y-16)
+            self.render_text(str(i), x - 4 + (20 * i), y - 16)
 
-        self.render_text('0', x-14, y-6)
-        self.render_text('1', x-14, y+19)
+        self.render_text('0', x - 14, y - 6)
+        self.render_text('1', x - 14, y + 19)
 
     def render_trace(self, x, y, values, name):
         """Draw a signal output trace"""
@@ -156,7 +158,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glEnd()
         GL.glFlush()
 
-    def render(self, text):
+    def render_display(self, text):
         """Handle all drawing operations."""
         self.SetCurrent(self.context)
         self.canvas_size = self.GetClientSize()
@@ -170,7 +172,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.parent.trace_names = ['N/A']
             self.parent.values = [[]]
 
-        display_ys = [self.canvas_size[1] - 100 - 80*j for j in range(len(self.parent.values))]
+        display_ys = [self.canvas_size[1] - 100 - 80 * j for j in range(len(self.parent.values))]
         display_x = 120
         signal_no = len(self.parent.trace_names)
 
@@ -179,7 +181,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         # Draw title
         title_text = "Monitored Signal Display"
-        self.render_text(title_text, 10, self.canvas_size[1]-20, title=True)
+        self.render_text(title_text, 10, self.canvas_size[1] - 20, title=True)
 
         # Draw specified text at position (10, 10)
         self.render_text(text, 10, 10)
@@ -191,6 +193,12 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         GL.glFlush()
         self.SwapBuffers()
+
+    def render(self, text):
+        if self.help_screen:
+            self.render_help()
+        else:
+            self.render_display(text)
 
     def on_paint(self, event):
         """Handle the paint event."""
@@ -243,7 +251,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                             str(self.pan_x), ", ", str(self.pan_y)])
         if event.GetWheelRotation() < 0:
             self.zoom *= (1.0 + (
-                event.GetWheelRotation() / (20 * event.GetWheelDelta())))
+                    event.GetWheelRotation() / (20 * event.GetWheelDelta())))
             # Adjust pan so as to zoom around the mouse position
             self.pan_x -= (self.zoom - old_zoom) * ox
             self.pan_y -= (self.zoom - old_zoom) * oy
@@ -252,7 +260,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                             str(self.zoom)])
         if event.GetWheelRotation() > 0:
             self.zoom /= (1.0 - (
-                event.GetWheelRotation() / (20 * event.GetWheelDelta())))
+                    event.GetWheelRotation() / (20 * event.GetWheelDelta())))
             # Adjust pan so as to zoom around the mouse position
             self.pan_x -= (self.zoom - old_zoom) * ox
             self.pan_y -= (self.zoom - old_zoom) * oy
@@ -280,6 +288,26 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                 GL.glRasterPos2f(x_pos, y_pos)
             else:
                 GLUT.glutBitmapCharacter(font, ord(character))
+
+    def render_help(self):
+        """Render the help screen"""
+
+        if not self.init:
+            # Configure the viewport, modelview and projection matrices
+            self.init_gl()
+            self.init = True
+
+        self.SetCurrent(self.context)
+        self.canvas_size = self.GetClientSize()
+
+        if not self.help_text:
+            with open('help.txt', 'r') as f:
+                self.help_text = f.readlines()
+
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+        self.render_text("".join(self.help_text), 10, self.canvas_size[1] - 20)
+        GL.glFlush()
+        self.SwapBuffers()
 
 
 class Gui(wx.Frame):
@@ -321,6 +349,9 @@ class Gui(wx.Frame):
     def __init__(self, title, path, names, devices, network, monitors):
         """Initialise widgets and layout."""
         super().__init__(parent=None, title=title, size=(800, 600))
+        self.quit_id = 999
+        self.open_id = 998
+        self.help_id = 997
 
         # Configure the file menu
         fileMenu = wx.Menu()
@@ -344,6 +375,18 @@ class Gui(wx.Frame):
         self.devices = devices
         self.network = network
         self.monitors = monitors
+
+        # Toolbar setup
+        toolbar = self.CreateToolBar()
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_NEW, wx.ART_TOOLBAR)
+        toolbar.AddTool(wx.ID_ANY, "New file", myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR)
+        toolbar.AddTool(self.open_id, "Open file", myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_HELP, wx.ART_TOOLBAR)
+        toolbar.AddTool(self.help_id, "Help", myimage)
+        toolbar.Bind(wx.EVT_TOOL, self.toolbar_handler)
+        toolbar.Realize()
+        self.ToolBar = toolbar
 
         # Configure the widgets
         self.text_cycles = wx.StaticText(self, wx.ID_ANY, "Cycles to run:")
@@ -404,6 +447,29 @@ class Gui(wx.Frame):
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
 
+    def reset_screen(self):
+        self.canvas.pan_x = 0
+        self.canvas.pan_y = 0
+        self.canvas.zoom = 1
+        self.canvas.init = False
+
+    def toolbar_handler(self, event):
+        if event.GetId() == self.quit_id:
+            print("Quitting")
+            self.Close(True)
+        elif event.GetId() == self.open_id:
+            openFileDialog = wx.FileDialog(self, "Open txt file", "", "", wildcard="TXT files (*.txt)|*.txt",
+                                           style=wx.FD_OPEN + wx.FD_FILE_MUST_EXIST)
+            self.reset_screen()
+            if openFileDialog.ShowModal() == wx.ID_CANCEL:
+                print("The user cancelled")
+                return  # the user changed idea...
+            print("File chosen=", openFileDialog.GetPath())
+        elif event.GetId() == self.help_id:
+            self.reset_screen()
+            self.canvas.help_screen = not self.canvas.help_screen
+            self.canvas.render('')
+
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
         Id = event.GetId()
@@ -432,7 +498,7 @@ class Gui(wx.Frame):
         self.time_steps = spin_value
         self.run_network_and_get_values(self.time_steps)
 
-        text = "Run button pressed. (self.time_steps=%d)"%self.time_steps
+        text = "Run button pressed. (self.time_steps=%d)" % self.time_steps
         self.canvas.render(text)
 
     def on_continue_button(self, event):
@@ -442,7 +508,7 @@ class Gui(wx.Frame):
         self.time_steps += spin_cont_value
         self.run_network_and_get_values(self.time_steps)
 
-        text = "Continue button pressed. (self.time_steps=%d)"%self.time_steps
+        text = "Continue button pressed. (self.time_steps=%d)" % self.time_steps
         self.canvas.render(text)
 
     def run_network_and_get_values(self, time_steps):
@@ -450,6 +516,24 @@ class Gui(wx.Frame):
         ## Test for now:
         self.values = [[0, 0, 0, 1, 1, 1], [1, 1, 0, 0, 1, 0]]
         self.trace_names = ['test 000111', 'test 110010']
+
+    def run_network_and_get_values_real(self, time_steps):
+        """Run the network and get the monitored signal values"""
+
+        # Add return False / True (deal with faulty execution)
+
+        self.devices.cold_startup()
+        self.monitors.reset_monitors()
+        for i in range(time_steps):
+            if not self.network.execute_network():
+                break
+            self.monitors.record_signals()
+        self.values = []
+
+        monitor_dict = self.monitors.monitors_dictionary
+        for device_id, output_id in monitor_dict:
+            self.values.append(monitor_dict((device_id, output_id)))
+        self.trace_names = self.monitors.get_signal_names()[0]
 
     def on_text_box(self, event):
         """Handle the event when the user enters text."""
@@ -462,7 +546,16 @@ class Gui(wx.Frame):
         """Handle the event when user clicks "add" """
         pass
 
-path, names, devices, network, monitors = None, None, None, None, None
+
+path = None
+names = Names()
+devices = Devices(names)
+network = Network(names, devices)
+monitors = Monitors(names, devices, network)
+
+#scanner = Scanner(path, names)
+#parser = Parser(names, devices, network, monitors, scanner)
+
 app = wx.App()
 gui = Gui("Logic Simulator", path, names, devices, network, monitors)
 gui.Show(True)
