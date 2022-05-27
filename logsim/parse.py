@@ -317,9 +317,10 @@ class Parser:
     def parse_connections(self):
         self.parse_completion[1] = True
         while self.current_symbol.type == self.scanner.NAME:
+            first_device_id=self.current_symbol.id
             self.next_symbol()
             expect_dash = True
-
+            
             if self.current_symbol.type == self.scanner.DOT:
                 expect_dash = False
                 self.next_symbol()
@@ -334,13 +335,16 @@ class Parser:
             if self.current_symbol.type == self.scanner.DASH and expect_dash:
                 self.next_symbol()
                 if self.current_symbol.type == self.scanner.NAME:
+                    second_device_id=self.current_symbol.id
                     self.next_symbol()
                     if self.current_symbol.type == self.scanner.DOT:
+                        
                         self.next_symbol()
                         self.parse_inputlabel()
                         if self.current_symbol.type == self.scanner.SEMICOLON:
+                            self.network.make_connection(first_device_id, first_port_id, second_device_id,
+                        second_port_id)
                             self.next_symbol()
-                            #need to add ability to add connections
                         else:
                             # SYNTAX ERROR (Expected a semicolon here) IMPLEMENTED
                             self.display_error(self.NO_SEMICOLON)
