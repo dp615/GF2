@@ -261,15 +261,18 @@ class Parser:
                 and (self.current_symbol.id in self.devices.device_types 
                 or self.current_symbol.id in self.devices.gate_types)
             ):
-
+            device_kind=self.current_symbol.id
+            device_property=None
             self.next_symbol()
             expect_equals = True
             if self.current_symbol.type == self.scanner.COMMA:
                 expect_equals = False
                 self.next_symbol()
                 if self.current_symbol.type == self.scanner.NUMBER:
+                    parameter=self.current_symbol.id
                     self.next_symbol()
                     expect_equals = True
+
                 else:
                     #SYNTAX ERROR (Expected a number here) IMPLEMENTED
                     self.display_error(self.NO_NUMBER)
@@ -277,10 +280,11 @@ class Parser:
             if self.current_symbol.type == self.scanner.EQUALS and expect_equals:
                 self.next_symbol()
                 if self.current_symbol.type == self.scanner.NAMES:
+                    device_id=self.current_symbol.id
                     self.next_symbol()
                     if self.current_symbol.type == self.scanner.SEMICOLON:
+                        self.devices.make_device(device_id, device_kind, device_property)
                         self.next_symbol()
-                        #Need to add ability to add a device here
                     else:
                         #SYNTAX ERROR MESSAGE (Expected a semicolon) IMPLEMENTED
                         self.display_error(self.NO_SEMICOLON)
