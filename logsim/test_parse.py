@@ -31,11 +31,11 @@ def test_parser(capsys):
                 "SYNTAX ERROR : Unexpected 'END' statement",
                 "SYNTAX ERROR : Invalid input label"]
 
-    for i in range (19):
+    for i in range (1):
         if i not in [1,2,3]:
-            file_path = "parser_tests\parser_test_file".join([str(i+1),".txt"])
+            file_path = "".join(['parser_tests\parser_test_file',str(i+1),'.txt'])
             scanner=Scanner(file_path,names)
-            parser = Parser(names, devices, network, monitors, scanner)
+            parser = Parser(names, devices, network, monitors, scanner, test = True)
             parser.parse_network()
             out, err = capsys.readouterr()
             assert out == error_output[i]
