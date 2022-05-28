@@ -7,7 +7,7 @@ OR, 2 = G8;
 END
 
 CONNECTIONS
-A0.Q - G1.I1 ;
+A0.Q , G1.I1 ;
 A1 - G4.I1 ;
 B0 - G1.I1 ;
 B1.Q - G4.I1 ;

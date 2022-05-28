@@ -340,6 +340,7 @@ class Parser:
                     # SYNTAX ERROR (Invalid output label) IMPLEMENTED
                     self.display_error(self.INVALID_OUTPUTLABEL)
 
+            print(expect_dash, self.current_symbol.type, self.scanner.DASH)
             if self.current_symbol.type == self.scanner.DASH and expect_dash:
                 self.next_symbol()
                 if self.current_symbol.type == self.scanner.NAME:
