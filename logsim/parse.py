@@ -9,6 +9,10 @@ Classes
 Parser - parses the definition file and builds the logic network.
 """
 
+# Tasks to be done 
+# Repeated semicolons to give just on error message
+# Implement devices, connections, monitors, network
+# Fix next_scan_start
 
 class Parser:
 
@@ -53,7 +57,14 @@ class Parser:
 
         self.error_count = 0
 
-    # To be completed function to display line with caret pointing to error 
+    def copy_symbol(self)
+        symbol = Symbol()
+        symbol.type = self.current_symbol.type
+        symbol.id = self.current_symbol.id
+        symbol.line = self.current_symbol.line
+        symbol.position_in_line = self.current_symbol.position_in_line
+        return symbol
+
     def inline_error_message(self):
         self.scanner.print_location(self.current_symbol.line,self.current_symbol.position_in_line)
 
@@ -197,18 +208,25 @@ class Parser:
             self.error_count += 1
             print('Unregistered error id in parser code', error_id)
 
+    #Function that can be deleted after testing is done
+    def display_symbol(self):
+        ll = ['COMMA', 'SEMICOLON', 'EQUALS', 'DASH',
+        'KEYWORD', 'NUMBER', 'NAME', 'DOT', 'EOF'] 
+        if self.current_symbol.type in [4,6]:
+            print(self.names.get_name_string(self.current_symbol.id))
+        else:
+            print(ll[self.current_symbol.type])
 
     def next_symbol(self):
         self.current_symbol = self.scanner.get_symbol()
+        #Following line to be deleted after testing done
+        self.display_symbol()
 
     def repeated_semicolon(self):
-        error = False
         while self.current_symbol.type == self.scanner.SEMICOLON:
-            self.next_symbol()
-            error = True
-        if error:
             #SYNTAX WARNING (extra semicolons added) IMPLEMENTED
             self.display_error(self.EXTRA_SEMICOLON)
+            self.next_symbol()
 
     def next_scan_start(self, in_block = True):
         safe_start = False
@@ -314,8 +332,8 @@ class Parser:
         elif self.current_symbol.type == self.scanner.SEMICOLON:
             #SYNTAX ERROR MESSAGE (EXTRA SEMICOLONS) IMPLEMENTED
             while self.current_symbol.type == self.scanner.SEMICOLON:
+                self.display_error(self.EXTRA_SEMICOLON)
                 self.next_symbol()
-            self.display_error(self.EXTRA_SEMICOLON)
             self.parse_devices()
 
         else:
