@@ -167,26 +167,30 @@ class Parser:
         elif error_id == self.EXPECT_MONITOR:
             self.error_count += 1
             print("SYNTAX ERROR : Expected a 'MONITOR' statement here")
-            self.inline_error_message()
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.NO_MAIN_END:
             self.error_count += 1
             print("SYNTAX ERROR : Expected a 'MAIN_END' statement here")
-            self.inline_error_message()
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start(in_block = False)
 
         elif error_id == self.NOT_EXPECT_END:
             self.error_count += 1
             print("SYNTAX ERROR : Unexpected 'END' statement")
-            self.inline_error_message()
+            if not self.test:
+                self.inline_error_message()
             self.next_symbol()
             self.next_scan_start()
 
         elif error_id == self.INVALID_INPUTLABEL:
             self.error_count += 1
             print("SYNTAX ERROR : Invalid input label")
-            self.inline_error_message()
+            if not self.test:
+                self.inline_error_message()
             self.next_scan_start()
 
         else:
@@ -276,7 +280,7 @@ class Parser:
 
             if self.current_symbol.type == self.scanner.EQUALS and expect_equals:
                 self.next_symbol()
-                if self.current_symbol.type == self.scanner.NAMES:
+                if self.current_symbol.type == self.scanner.NAME:
                     self.next_symbol()
                     if self.current_symbol.type == self.scanner.SEMICOLON:
                         self.next_symbol()
@@ -303,7 +307,16 @@ class Parser:
                 return
 
         elif self.current_symbol.type == self.scanner.EOF:
+            #SYNTAX ERROR MESSAGE (Expected END after devices) IMPLEMENTED
+            self.display_error(self.NO_END)
             return
+
+        elif self.current_symbol.type == self.scanner.SEMICOLON:
+            #SYNTAX ERROR MESSAGE (EXTRA SEMICOLONS) IMPLEMENTED
+            while self.current_symbol.type == self.scanner.SEMICOLON:
+                self.next_symbol()
+            self.display_error(self.EXTRA_SEMICOLON)
+            self.parse_devices()
 
         else:
             #SYNTAX ERROR MESSAGE (Unrecognised Device Type) IMPLEMENTED
@@ -320,7 +333,7 @@ class Parser:
                 expect_dash = False
                 self.next_symbol()
                 if (self.current_symbol.type == self.scanner.NAME 
-                    and self.current_symbol.id in self.dtype_output_ids):
+                    and self.current_symbol.id in self.devices.dtype_output_ids):
                     self.next_symbol()
                     expect_dash = True
                 else:
@@ -362,7 +375,16 @@ class Parser:
                 return
 
         elif self.current_symbol.type == self.scanner.EOF:
+            #SYNTAX ERROR MESSAGE (Expected END after devices) IMPLEMENTED
+            self.display_error(self.NO_END)
             return
+
+        elif self.current_symbol.type == self.scanner.SEMICOLON:
+            #SYNTAX ERROR MESSAGE (EXTRA SEMICOLONS) IMPLEMENTED
+            while self.current_symbol.type == self.scanner.SEMICOLON:
+                self.next_symbol()
+            self.display_error(self.EXTRA_SEMICOLON)
+            self.parse_devices()
 
         else:
             #SYNTAX ERROR MESSAGE (Unrecognised Device Name) IMPLEMENTED
@@ -378,7 +400,7 @@ class Parser:
                 expect_semicolon = False
                 self.next_symbol()
                 if (self.current_symbol.type == self.scanner.NAME 
-                    and self.current_symbol.id in self.dtype_output_ids):
+                    and self.current_symbol.id in self.devices.dtype_output_ids):
                     self.next_symbol()
                     expect_semicolon = True
                 else:
@@ -404,7 +426,16 @@ class Parser:
                 return
 
         elif self.current_symbol.type == self.scanner.EOF:
+            #SYNTAX ERROR MESSAGE (Expected END after devices) IMPLEMENTED
+            self.display_error(self.NO_END)
             return
+
+        elif self.current_symbol.type == self.scanner.SEMICOLON:
+            #SYNTAX ERROR MESSAGE (EXTRA SEMICOLONS) IMPLEMENTED
+            while self.current_symbol.type == self.scanner.SEMICOLON:
+                self.next_symbol()
+            self.display_error(self.EXTRA_SEMICOLON)
+            self.parse_devices()
 
         else:
             #SYNTAX ERROR MESSAGE (Unrecognised Device Name) IMPLEMENTED
@@ -449,7 +480,7 @@ class Parser:
         else:
             self.successful_parse = False
             #SYNTAX ERROR MESSAGE (NO MAIN_END)
-            self.display_error(self.NO)
+            self.display_error(self.NO_MAIN_END)
         
         if self.error_count > 0:
             return False

@@ -56,7 +56,7 @@ class Scanner:
         try:
             self.file = open(path, "r")
             self.file.seek(0, 0)
-        except cantOpenFile:
+        except FileNotFoundError:
             sys.exit()
 
         self.names = names
@@ -119,7 +119,7 @@ class Scanner:
                 symbol.type = self.KEYWORD
             else:
                 symbol.type = self.NAME
-                [symbol.id] = self.names.lookup([name_string])
+            [symbol.id] = self.names.lookup([name_string])
         elif self.current_character.isdigit(): # number
             symbol.id = self.get_number()
             symbol.type = self.NUMBER
