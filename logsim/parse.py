@@ -13,6 +13,7 @@ Parser - parses the definition file and builds the logic network.
 # Repeated semicolons to give just on error message
 # Implement devices, connections, monitors, network
 # Fix next_scan_start
+from scanner import Symbol
 
 class Parser:
 
@@ -57,12 +58,12 @@ class Parser:
 
         self.error_count = 0
 
-    def copy_symbol(self)
+    def copy_symbol(self):
         symbol = Symbol()
-        symbol.type = self.current_symbol.type
-        symbol.id = self.current_symbol.id
-        symbol.line = self.current_symbol.line
-        symbol.position_in_line = self.current_symbol.position_in_line
+        symbol.type = int(self.current_symbol.type)
+        symbol.id = int(self.current_symbol.id)
+        symbol.line = int(self.current_symbol.line)
+        symbol.position_in_line = int(self.current_symbol.position_in_line)
         return symbol
 
     def inline_error_message(self):
@@ -269,27 +270,22 @@ class Parser:
                 self.next_symbol()
         return
 
-    def parse_inputlabel(self):
-        if self.current_symbol.type == self.scanner.NAME:
-            self.next_symbol()
-        else:
-            #SYNTAX WARNING (INVALID INPUTLABEL ALREADY CALLED) IMPLEMENTED
-            self.display_error(self.INVALID_INPUTLABEL)
-
     def parse_devices(self):
         self.parse_completion[0] = True
-        while (
-                self.current_symbol.type == self.scanner.NAME 
-                and (self.current_symbol.id in self.devices.device_types 
-                or self.current_symbol.id in self.devices.gate_types)
-            ):
-
+        while self.current_symbol.type == self.scanner.NAME:
+            ###
+            device_type_symbol = self.copy_symbol()
+            device_parameter_symbol = Symbol()
+            ###
             self.next_symbol()
             expect_equals = True
             if self.current_symbol.type == self.scanner.COMMA:
                 expect_equals = False
                 self.next_symbol()
                 if self.current_symbol.type == self.scanner.NUMBER:
+                    ##
+                    device_parameter_symbol = self.copy_symbol()
+                    ##
                     self.next_symbol()
                     expect_equals = True
                 else:
@@ -299,10 +295,23 @@ class Parser:
             if self.current_symbol.type == self.scanner.EQUALS and expect_equals:
                 self.next_symbol()
                 if self.current_symbol.type == self.scanner.NAME:
+                    ##
+                    device_name_symbol = self.copy_symbol()
+                    ##
                     self.next_symbol()
                     if self.current_symbol.type == self.scanner.SEMICOLON:
                         self.next_symbol()
-                        #Need to add ability to add a device here
+                        ##
+                        error_type = self.devices.make_device(device_name_symbol.id, 
+                                                              device_type_symbol.id, 
+                                                              device_property=device_parameter_symbol.id)
+                        if error_type == self.devices.NO_ERROR:
+                            pass
+                        else:
+                            '''SEMANTIC ERROR to be implemented'''
+                            self.error_count += 1
+                            pass
+                        ##
                     else:
                         #SYNTAX ERROR MESSAGE (Expected a semicolon) IMPLEMENTED
                         self.display_error(self.NO_SEMICOLON)
@@ -344,14 +353,19 @@ class Parser:
     def parse_connections(self):
         self.parse_completion[1] = True
         while self.current_symbol.type == self.scanner.NAME:
+            ##
+            output_device_symbol = self.copy_symbol()
+            output_symbol = Symbol()
+            ##
             self.next_symbol()
             expect_dash = True
-
             if self.current_symbol.type == self.scanner.DOT:
                 expect_dash = False
                 self.next_symbol()
-                if (self.current_symbol.type == self.scanner.NAME 
-                    and self.current_symbol.id in self.devices.dtype_output_ids):
+                if self.current_symbol.type == self.scanner.NAME:
+                    ##
+                    output_symbol = self.copy_symbol()
+                    ##
                     self.next_symbol()
                     expect_dash = True
                 else:
@@ -362,16 +376,37 @@ class Parser:
             if self.current_symbol.type == self.scanner.DASH and expect_dash:
                 self.next_symbol()
                 if self.current_symbol.type == self.scanner.NAME:
+                    ##
+                    input_device_symbol = self.copy_symbol()
+                    ##
                     self.next_symbol()
                     if self.current_symbol.type == self.scanner.DOT:
                         self.next_symbol()
-                        self.parse_inputlabel()
-                        if self.current_symbol.type == self.scanner.SEMICOLON:
+                        if self.current_symbol.type == self.scanner.NAME:
+                            ##
+                            input_symbol = self.copy_symbol()
+                            ##
                             self.next_symbol()
-                            #need to add ability to add connections
+                            if self.current_symbol.type == self.scanner.SEMICOLON:
+                                self.next_symbol()
+                                ##
+                                error_type = self.network.make_connection(output_device_symbol.id, 
+                                                                          output_symbol.id, 
+                                                                          input_device_symbol,
+                                                                          input_symbol.id)
+                                if error_type == self.devices.NO_ERROR:
+                                    pass
+                                else:
+                                    '''SEMANTIC ERROR to be implemented'''
+                                    self.error_count += 1
+                                    pass
+                                ##
+                            else:
+                                # SYNTAX ERROR (Expected a semicolon here) IMPLEMENTED
+                                self.display_error(self.NO_SEMICOLON)
                         else:
-                            # SYNTAX ERROR (Expected a semicolon here) IMPLEMENTED
-                            self.display_error(self.NO_SEMICOLON)
+                            #SYNTAX WARNING (INVALID INPUTLABEL ALREADY CALLED) IMPLEMENTED
+                            self.display_error(self.INVALID_INPUTLABEL)
                     else:
                         # SYNTAX ERROR (Expected a dot here) IMPLEMENTED
                         self.display_error(self.NO_DOT)
@@ -413,13 +448,19 @@ class Parser:
     def parse_monitor(self):
         self.parse_completion[2] = True
         while self.current_symbol.type == self.scanner.NAME:
+            ##
+            monitor_symbol = self.copy_symbol()
+            monitor_output_symbol = Symbol()
+            ##
             self.next_symbol()
             expect_semicolon = True
             if self.current_symbol.type == self.scanner.DOT:
                 expect_semicolon = False
                 self.next_symbol()
-                if (self.current_symbol.type == self.scanner.NAME 
-                    and self.current_symbol.id in self.devices.dtype_output_ids):
+                if self.current_symbol.type == self.scanner.NAME:
+                    ##
+                    monitor_output_symbol = self.copy_symbol()
+                    ##
                     self.next_symbol()
                     expect_semicolon = True
                 else:
@@ -428,7 +469,15 @@ class Parser:
             
             if self.current_symbol.type == self.scanner.SEMICOLON and expect_semicolon:
                 self.next_symbol()
-                #Need to implement monitoring here
+                ##
+                error_type = self.monitors.make_monitor(self, monitor_symbol.id, monitor_output_symbol.id)
+                if error_type == self.devices.NO_ERROR:
+                    pass
+                else:
+                    '''SEMANTIC ERROR to be implemented'''
+                    self.error_count += 1
+                    pass
+                ##
             elif not expect_semicolon:
                 pass
             else:
