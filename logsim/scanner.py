@@ -113,6 +113,8 @@ class Scanner:
         symbol = Symbol()
         
         self.skip_spaces_and_comments() # current character now not whitespace
+        symbol.position_in_line=self.position_in_line
+        symbol.line=self.line
         if self.current_character.isalpha(): # name
             name_string = self.get_name()
             if name_string in self.keywords_list:
@@ -142,8 +144,6 @@ class Scanner:
             symbol.type = self.EOF
         else: # not a valid character
             self.advance()
-        symbol.position_in_line=self.position_in_line
-        symbol.line=self.line
         return symbol
 
     def print_location(self,line,position_on_line):
