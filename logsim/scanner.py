@@ -100,11 +100,10 @@ class Scanner:
 
     def advance(self):
         self.current_character=self.file.read(1)  
-        self.position+=1
         self.position_in_line+=1
         if self.current_character=='\n':
             self.line+=1
-            self.position_in_line=0 
+            self.position_in_line=-1 
             
 
     def get_symbol(self):
@@ -147,8 +146,9 @@ class Scanner:
         return symbol
 
     def print_location(self,line,position_on_line):
+        self.position=self.file.tell()
         self.file.seek(0,0)
-        print('Error on line'+ str(line))
+        print('Error on line'+ str(line+1))
         print(self.file.readlines()[line])
         string=''
         for i in range(position_on_line):

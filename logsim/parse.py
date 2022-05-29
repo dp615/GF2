@@ -227,14 +227,14 @@ class Parser:
             self.error_count += 1
         elif error_id == self.devices.NO_QUALIFIER: 
             print('No qualifier given and device type requires one')              
-            self.inline_error_message(device_parameter_symbol)   
+            self.inline_error_message(device_type_symbol)   
             self.error_count += 1
         elif error_id == self.devices.INVALID_QUALIFIER:
             print('Qualifier is invalid for device type')              
             self.inline_error_message(device_parameter_symbol)   
             self.error_count += 1
         elif error_id == self.devices.QUALIFIER_PRESENT: 
-            print('QUalifier given but one was not allowed with device type')              
+            print('Qualifier given but one was not allowed with device type')              
             self.inline_error_message(device_parameter_symbol)   
             self.error_count += 1
         elif error_id == self.devices.BAD_DEVICE: 
@@ -337,7 +337,6 @@ class Parser:
             ###
             device_type_symbol = self.copy_symbol()
             device_parameter_symbol = Symbol()
-            device_parameter_symbol = self.copy_symbol()
             ###
             self.next_symbol()
             expect_equals = True
