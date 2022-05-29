@@ -28,7 +28,7 @@ class Symbol:
         self.type = None
         self.id = None
         self.line=None
-        self.position=None
+        self.position_in_line=None
 
 
 class Scanner:
@@ -56,13 +56,13 @@ class Scanner:
         try:
             self.file = open(path, "r")
             self.file.seek(0, 0)
-        except cantOpenFile:
+        except FileNotFoundError:
             sys.exit()
 
         self.names = names
 
         self.symbol_type_list = [self.COMMA, self.SEMICOLON, self.EQUALS, self.DASH,
-        self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(8)
+        self.KEYWORD, self.NUMBER, self.NAME, self.DOT, self.EOF] = range(9)
 
         self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITOR", "MAIN_END","END"]
 
@@ -72,6 +72,7 @@ class Scanner:
         self.current_character = " "
         self.position=0
         self.line=0
+        self.position_in_line=0
 
     def skip_spaces_and_comments(self):
         #skip white spaces and comments
@@ -100,10 +101,11 @@ class Scanner:
     def advance(self):
         self.current_character=self.file.read(1)  
         self.position+=1
+        self.position_in_line+=1
         if self.current_character=='\n':
-            print('here')
             self.line+=1
-            self.position=0 
+            self.position_in_line=0 
+            
 
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
@@ -111,13 +113,15 @@ class Scanner:
         symbol = Symbol()
         
         self.skip_spaces_and_comments() # current character now not whitespace
+        symbol.position_in_line=self.position_in_line
+        symbol.line=self.line
         if self.current_character.isalpha(): # name
             name_string = self.get_name()
             if name_string in self.keywords_list:
                 symbol.type = self.KEYWORD
             else:
                 symbol.type = self.NAME
-                [symbol.id] = self.names.lookup([name_string])
+            [symbol.id] = self.names.lookup([name_string])
         elif self.current_character.isdigit(): # number
             symbol.id = self.get_number()
             symbol.type = self.NUMBER
@@ -133,27 +137,23 @@ class Scanner:
         elif self.current_character == "-":
             symbol.type =self.DASH
             self.advance()
+        elif self.current_character == ".":
+            symbol.type =self.DOT
+            self.advance()
         elif self.current_character == "": # end of file
             symbol.type = self.EOF
         else: # not a valid character
             self.advance()
-        symbol.position=self.position
-        symbol.line=self.line
         return symbol
 
-    def print_location(self):
-        print(self.file.readlines(0))
+    def print_location(self,line,position_on_line):
+        self.file.seek(0,0)
+        print(self.file.readlines()[line])
         string=''
-        for i in range(self.position):
+        for i in range(position_on_line):
             string=string+' '
         string=string+'^'
         print(string)
+        self.file.seek(self.position)
 
 
-
-from names import *   
-names=Names()
-scanner=Scanner(r'scanner_test_file.txt',names)
-for i in range(10):
-    scanner.get_symbol()
-scanner.print_location()
