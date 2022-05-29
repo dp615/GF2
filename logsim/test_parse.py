@@ -38,4 +38,4 @@ def test_parser(capsys):
             parser = Parser(names, devices, network, monitors, scanner, test = True)
             parser.parse_network()
             out, err = capsys.readouterr()
-            assert out == error_output[i]
+            assert error_output[i] in out

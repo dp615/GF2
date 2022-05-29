@@ -222,41 +222,67 @@ class Parser:
     # TO be completed
     def display_devices_error(self,error_id, device_name_symbol, device_type_symbol, device_parameter_symbol):
         if error_id == self.devices.DEVICE_PRESENT: 
-            print('Device by this name already exists')              
+            print('ERROR : Device by this name already exists')              
             self.inline_error_message(device_name_symbol)   
             self.error_count += 1
         elif error_id == self.devices.NO_QUALIFIER: 
-            print('No qualifier given and device type requires one')              
+            print('ERROR : No qualifier given and device type requires one')              
             self.inline_error_message(device_type_symbol)   
             self.error_count += 1
         elif error_id == self.devices.INVALID_QUALIFIER:
-            print('Qualifier is invalid for device type')              
+            print('ERROR : Qualifier is invalid for device type')              
             self.inline_error_message(device_parameter_symbol)   
             self.error_count += 1
         elif error_id == self.devices.QUALIFIER_PRESENT: 
-            print('Qualifier given but one was not allowed with device type')              
+            print('ERROR : Qualifier given but one was not allowed with device type')              
             self.inline_error_message(device_parameter_symbol)   
             self.error_count += 1
         elif error_id == self.devices.BAD_DEVICE: 
-            print('Device Type given is not a valid device type')             
+            print('ERROR : Device Type given is not a valid device type')             
             self.inline_error_message(device_type_symbol)   
             self.error_count += 1
         
         else:
             self.error_count += 1
-            print('Unregistered error id in parser code', error_id)
+            print('ERROR : Unregistered error id in parser code', error_id)
 
     # TO be completed
     def display_connect_error(self, error_id, output_device_symbol, output_symbol, input_device_symbol, input_symbol):
-        symbol = None # Remove this line once done
-        if error_id == self.devices.ERROR: # 'ERROR' needs to be changed to match those in network
-            print('error message')              #Error message needs to be added
-            self.inline_error_message(symbol)   #Relevant error symbol needs tp be included
+        if error_id == self.devices.DEVICE_ABSENT_ONE: 
+            print('ERROR : Device name does not exist')              
+            self.inline_error_message(output_device_symbol)   
             self.error_count += 1
-        
+        elif error_id == self.devices.DEVICE_ABSENT_TWO: 
+            print('ERROR : Device name does not exist')              
+            self.inline_error_message(input_device_symbol)   
+            self.error_count += 1
+        elif error_id == self.devices.INPUT_CONNECTED_ONE: 
+            print('ERROR : Input is already connected')              
+            self.inline_error_message(output_symbol)   
+            self.error_count += 1
+        elif error_id == self.devices.INPUT_CONNECTED_TWO: 
+            print('ERROR : Input is already connected')              
+            self.inline_error_message(input_symbol)   
+            self.error_count += 1
+        elif error_id == self.devices.INPUT_TO_INPUT: 
+            print('ERROR : Cannot connect an input to an input')              
+            self.inline_error_message(output_symbol)   
+            self.error_count += 1
+        elif error_id == self.devices.PORT_ABSENT_ONE: 
+            print('ERROR : Port does not exist')              
+            self.inline_error_message(output_symbol)   
+            self.error_count += 1
+        elif error_id == self.devices.PORT_ABSENT_TWO: 
+            print('ERROR : Port does not exist')              
+            self.inline_error_message(input_symbol)   
+            self.error_count += 1
+        elif error_id == self.devices.OUTPUT_TO_OUTPUT: 
+            print('ERROR : Cannot Connect output to output')              
+            self.inline_error_message(output_symbol)   
+            self.error_count += 1
         else:
             self.error_count += 1
-            print('Unregistered error id in parser code', error_id)
+            print('ERROR : Unregistered error id in parser code', error_id)
 
     # To be completed
     def display_monitors_error(self,error_id, monitor_symbol, monitor_output_symbol):
@@ -436,7 +462,7 @@ class Parser:
                     # SYNTAX ERROR (Invalid output label) IMPLEMENTED
                     self.display_syntax_error(self.INVALID_OUTPUTLABEL)
 
-            print(expect_dash, self.current_symbol.type, self.scanner.DASH)
+            #print(expect_dash, self.current_symbol.type, self.scanner.DASH)
             if self.current_symbol.type == self.scanner.DASH and expect_dash:
                 self.next_symbol()
                 if self.current_symbol.type == self.scanner.NAME:
