@@ -14,5 +14,4 @@ file_path = r'parser_semantic_error_tests/DEVICE_PRESENT.txt'
 scanner=Scanner(file_path,names)
 parser = Parser(names, devices, network, monitors, scanner)
 parser.parse_network()
-out, err = capfd.readouterr()
-assert out == "Hello World!"
+

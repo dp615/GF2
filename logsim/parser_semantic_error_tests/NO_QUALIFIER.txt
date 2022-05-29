@@ -1,7 +1,7 @@
 DEVICES
 SWITCH = A0;
 SWITCH, 1 = A1;
-XOR, 2 = G1;
+XOR = G1;
 AND, 2 = G2;
 OR, 2 = G8;
 END
