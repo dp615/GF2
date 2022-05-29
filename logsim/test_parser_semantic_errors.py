@@ -10,8 +10,9 @@ names=Names()
 devices = Devices(names)
 network = Network(names, devices)
 monitors = Monitors(names, devices, network)
-
-file_path = "".join([r'parser_test_file1.txt'])
+file_path = r'parser_semantic_error_tests/DEVICE_PRESENT.txt'
 scanner=Scanner(file_path,names)
 parser = Parser(names, devices, network, monitors, scanner)
 parser.parse_network()
+out, err = capfd.readouterr()
+assert out == "Hello World!"

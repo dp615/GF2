@@ -221,10 +221,25 @@ class Parser:
 
     # TO be completed
     def display_devices_error(self,error_id, device_name_symbol, device_type_symbol, device_parameter_symbol):
-        symbol = None # Remove this line once done
-        if error_id == self.devices.ERROR: # 'ERROR' needs to be changed to match those in devices
-            print('error message')              #Error message needs to be added
-            self.inline_error_message(symbol)   #Relevant error symbol needs tp be included
+        if error_id == self.devices.DEVICE_PRESENT: 
+            print('Device by this name already exists')              
+            self.inline_error_message(device_name_symbol)   
+            self.error_count += 1
+        if error_id == self.devices.NO_QUALIFIER: 
+            print('error message')              
+            self.inline_error_message(symbol)   
+            self.error_count += 1
+        if error_id == self.devices.INVALID_QUALIFIER:
+            print('error message')              
+            self.inline_error_message(symbol)   
+            self.error_count += 1
+        if error_id == self.devices.QUALIFIER_PRESENT: 
+            print('error message')              
+            self.inline_error_message(symbol)   
+            self.error_count += 1
+        if error_id == self.devices.BAD_DEVICE: 
+            print('error message')             
+            self.inline_error_message(symbol)   
             self.error_count += 1
         
         else:
@@ -267,7 +282,7 @@ class Parser:
     def next_symbol(self):
         self.current_symbol = self.scanner.get_symbol()
         #Following line to be deleted after testing done
-        self.display_symbol()
+        #self.display_symbol()
 
     def repeated_semicolon(self):
         while self.current_symbol.type == self.scanner.SEMICOLON:
@@ -347,7 +362,7 @@ class Parser:
                     self.next_symbol()
                     if self.current_symbol.type == self.scanner.SEMICOLON:
                         self.next_symbol()
-                        ##
+                        #
                         if self.error_count == 0 and not self.test:
                             error_type = self.devices.make_device(device_name_symbol.id, 
                                                                 device_type_symbol.id, 
