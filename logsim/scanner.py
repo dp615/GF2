@@ -84,7 +84,7 @@ class Scanner:
 
     def get_name(self):
         name=''
-        while self.current_character.isalnum()==True:
+        while self.current_character.isalnum()==True or self.current_character=='_':
             name=name+self.current_character
             self.advance()
         return name
