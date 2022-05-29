@@ -148,7 +148,7 @@ def test_make_connection(network_with_devices):
     ("(SW1_ID, None, OR1_ID, None)", "network.OUTPUT_TO_OUTPUT"),
 
     # Switch device does not have port I1, so give PORT_ABSENT_ERROR
-    ("(SW1_ID, I1, OR1_ID, I2)", "network.PORT_ABSENT_ONE"),
+    ("(SW1_ID, I1, OR1_ID, I2)", "network.PORT_ABSENT"),
 
     # Output first
     ("(SW2_ID, None, OR1_ID, I2)", "network.NO_ERROR"),
@@ -157,7 +157,7 @@ def test_make_connection(network_with_devices):
     ("(OR1_ID, I2, SW2_ID, None)", "network.NO_ERROR"),
 
     # Note: Or1.I1 will have been connected earlier in the function
-    ("(SW1_ID, None, OR1_ID, I1)", "network.INPUT_CONNECTED_TWO"),
+    ("(SW1_ID, None, OR1_ID, I1)", "network.INPUT_CONNECTED"),
 ])
 def test_make_connection_gives_error(network_with_devices,
                                      function_args, error):

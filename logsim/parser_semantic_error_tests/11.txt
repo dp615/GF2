@@ -2,14 +2,14 @@ DEVICES
 SWITCH, 0 = A0;
 SWITCH, 1 = A1;
 XOR = G1;
-AND, 2 = G2;
+DTYPE = G2;
 OR, 2 = G3;
 END
 
 CONNECTIONS
 A0 - G1.I1 ;
-A1 - G2.I1 ;
-A9 - G1.I2 ;
+A1 - G2.Q ;
+A1 - G1.I2 ;
 A0 - G2.I2 ;
 G1 - G3.I1 ;
 G2 - G3.I2 ;

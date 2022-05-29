@@ -67,9 +67,9 @@ class Network:
         self.devices = devices
 
         [self.NO_ERROR, self.INPUT_TO_INPUT, self.OUTPUT_TO_OUTPUT,
-         self.INPUT_CONNECTED,self.INPUT_CONNECTED_ONE,self.INPUT_CONNECTED_TWO,
-         self.PORT_ABSENT,self.PORT_ABSENT_ONE,self.PORT_ABSENT_TWO,
-         self.DEVICE_ABSENT_ONE,self.DEVICE_ABSENT,self.DEVICE_ABSENT_ONE] = self.names.unique_error_codes(12)
+         self.INPUT_CONNECTED,
+         self.PORT_ABSENT,
+         self.DEVICE_ABSENT_ONE,self.DEVICE_ABSENT,self.DEVICE_ABSENT_TWO] = self.names.unique_error_codes(8)
         self.steady_state = True  # for checking if signals have settled
 
     def get_connected_output(self, device_id, input_id):
@@ -125,7 +125,7 @@ class Network:
         elif first_port_id in first_device.inputs:
             if first_device.inputs[first_port_id] is not None:
                 # Input is already in a connection
-                error_type = self.INPUT_CONNECTED_ONE
+                error_type = self.INPUT_CONNECTED
             elif second_port_id in second_device.inputs:
                 # Both ports are inputs
                 error_type = self.INPUT_TO_INPUT
@@ -135,7 +135,7 @@ class Network:
                                                       second_port_id)
                 error_type = self.NO_ERROR
             else:  # second_port_id is not a valid input or output port
-                error_type = self.PORT_ABSENT_TWO
+                error_type = self.PORT_ABSENT
 
         elif first_port_id in first_device.outputs:
             if second_port_id in second_device.outputs:
@@ -144,16 +144,16 @@ class Network:
             elif second_port_id in second_device.inputs:
                 if second_device.inputs[second_port_id] is not None:
                     # Input is already in a connection
-                    error_type = self.INPUT_CONNECTED_TWO
+                    error_type = self.INPUT_CONNECTED
                 else:
                     second_device.inputs[second_port_id] = (first_device_id,
                                                             first_port_id)
                     error_type = self.NO_ERROR
             else:
-                error_type = self.PORT_ABSENT_TWO
+                error_type = self.PORT_ABSENT
 
         else:  # first_port_id not a valid input or output port
-            error_type = self.PORT_ABSENT_ONE
+            error_type = self.PORT_ABSENT
 
         return error_type
 

@@ -209,7 +209,7 @@ class Parser:
                 self.inline_error_message()
             self.next_scan_start()
 
-        elif error_id == self.self.INCOMPLETE_NETWORK:
+        elif error_id == self.INCOMPLETE_NETWORK:
             self.error_count += 1
             print("SEMANTIC ERROR : Not all inputs are connected")
             if not self.test:
@@ -248,37 +248,29 @@ class Parser:
 
     # TO be completed
     def display_connect_error(self, error_id, output_device_symbol, output_symbol, input_device_symbol, input_symbol):
-        if error_id == self.devices.DEVICE_ABSENT_ONE: 
+        if error_id == self.network.DEVICE_ABSENT_ONE: 
             print('ERROR : Device name does not exist')              
             self.inline_error_message(output_device_symbol)   
             self.error_count += 1
-        elif error_id == self.devices.DEVICE_ABSENT_TWO: 
+        elif error_id == self.network.DEVICE_ABSENT_TWO: 
             print('ERROR : Device name does not exist')              
             self.inline_error_message(input_device_symbol)   
             self.error_count += 1
-        elif error_id == self.devices.INPUT_CONNECTED_ONE: 
-            print('ERROR : Input is already connected')              
-            self.inline_error_message(output_symbol)   
-            self.error_count += 1
-        elif error_id == self.devices.INPUT_CONNECTED_TWO: 
+        elif error_id == self.network.INPUT_CONNECTED: 
             print('ERROR : Input is already connected')              
             self.inline_error_message(input_symbol)   
             self.error_count += 1
-        elif error_id == self.devices.INPUT_TO_INPUT: 
+        elif error_id == self.network.INPUT_TO_INPUT: 
             print('ERROR : Cannot connect an input to an input')              
             self.inline_error_message(output_symbol)   
             self.error_count += 1
-        elif error_id == self.devices.PORT_ABSENT_ONE: 
+        elif error_id == self.network.PORT_ABSENT: 
             print('ERROR : Port does not exist')              
-            self.inline_error_message(output_symbol)   
+            self.inline_error_message(output_device_symbol)   
             self.error_count += 1
-        elif error_id == self.devices.PORT_ABSENT_TWO: 
-            print('ERROR : Port does not exist')              
-            self.inline_error_message(input_symbol)   
-            self.error_count += 1
-        elif error_id == self.devices.OUTPUT_TO_OUTPUT: 
+        elif error_id == self.network.OUTPUT_TO_OUTPUT: 
             print('ERROR : Cannot Connect output to output')              
-            self.inline_error_message(output_symbol)   
+            self.inline_error_message(input_device_symbol)   
             self.error_count += 1
         else:
             self.error_count += 1
@@ -485,7 +477,7 @@ class Parser:
                                                                             output_symbol.id, 
                                                                             input_device_symbol.id,
                                                                             input_symbol.id)
-                                    if error_type == self.devices.NO_ERROR:
+                                    if error_type == self.network.NO_ERROR:
                                         pass
                                     else:
                                         '''SEMANTIC ERROR to be implemented'''
