@@ -349,6 +349,7 @@ class Gui(wx.Frame):
         self.quit_id = 999
         self.open_id = 998
         self.help_id = 997
+        self.home_id = 996
 
         # Configure the file menu
         fileMenu = wx.Menu()
@@ -378,14 +379,22 @@ class Gui(wx.Frame):
         self.switch_values = [self.devices.get_switch_value(i) for i in self.switch_ids]
         self.sig_mons, self.sig_n_mons = self.monitors.get_signal_names()
 
+        # Test values for gui
+        self.switch_ids = [0,1,2]
+        self.switch_names = ['sw_1', 'sw_2', 'sw_3']
+        self.switch_values = ['LOW', 'HIGH', 'LOW']
+        self.sig_mons, self.sig_n_mons = ['sig1', 'sig3'], ['sig2']
+
         # Toolbar setup
         toolbar = self.CreateToolBar()
-        myimage = wx.ArtProvider.GetBitmap(wx.ART_NEW, wx.ART_TOOLBAR)
-        toolbar.AddTool(wx.ID_ANY, "New file", myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_GO_HOME, wx.ART_TOOLBAR)
+        toolbar.AddTool(self.home_id, "Home", myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR)
         toolbar.AddTool(self.open_id, "Open file", myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_HELP, wx.ART_TOOLBAR)
         toolbar.AddTool(self.help_id, "Help", myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_QUIT, wx.ART_TOOLBAR)
+        toolbar.AddTool(self.quit_id, "Exit", myimage)
         toolbar.Bind(wx.EVT_TOOL, self.toolbar_handler)
         toolbar.Realize()
         self.ToolBar = toolbar
@@ -401,7 +410,8 @@ class Gui(wx.Frame):
 
         self.text_switch_control = wx.StaticText(self, wx.ID_ANY, "Switch On:")
         #self.text_switch_set = wx.StaticText(self, wx.ID_ANY, "On?:")
-        self.switch_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>", choices=['test1', 'test2'])
+        self.switch_choice = wx.ComboBox(self, wx.ID_ANY, "<SWITCH>", choices=self.switch_names)
+        self.switch_choice.SetValue(self.switch_names[0])
         self.switch_set = wx.CheckBox(self, wx.ID_ANY)
 
         self.text_add_monitor = wx.StaticText(self, wx.ID_ANY, "Signal Monitors:")
@@ -409,8 +419,10 @@ class Gui(wx.Frame):
         #                            style=wx.TE_PROCESS_ENTER)
         self.add_monitor_button = wx.Button(self, wx.ID_ANY, "Add")
         self.remove_monitor_button = wx.Button(self, wx.ID_ANY, "Remove")
-        self.add_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>", choices=['test1', 'test2'])
-        self.remove_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>", choices=['test1', 'test2'])
+        self.add_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>", choices=self.sig_n_mons)
+        self.remove_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>", choices=self.sig_mons)
+        self.add_monitor_choice.SetValue(self.sig_mons[0])
+        self.remove_monitor_choice.SetValue(self.sig_n_mons[0])
 
         # Bind events to widgets
         self.Bind(wx.EVT_MENU, self.on_menu)
@@ -421,8 +433,8 @@ class Gui(wx.Frame):
         self.continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
         self.add_monitor_button.Bind(wx.EVT_BUTTON, self.on_add_monitor_button)
         self.remove_monitor_button.Bind(wx.EVT_BUTTON, self.on_remove_monitor_button)
-        self.switch_choice.Bind(wx.EVT_BUTTON, self.on_switch_choice)
-        self.switch_set.Bind(wx.EVT_BUTTON, self.on_switch_set)
+        self.switch_choice.Bind(wx.EVT_COMBOBOX, self.on_switch_choice)
+        self.switch_set.Bind(wx.EVT_CHECKBOX, self.on_switch_set)
 
         #self.text_box.Bind(wx.EVT_TEXT_ENTER, self.on_text_box)
 
@@ -465,15 +477,18 @@ class Gui(wx.Frame):
         self.SetSizer(main_sizer)
 
     def reset_screen(self):
+        """Put screen back into its initial state"""
         self.canvas.pan_x = 0
         self.canvas.pan_y = 0
         self.canvas.zoom = 1
         self.canvas.init = False
 
     def toolbar_handler(self, event):
+        """Handles toolbar presses"""
         if event.GetId() == self.quit_id:
-            print("Quitting")
-            self.Close(True)
+            canc = wx.MessageBox('Are you sure you would like to quit?', 'Quit?', wx.ICON_INFORMATION | wx.CANCEL)
+            if canc == 4:
+                self.Close(True)
         elif event.GetId() == self.open_id:
             openFileDialog = wx.FileDialog(self, "Open txt file", "", "", wildcard="TXT files (*.txt)|*.txt",
                                            style=wx.FD_OPEN + wx.FD_FILE_MUST_EXIST)
@@ -486,26 +501,35 @@ class Gui(wx.Frame):
             self.reset_screen()
             self.canvas.help_screen = not self.canvas.help_screen
             self.canvas.render('')
+        elif event.GetId() == self.home_id:
+            self.reset_screen()
+            self.canvas.help_screen = False
+            self.canvas.render('')
 
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
         Id = event.GetId()
         if Id == wx.ID_EXIT:
-            self.Close(True)
+            print('menu quit')
+            #self.Close(True)
         if Id == wx.ID_ABOUT:
             wx.MessageBox("Logic Simulator\nCreated by Mojisola Agboola\n2017",
                           "About Logsim", wx.ICON_INFORMATION | wx.OK)
 
-    def on_switch_choice(self):
+    def on_switch_choice(self, event):
         sw_name = self.switch_choice.GetValue()
-        sw_val = self.switch_ids[self.switch_choice.index(sw_name)]
+        sw_val = self.switch_values[self.switch_names.index(sw_name)]
         if sw_val == 'HIGH':
             self.switch_set.SetValue(1)
         else:
             self.switch_set.SetValue(0)
 
-    def on_switch_set(self):
-        pass
+    def on_switch_set(self, event):
+        sw_name = self.switch_choice.GetValue()
+        sw_no = self.switch_names.index(sw_name)
+        self.switch_values[sw_no] = ['LOW', 'HIGH'][self.switch_set.GetValue()]
+        print(self.switch_values)
+        #self.devices.set_switch(sw_id, self.switch_set.GetValue())  # SET ACTUAL SWITCH
 
     def on_spin(self, event):
         """Handle the event when the user changes the spin control value."""
@@ -572,22 +596,33 @@ class Gui(wx.Frame):
 
     def on_add_monitor_button(self, event):
         """Handle the event when user clicks "add" """
-        self.canvas.render('Add: '+str(self.add_monitor_choice.GetValue()))
-        return ''  # While no network stuff
+        mon_choice_name = self.add_monitor_choice.GetValue()
+        self.canvas.render('Add: '+str(mon_choice_name))
+        #return ''  # While no network stuff
         device_id = None
         output_id = None
-        self.monitors.make_monitor(device_id, output_id)
-        self.run_network_and_get_values()
+        #self.monitors.make_monitor(device_id, output_id)
+        #self.run_network_and_get_values()
+        self.sig_mons.remove(mon_choice_name)
+        self.sig_n_mons.append(mon_choice_name)
+        print(self.sig_mons)
+        self.add_monitor_choice.SetItems(self.sig_n_mons)
+        self.remove_monitor_choice.SetItems(self.sig_mons)
         self.canvas.render('')
 
     def on_remove_monitor_button(self, event):
         """Handle the event when user clicks "add" """
-        self.canvas.render('Remove: '+str(self.remove_monitor_choice.GetValue()))
-        return ''  # While no network stuff
-        device_id = None
-        output_id = None
-        self.monitors.remove_monitor(device_id, output_id)
-        self.run_network_and_get_values()
+        mon_choice_name = self.remove_monitor_choice.GetValue()
+        self.canvas.render('Remove: '+str(mon_choice_name))
+        #return ''  # While no network stuff
+        #device_id = None
+        #output_id = None
+        #self.monitors.remove_monitor(device_id, output_id)
+        #self.run_network_and_get_values()
+        self.sig_mons.append(mon_choice_name)
+        self.sig_n_mons.remove(mon_choice_name)
+        self.add_monitor_choice.SetItems(self.sig_n_mons)
+        self.remove_monitor_choice.SetItems(self.sig_mons)
         self.canvas.render('')
 
 
