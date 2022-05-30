@@ -1,5 +1,5 @@
 DEVICES
-SWITCH, 0 = A0;
+CLOCK, 1 = A0;
 SWITCH, 1 = A1;
 XOR, 2 = G1;
 AND, 2 = G2;
