@@ -11,6 +11,7 @@ Gui - configures the main window and all the widgets.
 import wx
 import wx.glcanvas as wxcanvas
 from OpenGL import GL, GLUT
+import os
 
 from names import Names
 from devices import Devices
@@ -298,7 +299,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.canvas_size = self.GetClientSize()
 
         if not self.help_text:
-            with open('help.txt', 'r') as f:
+            with open('logsim/help.txt', 'r') as f:
                 self.help_text = f.readlines()
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
@@ -365,9 +366,10 @@ class Gui(wx.Frame):
         # Store for monitored signals from network
         self.values = None
         self.trace_names = None
-        self.time_steps = 10
+        self.time_steps = 8
 
         # Store inputs from logsim.py
+        self.title = title
         self.path = path
         self.names = names
         self.devices = devices
@@ -378,12 +380,6 @@ class Gui(wx.Frame):
         self.switch_names = [self.names.get_name_string(i) for i in self.switch_ids]
         self.switch_values = [self.devices.get_switch_value(i) for i in self.switch_ids]
         self.sig_mons, self.sig_n_mons = self.monitors.get_signal_names()
-
-        # Test values for gui
-        self.switch_ids = [0,1,2]
-        self.switch_names = ['sw_1', 'sw_2', 'sw_3']
-        self.switch_values = ['LOW', 'HIGH', 'LOW']
-        self.sig_mons, self.sig_n_mons = ['sig1', 'sig3'], ['sig2']
 
         # Toolbar setup
         toolbar = self.CreateToolBar()
@@ -421,8 +417,8 @@ class Gui(wx.Frame):
         self.remove_monitor_button = wx.Button(self, wx.ID_ANY, "Remove")
         self.add_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>", choices=self.sig_n_mons)
         self.remove_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>", choices=self.sig_mons)
-        self.add_monitor_choice.SetValue(self.sig_mons[0])
-        self.remove_monitor_choice.SetValue(self.sig_n_mons[0])
+        self.add_monitor_choice.SetValue(self.sig_n_mons[0])
+        self.remove_monitor_choice.SetValue(self.sig_mons[0])
 
         # Bind events to widgets
         self.Bind(wx.EVT_MENU, self.on_menu)
@@ -476,6 +472,9 @@ class Gui(wx.Frame):
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
 
+        self.run_network_and_get_values()
+        self.canvas.render('')
+
     def reset_screen(self):
         """Put screen back into its initial state"""
         self.canvas.pan_x = 0
@@ -496,7 +495,10 @@ class Gui(wx.Frame):
             if openFileDialog.ShowModal() == wx.ID_CANCEL:
                 print("The user cancelled")
                 return  # the user changed idea...
-            print("File chosen=", openFileDialog.GetPath())
+            new_path = openFileDialog.GetPath()
+            print("File chosen=", new_path)
+            self.path = new_path
+            #self.__init__(self.title, self.path, self.names, self.devices, self.network, self.monitors)
         elif event.GetId() == self.help_id:
             self.reset_screen()
             self.canvas.help_screen = not self.canvas.help_screen
@@ -519,7 +521,7 @@ class Gui(wx.Frame):
     def on_switch_choice(self, event):
         sw_name = self.switch_choice.GetValue()
         sw_val = self.switch_values[self.switch_names.index(sw_name)]
-        if sw_val == 'HIGH':
+        if sw_val:
             self.switch_set.SetValue(1)
         else:
             self.switch_set.SetValue(0)
@@ -527,9 +529,11 @@ class Gui(wx.Frame):
     def on_switch_set(self, event):
         sw_name = self.switch_choice.GetValue()
         sw_no = self.switch_names.index(sw_name)
-        self.switch_values[sw_no] = ['LOW', 'HIGH'][self.switch_set.GetValue()]
-        print(self.switch_values)
-        #self.devices.set_switch(sw_id, self.switch_set.GetValue())  # SET ACTUAL SWITCH
+        self.switch_values[sw_no] = [0, 1][self.switch_set.GetValue()]
+        sw_id = self.names.query(sw_name)
+        self.devices.set_switch(sw_id, self.switch_set.GetValue())  # SET ACTUAL SWITCH
+        self.run_network_and_get_values()
+        self.canvas.render('')
 
     def on_spin(self, event):
         """Handle the event when the user changes the spin control value."""
@@ -548,7 +552,7 @@ class Gui(wx.Frame):
         spin_value = self.spin.GetValue()
 
         self.time_steps = spin_value
-        self.run_network_and_get_values(self.time_steps)
+        self.run_network_and_get_values()
 
         text = "Run button pressed. (self.time_steps=%d)" % self.time_steps
         self.canvas.render(text)
@@ -558,22 +562,21 @@ class Gui(wx.Frame):
         spin_cont_value = self.spin.GetValue()
 
         self.time_steps += spin_cont_value
-        self.run_network_and_get_values(self.time_steps)
+        self.run_network_and_get_values()
 
         text = "Continue button pressed. (self.time_steps=%d)" % self.time_steps
         self.canvas.render(text)
 
-    def run_network_and_get_values(self, time_steps):
+    def run_network_and_get_values_test(self, time_steps):
         """Run the network and get the monitored signal values"""
         ## Test for now:
         self.values = [[0, 0, 0, 1, 1, 1], [1, 1, 0, 0, 1, 0]]
         self.trace_names = ['test 000111', 'test 110010']
 
-    def run_network_and_get_values_real(self):
+    def run_network_and_get_values(self):
         """Run the network and get the monitored signal values"""
 
         # Add return False / True (deal with faulty execution)
-
         self.devices.cold_startup()
         self.monitors.reset_monitors()
         for i in range(self.time_steps):
@@ -584,7 +587,7 @@ class Gui(wx.Frame):
 
         monitor_dict = self.monitors.monitors_dictionary
         for device_id, output_id in monitor_dict:
-            self.values.append(monitor_dict((device_id, output_id)))
+            self.values.append(monitor_dict[(device_id, output_id)])
         self.trace_names = self.monitors.get_signal_names()[0]
 
     def on_text_box(self, event):
@@ -597,35 +600,51 @@ class Gui(wx.Frame):
     def on_add_monitor_button(self, event):
         """Handle the event when user clicks "add" """
         mon_choice_name = self.add_monitor_choice.GetValue()
+        if mon_choice_name not in self.sig_n_mons:
+            return ''
         self.canvas.render('Add: '+str(mon_choice_name))
-        #return ''  # While no network stuff
-        device_id = None
+
+        device_id = self.names.query(mon_choice_name)
         output_id = None
-        #self.monitors.make_monitor(device_id, output_id)
-        #self.run_network_and_get_values()
-        self.sig_mons.remove(mon_choice_name)
-        self.sig_n_mons.append(mon_choice_name)
-        print(self.sig_mons)
+        self.monitors.make_monitor(device_id, output_id)
+        self.run_network_and_get_values()
+
+        self.sig_n_mons.remove(mon_choice_name)
+        self.sig_mons.append(mon_choice_name)
         self.add_monitor_choice.SetItems(self.sig_n_mons)
         self.remove_monitor_choice.SetItems(self.sig_mons)
+        if self.sig_n_mons:
+            self.add_monitor_choice.SetValue(self.sig_n_mons[0])
+        if self.sig_mons:
+            self.remove_monitor_choice.SetValue(self.sig_mons[0])
         self.canvas.render('')
 
     def on_remove_monitor_button(self, event):
         """Handle the event when user clicks "add" """
         mon_choice_name = self.remove_monitor_choice.GetValue()
+        if mon_choice_name not in self.sig_mons:
+            return ''
         self.canvas.render('Remove: '+str(mon_choice_name))
-        #return ''  # While no network stuff
-        #device_id = None
-        #output_id = None
-        #self.monitors.remove_monitor(device_id, output_id)
-        #self.run_network_and_get_values()
-        self.sig_mons.append(mon_choice_name)
-        self.sig_n_mons.remove(mon_choice_name)
+
+        device_id = self.names.query(mon_choice_name)
+        output_id = None
+        self.monitors.remove_monitor(device_id, output_id)
+        self.run_network_and_get_values()
+
+        self.sig_n_mons.append(mon_choice_name)
+        self.sig_mons.remove(mon_choice_name)
+
         self.add_monitor_choice.SetItems(self.sig_n_mons)
         self.remove_monitor_choice.SetItems(self.sig_mons)
+        if self.sig_n_mons:
+            self.add_monitor_choice.SetValue(self.sig_n_mons[0])
+        if self.sig_mons:
+            self.remove_monitor_choice.SetValue(self.sig_mons[0])
         self.canvas.render('')
 
 
+
+"""
 path = None
 names = Names()
 devices = Devices(names)
@@ -639,3 +658,4 @@ app = wx.App()
 gui = Gui("Logic Simulator", path, names, devices, network, monitors)
 gui.Show(True)
 app.MainLoop()
+"""
