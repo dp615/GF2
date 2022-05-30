@@ -32,12 +32,12 @@ def test_parser_semantic_errors_devices(capsys):
 
 
 def test_parser_semantic_errors_connections(capsys):
-    errors=['ERROR : Device name does not exist\nError on line12\nA9 - G1.I2 ;',
-            'ERROR : Device name does not exist\nError on line12\nA1 - G9.I2 ;',
-            'ERROR : Input is already connected\nError on line12\nA1 - G1.I1 ;',
-            'ERROR : Cannot connect an input to an input\nError on line12\nG3.I2 - G1.I2 ;',
-            'ERROR : Port does not exist\nError on line15\nG2 - G3.I2 ;',
-            'ERROR : Cannot Connect output to output\nError on line11\nA1 - G2.Q ;'
+    errors=['ERROR : Device name does not exist',
+            'ERROR : Device name does not exist',
+            'ERROR : Input is already connected',
+            'ERROR : Cannot connect an input to an input',
+            'ERROR : Port does not exist',
+            'ERROR : Cannot Connect output to output'
                 ]
         
     for i in range(6):
@@ -56,9 +56,9 @@ def test_parser_semantic_errors_connections(capsys):
         assert  errors[i]   in out
 
 def test_parser_semantic_errors_monitor(capsys):
-    errors=['ERROR : Can only monitor outputs\nError on line19\nG1.I1 ;',
-            'ERROR : Output already being monitored\nError on line20\nG1 ;',
-            'ERROR : Device does not exist\nError on line21\nA8 ;'
+    errors=['ERROR : Can only monitor outputs',
+            'ERROR : Output already being monitored',
+            'ERROR : Device does not exist'
             ]
         
     for i in range(3):

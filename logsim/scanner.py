@@ -145,11 +145,16 @@ class Scanner:
             self.advance()
         return symbol
 
-    def print_location(self,line,position_on_line):
+    def print_location(self,symbol,line):
+        line=symbol.line
+        position_on_line=symbol.position_on_line
         self.position=self.file.tell()
         self.file.seek(0,0)
         print('Error on line '+ str(line+1))
-        print(self.file.readlines()[line],end='')
+        line_to_print=self.file.readlines()[line]
+        print(line_to_print,end='')
+        if line_to_print[-1] != '\n':
+            print('')
         string=''
         for i in range(position_on_line):
             string=string+' '
