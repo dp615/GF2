@@ -212,8 +212,6 @@ class Parser:
         elif error_id == self.INCOMPLETE_NETWORK:
             self.error_count += 1
             print("SEMANTIC ERROR : Not all inputs are connected")
-            if not self.test:
-                self.inline_error_message()
 
         else:
             self.error_count += 1
@@ -577,7 +575,7 @@ class Parser:
                 self.next_symbol()
                 ##
                 if self.error_count == 0 and not self.test:
-                    error_type = self.monitors.make_monitor(self, monitor_symbol.id, monitor_output_symbol.id)
+                    error_type = self.monitors.make_monitor(monitor_symbol.id, monitor_output_symbol.id)
                     if error_type == self.devices.NO_ERROR:
                         pass
                     else:

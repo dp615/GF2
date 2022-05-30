@@ -16,7 +16,7 @@ G2 - G3.I2 ;
 END
 
 MONITOR
-G1.I2 ;
+G1 ;
 G2 ;
 A0 ;
 END
