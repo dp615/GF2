@@ -378,7 +378,7 @@ class Network:
 
         iterations = 0
         while iterations < iteration_limit:
-            iterations = 1
+            iterations += 1
             self.steady_state = True
 
             for device_id in switch_devices:  # execute switch devices
