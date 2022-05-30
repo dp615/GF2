@@ -148,8 +148,8 @@ class Scanner:
     def print_location(self,line,position_on_line):
         self.position=self.file.tell()
         self.file.seek(0,0)
-        print('Error on line'+ str(line+1))
-        print(self.file.readlines()[line])
+        print('Error on line '+ str(line+1))
+        print(self.file.readlines()[line],end='')
         string=''
         for i in range(position_on_line):
             string=string+' '
