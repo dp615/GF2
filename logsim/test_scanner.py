@@ -8,7 +8,7 @@ def test_scanner():
     ids=[None,5,None,6,1,None,2,None,7,8,None,7,0,None,None]
     a=Symbol()
     counter=0
-    while a.type!=7:
+    while a.type!=8:
         a=scanner.get_symbol()
         assert a.type==types[counter]
         assert a.id==ids[counter]

@@ -67,8 +67,9 @@ class Network:
         self.devices = devices
 
         [self.NO_ERROR, self.INPUT_TO_INPUT, self.OUTPUT_TO_OUTPUT,
-         self.INPUT_CONNECTED, self.PORT_ABSENT,
-         self.DEVICE_ABSENT] = self.names.unique_error_codes(6)
+         self.INPUT_CONNECTED,
+         self.PORT_ABSENT,
+         self.DEVICE_ABSENT_ONE,self.DEVICE_ABSENT,self.DEVICE_ABSENT_TWO] = self.names.unique_error_codes(8)
         self.steady_state = True  # for checking if signals have settled
 
     def get_connected_output(self, device_id, input_id):
@@ -117,9 +118,10 @@ class Network:
         first_device = self.devices.get_device(first_device_id)
         second_device = self.devices.get_device(second_device_id)
 
-        if first_device is None or second_device is None:
-            error_type = self.DEVICE_ABSENT
-
+        if first_device is None: 
+            error_type = self.DEVICE_ABSENT_ONE
+        elif second_device is None:
+            error_type = self.DEVICE_ABSENT_TWO
         elif first_port_id in first_device.inputs:
             if first_device.inputs[first_port_id] is not None:
                 # Input is already in a connection

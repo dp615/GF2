@@ -141,7 +141,7 @@ def test_make_connection(network_with_devices):
 
 @pytest.mark.parametrize("function_args, error", [
     # I1 is not a valid device id
-    ("(I1, I1, OR1_ID, I2)", "network.DEVICE_ABSENT"),
+    ("(I1, I1, OR1_ID, I2)", "network.DEVICE_ABSENT_ONE"),
 
     ("(OR1_ID, I2, OR1_ID, I2)", "network.INPUT_TO_INPUT"),
 

@@ -209,7 +209,7 @@ class Parser:
                 self.inline_error_message()
             self.next_scan_start()
 
-        elif error_id == self.self.INCOMPLETE_NETWORK:
+        elif error_id == self.INCOMPLETE_NETWORK:
             self.error_count += 1
             print("SEMANTIC ERROR : Not all inputs are connected")
             if not self.test:
@@ -219,36 +219,86 @@ class Parser:
             self.error_count += 1
             print('Unregistered error id in parser code', error_id)
 
-    # TO be completed
     def display_devices_error(self,error_id, device_name_symbol, device_type_symbol, device_parameter_symbol):
-        symbol = None # Remove this line once done
-        if error_id == self.devices.ERROR: # 'ERROR' needs to be changed to match those in devices
-            print('error message')              #Error message needs to be added
-            self.inline_error_message(symbol)   #Relevant error symbol needs tp be included
+        if error_id == self.devices.DEVICE_PRESENT: 
+            print('ERROR : Device by this name already exists')              
+            self.inline_error_message(device_name_symbol)   
+            self.error_count += 1
+
+        elif error_id == self.devices.NO_QUALIFIER: 
+            print('ERROR : No qualifier given and device type requires one')              
+            self.inline_error_message(device_type_symbol)   
+            self.error_count += 1
+
+        elif error_id == self.devices.INVALID_QUALIFIER:
+            print('ERROR : Qualifier is invalid for device type')              
+            self.inline_error_message(device_parameter_symbol)   
+            self.error_count += 1
+
+        elif error_id == self.devices.QUALIFIER_PRESENT: 
+            print('ERROR : Qualifier given but one was not allowed with device type')              
+            self.inline_error_message(device_parameter_symbol)   
+            self.error_count += 1
+
+        elif error_id == self.devices.BAD_DEVICE: 
+            print('ERROR : Device Type given is not a valid device type')             
+            self.inline_error_message(device_type_symbol)   
             self.error_count += 1
         
         else:
             self.error_count += 1
-            print('Unregistered error id in parser code', error_id)
+            print('ERROR : Unregistered error id in parser code', error_id)
 
-    # TO be completed
+
     def display_connect_error(self, error_id, output_device_symbol, output_symbol, input_device_symbol, input_symbol):
-        symbol = None # Remove this line once done
-        if error_id == self.devices.ERROR: # 'ERROR' needs to be changed to match those in network
-            print('error message')              #Error message needs to be added
-            self.inline_error_message(symbol)   #Relevant error symbol needs tp be included
+        if error_id == self.network.DEVICE_ABSENT_ONE: 
+            print('ERROR : Device name does not exist')              
+            self.inline_error_message(output_device_symbol)   
             self.error_count += 1
-        
+
+        elif error_id == self.network.DEVICE_ABSENT_TWO: 
+            print('ERROR : Device name does not exist')              
+            self.inline_error_message(input_device_symbol)   
+            self.error_count += 1
+
+        elif error_id == self.network.INPUT_CONNECTED: 
+            print('ERROR : Input is already connected')              
+            self.inline_error_message(input_symbol)   
+            self.error_count += 1
+
+        elif error_id == self.network.INPUT_TO_INPUT: 
+            print('ERROR : Cannot connect an input to an input')              
+            self.inline_error_message(output_symbol)   
+            self.error_count += 1
+
+        elif error_id == self.network.PORT_ABSENT: 
+            print('ERROR : Port does not exist')              
+            self.inline_error_message(output_device_symbol)   
+            self.error_count += 1
+
+        elif error_id == self.network.OUTPUT_TO_OUTPUT: 
+            print('ERROR : Cannot Connect output to output')              
+            self.inline_error_message(input_device_symbol)   
+            self.error_count += 1
+
         else:
             self.error_count += 1
-            print('Unregistered error id in parser code', error_id)
+            print('ERROR : Unregistered error id in parser code', error_id)
 
-    # To be completed
     def display_monitors_error(self,error_id, monitor_symbol, monitor_output_symbol):
-        symbol = None # Remove this line once done
-        if error_id == self.devices.ERROR: # 'ERROR' needs to be changed to match those in monitors
-            print('error message')              #Error message needs to be added
-            self.inline_error_message(symbol)   #Relevant error symbol needs tp be included
+        if error_id == self.monitor.NOT_OUTPUT: 
+            print('ERROR : error message')              
+            self.inline_error_message(monitor_symbol)  
+            self.error_count += 1
+
+        elif error_id == self.monitor.MONITOR_PRESENT: 
+            print('ERROR : error message')              
+            self.inline_error_message(monitor_symbol)  
+            self.error_count += 1
+            
+        elif error_id == self.monitor.network.DEVICE_ABSENT: 
+            print('ERROR : error message')              
+            self.inline_error_message(monitor_symbol)  
             self.error_count += 1
         
         else:
@@ -267,7 +317,7 @@ class Parser:
     def next_symbol(self):
         self.current_symbol = self.scanner.get_symbol()
         #Following line to be deleted after testing done
-        self.display_symbol()
+        #self.display_symbol()
 
     def repeated_semicolon(self):
         while self.current_symbol.type == self.scanner.SEMICOLON:
@@ -347,7 +397,7 @@ class Parser:
                     self.next_symbol()
                     if self.current_symbol.type == self.scanner.SEMICOLON:
                         self.next_symbol()
-                        ##
+                        #
                         if self.error_count == 0 and not self.test:
                             error_type = self.devices.make_device(device_name_symbol.id, 
                                                                 device_type_symbol.id, 
@@ -421,7 +471,7 @@ class Parser:
                     # SYNTAX ERROR (Invalid output label) IMPLEMENTED
                     self.display_syntax_error(self.INVALID_OUTPUTLABEL)
 
-            print(expect_dash, self.current_symbol.type, self.scanner.DASH)
+            #print(expect_dash, self.current_symbol.type, self.scanner.DASH)
             if self.current_symbol.type == self.scanner.DASH and expect_dash:
                 self.next_symbol()
                 if self.current_symbol.type == self.scanner.NAME:
@@ -444,7 +494,7 @@ class Parser:
                                                                             output_symbol.id, 
                                                                             input_device_symbol.id,
                                                                             input_symbol.id)
-                                    if error_type == self.devices.NO_ERROR:
+                                    if error_type == self.network.NO_ERROR:
                                         pass
                                     else:
                                         '''SEMANTIC ERROR to be implemented'''

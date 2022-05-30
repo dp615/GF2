@@ -11,7 +11,7 @@ devices = Devices(names)
 network = Network(names, devices)
 monitors = Monitors(names, devices, network)
 
-file_path = "".join([r'logsim\parser_test_file1.txt'])
+file_path = "".join([r'parser_test_file1.txt'])
 scanner=Scanner(file_path,names)
 parser = Parser(names, devices, network, monitors, scanner)
 parser.parse_network()
