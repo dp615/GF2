@@ -15,6 +15,7 @@ Parser - parses the definition file and builds the logic network.
 # Fix next_scan_start
 from scanner import Symbol
 
+
 class Parser:
 
     """Parse the definition file and build the logic network.
@@ -35,6 +36,28 @@ class Parser:
 
     Public methods
     --------------
+    copy_symbol(self): Returns a copy Symbol class instance of the current symbol
+
+    inline_error_message(self, symbol = None): 
+
+    display_syntax_error(self,error_id): 
+
+    display_devices_error(self,error_id, device_name_symbol, device_type_symbol, device_parameter_symbol): 
+
+    display_connect_error(self, error_id, output_device_symbol, output_symbol, input_device_symbol, input_symbol): 
+
+    display_monitors_error(self,error_id, monitor_symbol, monitor_output_symbol): 
+
+    next_symbol(self): 
+
+    next_scan_start(self, in_block = True): 
+
+    parse_devices(self): Parses the 'DEVICES' block of definition file
+
+    parse_connections(self): Parses the 'CONNECTIONS' block of definition file
+
+    parse_monitor(self): Parses the 'MONITORS' block of definition file
+
     parse_network(self): Parses the circuit definition file.
     """
 
@@ -51,12 +74,28 @@ class Parser:
         self.test = test
 
         # Error codes are for all syntax errors as well as the error for an incomplete network
-        self.ERROR_ID = [self.EXTRA_SEMICOLON, self.EXTRA_DEVICES, self.EXTRA_CONNECT,
-            self.EXTRA_MONITOR, self.NO_NUMBER, self.NO_SEMICOLON, self.INVALID_DEVICENAME,
-            self.NO_EQUALS, self.NO_END, self.INVALID_DEVICETYPE, self.INVALID_OUTPUTLABEL,
-            self.NO_DOT, self.NO_DASH, self.EXPECT_DEVICES, self.EXPECT_CONNECT,
-            self.EXPECT_MONITOR, self.NO_MAIN_END,self.NOT_EXPECT_END, self.INVALID_INPUTLABEL,
-            self.INCOMPLETE_NETWORK] = self.names.unique_error_codes(20)
+        self.ERROR_ID = [
+            self.EXTRA_SEMICOLON, 
+            self.EXTRA_DEVICES, 
+            self.EXTRA_CONNECT,
+            self.EXTRA_MONITOR, 
+            self.NO_NUMBER, 
+            self.NO_SEMICOLON, 
+            self.INVALID_DEVICENAME,
+            self.NO_EQUALS, 
+            self.NO_END, 
+            self.INVALID_DEVICETYPE, 
+            self.INVALID_OUTPUTLABEL,
+            self.NO_DOT, 
+            self.NO_DASH, 
+            self.EXPECT_DEVICES, 
+            self.EXPECT_CONNECT,
+            self.EXPECT_MONITOR, 
+            self.NO_MAIN_END,
+            self.NOT_EXPECT_END, 
+            self.INVALID_INPUTLABEL,
+            self.INCOMPLETE_NETWORK
+        ] = self.names.unique_error_codes(20)
 
         self.error_count = 0
 
@@ -224,7 +263,7 @@ class Parser:
 
     def display_devices_error(self,error_id, device_name_symbol, device_type_symbol, device_parameter_symbol):
         """Handles all error messaging for all devices errors"""
-        print(self.error_count + 1, "errors found so far")
+        print("Errors found so far :", self.error_count + 1)
         if error_id == self.devices.DEVICE_PRESENT: 
             print('ERROR : Device by this name already exists')              
             self.inline_error_message(device_name_symbol)   
@@ -256,7 +295,7 @@ class Parser:
 
     def display_connect_error(self, error_id, output_device_symbol, output_symbol, input_device_symbol, input_symbol):
         """Handles all error messaging for all network errors"""
-        print(self.error_count + 1, "errors found so far")
+        print("Errors found so far :", self.error_count + 1)
         if error_id == self.network.DEVICE_ABSENT_ONE: 
             print('ERROR : Device name does not exist')              
             self.inline_error_message(output_device_symbol)   
@@ -293,7 +332,7 @@ class Parser:
     
     def display_monitors_error(self,error_id, monitor_symbol, monitor_output_symbol):
         """Handles all error messaging for all monitors errors"""
-        print(self.error_count + 1, "errors found so far")
+        print("Errors found so far :", self.error_count + 1)
         if error_id == self.monitors.NOT_OUTPUT: 
             print('ERROR : Can only monitor outputs')              
             self.inline_error_message(monitor_symbol)  
@@ -318,13 +357,6 @@ class Parser:
         """Changes current symbol to next symbol from scanner"""
         self.current_symbol = self.scanner.get_symbol()
 
-    def repeated_semicolon(self):
-        """Triggers an error if repeated semicolons are detetected in error recovery"""
-        while self.current_symbol.type == self.scanner.SEMICOLON:
-            #SYNTAX WARNING (extra semicolons added) IMPLEMENTED
-            self.display_syntax_error(self.EXTRA_SEMICOLON)
-            self.next_symbol()
-
     def next_scan_start(self, in_block = True):
         """Reaches a safe symbol to resume parsing after an error
         
@@ -336,7 +368,10 @@ class Parser:
         while not safe_start:
             if self.current_symbol.type == self.scanner.SEMICOLON and in_block:
                 self.next_symbol()
-                self.repeated_semicolon()
+                while self.current_symbol.type == self.scanner.SEMICOLON:
+                    #SYNTAX WARNING (extra semicolons added) IMPLEMENTED
+                    self.display_syntax_error(self.EXTRA_SEMICOLON)
+                    self.next_symbol()
                 safe_start = True
             elif self.current_symbol.type == self.scanner.EOF:
                 safe_start = True
@@ -563,10 +598,8 @@ class Parser:
         """Parses the 'MONITORS' block of definition file"""
         self.parse_completion[2] = True
         while self.current_symbol.type == self.scanner.NAME:
-            ##
             monitor_symbol = self.copy_symbol()
             monitor_output_symbol = Symbol()
-            ##
             self.next_symbol()
             expect_semicolon = True
             if self.current_symbol.type == self.scanner.DOT:
@@ -627,7 +660,9 @@ class Parser:
             self.parse_monitor()
 
     def parse_network(self):
-        """Parse the circuit definition file."""
+        """Parse the circuit definition file.
+        
+        Returns True if no errors found."""
         self.next_symbol()
         if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.DEVICES_ID:
             self.next_symbol()
@@ -676,3 +711,4 @@ class Parser:
         # skeleton code. When complete, should return False when there are
         # errors in the circuit definition file.
         return True'''
+
