@@ -352,6 +352,7 @@ class Gui(wx.Frame):
         self.help_id = 997
         self.home_id = 996
 
+        """
         # Configure the file menu
         fileMenu = wx.Menu()
         menuBar = wx.MenuBar()
@@ -359,6 +360,7 @@ class Gui(wx.Frame):
         fileMenu.Append(wx.ID_EXIT, "&Exit")
         menuBar.Append(fileMenu, "&File")
         self.SetMenuBar(menuBar)
+        """
 
         # Canvas for drawing signals
         self.canvas = MyGLCanvas(self, devices, monitors)
@@ -421,7 +423,7 @@ class Gui(wx.Frame):
         self.remove_monitor_choice.SetValue(self.sig_mons[0])
 
         # Bind events to widgets
-        self.Bind(wx.EVT_MENU, self.on_menu)
+        #self.Bind(wx.EVT_MENU, self.on_menu)
         self.spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
         #self.spin_cont.Bind(wx.EVT_SPINCTRL, self.on_spin_cont)
 
@@ -497,8 +499,19 @@ class Gui(wx.Frame):
                 return  # the user changed idea...
             new_path = openFileDialog.GetPath()
             print("File chosen=", new_path)
-            self.path = new_path
-            #self.__init__(self.title, self.path, self.names, self.devices, self.network, self.monitors)
+
+            self.Close(True)
+            names = Names()
+            devices = Devices(names)
+            network = Network(names, devices)
+            monitors = Monitors(names, devices, network)
+            scanner = Scanner(new_path, names)
+            parser = Parser(names, devices, network, monitors, scanner)
+            if parser.parse_network():
+                gui = Gui("Logic Simulator", new_path, names, devices, network,
+                          monitors)
+                gui.Show(True)
+
         elif event.GetId() == self.help_id:
             self.reset_screen()
             self.canvas.help_screen = not self.canvas.help_screen
