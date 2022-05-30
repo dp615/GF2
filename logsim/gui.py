@@ -158,7 +158,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def render_display(self, text):
         """Handle all drawing operations."""
-        self.SetCurrent(self.context)
+        #self.SetCurrent(self.context)
         self.canvas_size = self.GetClientSize()
 
         if not self.init:
