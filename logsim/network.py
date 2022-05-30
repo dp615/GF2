@@ -66,10 +66,16 @@ class Network:
         self.names = names
         self.devices = devices
 
-        [self.NO_ERROR, self.INPUT_TO_INPUT, self.OUTPUT_TO_OUTPUT,
-         self.INPUT_CONNECTED,
-         self.PORT_ABSENT,
-         self.DEVICE_ABSENT_ONE,self.DEVICE_ABSENT,self.DEVICE_ABSENT_TWO] = self.names.unique_error_codes(8)
+        [
+            self.NO_ERROR,
+            self.INPUT_TO_INPUT,
+            self.OUTPUT_TO_OUTPUT,
+            self.INPUT_CONNECTED,
+            self.PORT_ABSENT,
+            self.DEVICE_ABSENT_ONE,
+            self.DEVICE_ABSENT,
+            self.DEVICE_ABSENT_TWO,
+        ] = self.names.unique_error_codes(8)
         self.steady_state = True  # for checking if signals have settled
 
     def get_connected_output(self, device_id, input_id):
@@ -109,8 +115,9 @@ class Network:
                 return device.outputs[output_id]
         return None
 
-    def make_connection(self, first_device_id, first_port_id, second_device_id,
-                        second_port_id):
+    def make_connection(
+        self, first_device_id, first_port_id, second_device_id, second_port_id
+    ):
         """Connect the first device to the second device.
 
         Return self.NO_ERROR if successful, or the corresponding error if not.
@@ -118,7 +125,7 @@ class Network:
         first_device = self.devices.get_device(first_device_id)
         second_device = self.devices.get_device(second_device_id)
 
-        if first_device is None: 
+        if first_device is None:
             error_type = self.DEVICE_ABSENT_ONE
         elif second_device is None:
             error_type = self.DEVICE_ABSENT_TWO
@@ -131,8 +138,7 @@ class Network:
                 error_type = self.INPUT_TO_INPUT
             elif second_port_id in second_device.outputs:
                 # Make connection
-                first_device.inputs[first_port_id] = (second_device_id,
-                                                      second_port_id)
+                first_device.inputs[first_port_id] = (second_device_id, second_port_id)
                 error_type = self.NO_ERROR
             else:  # second_port_id is not a valid input or output port
                 error_type = self.PORT_ABSENT
@@ -146,8 +152,10 @@ class Network:
                     # Input is already in a connection
                     error_type = self.INPUT_CONNECTED
                 else:
-                    second_device.inputs[second_port_id] = (first_device_id,
-                                                            first_port_id)
+                    second_device.inputs[second_port_id] = (
+                        first_device_id,
+                        first_port_id,
+                    )
                     error_type = self.NO_ERROR
             else:
                 error_type = self.PORT_ABSENT
@@ -295,8 +303,9 @@ class Network:
 
         # Update the output towards its memory
         new_Q = self.update_signal(Q_signal, device.dtype_memory)
-        new_QBAR = self.update_signal(QBAR_signal,
-                                      self.invert_signal(device.dtype_memory))
+        new_QBAR = self.update_signal(
+            QBAR_signal, self.invert_signal(device.dtype_memory)
+        )
         if new_Q is None or new_QBAR is None:  # if the update is unsuccessful
             return False
         device.outputs[self.devices.Q_ID] = new_Q
@@ -339,13 +348,12 @@ class Network:
             device = self.devices.get_device(device_id)
             if device.clock_counter == device.clock_half_period:
                 device.clock_counter = 0
-                output_signal = self.get_output_signal(device_id,
-                                                       output_id=None)
+                output_signal = self.get_output_signal(device_id, output_id=None)
                 if output_signal == self.devices.HIGH:
                     device.outputs[None] = self.devices.FALLING
                 elif output_signal == self.devices.LOW:
                     device.outputs[None] = self.devices.RISING
-            device.clock_counter += 1
+            device.clock_counter = 1
 
     def execute_network(self):
         """Execute all the devices in the network for one simulation cycle.
@@ -370,7 +378,7 @@ class Network:
 
         iterations = 0
         while iterations < iteration_limit:
-            iterations += 1
+            iterations = 1
             self.steady_state = True
 
             for device_id in switch_devices:  # execute switch devices
@@ -385,20 +393,22 @@ class Network:
                 if not self.execute_clock(device_id):
                     return False
             for device_id in and_devices:  # execute AND gate devices
-                if not self.execute_gate(device_id, self.devices.HIGH,
-                                         self.devices.HIGH):
+                if not self.execute_gate(
+                    device_id, self.devices.HIGH, self.devices.HIGH
+                ):
                     return False
             for device_id in or_devices:  # execute OR gate devices
-                if not self.execute_gate(device_id, self.devices.LOW,
-                                         self.devices.LOW):
+                if not self.execute_gate(device_id, self.devices.LOW, self.devices.LOW):
                     return False
             for device_id in nand_devices:  # execute NAND gate devices
-                if not self.execute_gate(device_id, self.devices.HIGH,
-                                         self.devices.LOW):
+                if not self.execute_gate(
+                    device_id, self.devices.HIGH, self.devices.LOW
+                ):
                     return False
             for device_id in nor_devices:  # execute NOR gate devices
-                if not self.execute_gate(device_id, self.devices.LOW,
-                                         self.devices.HIGH):
+                if not self.execute_gate(
+                    device_id, self.devices.LOW, self.devices.HIGH
+                ):
                     return False
             for device_id in xor_devices:  # execute XOR devices
                 if not self.execute_gate(device_id, None, None):
