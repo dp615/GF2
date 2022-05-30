@@ -285,23 +285,24 @@ class Parser:
     
     def display_monitors_error(self,error_id, monitor_symbol, monitor_output_symbol):
         if error_id == self.monitors.NOT_OUTPUT: 
-            print('ERROR : error message')              
+            print('ERROR : Can only monitor outputs')              
             self.inline_error_message(monitor_symbol)  
             self.error_count += 1
 
         elif error_id == self.monitors.MONITOR_PRESENT: 
-            print('ERROR : error message')              
+            print('ERROR : Output already being monitored')              
             self.inline_error_message(monitor_symbol)  
             self.error_count += 1
 
         elif error_id == self.monitors.network.DEVICE_ABSENT: 
-            print('ERROR : error message')              
+            print('ERROR : Device does not exist')              
             self.inline_error_message(monitor_symbol)  
             self.error_count += 1
         
         else:
             self.error_count += 1
             print('Unregistered error id in parser code', error_id)
+            print(self.monitors.MONITOR_PRESENT)
 
     #Function that can be deleted after testing is done
     def display_symbol(self):
@@ -576,7 +577,7 @@ class Parser:
                 ##
                 if self.error_count == 0 and not self.test:
                     error_type = self.monitors.make_monitor(monitor_symbol.id, monitor_output_symbol.id)
-                    if error_type == self.devices.NO_ERROR:
+                    if error_type == self.monitors.NO_ERROR:
                         pass
                     else:
                         self.display_monitors_error(error_type, 
