@@ -78,7 +78,7 @@ class Parser:
 
     def display_syntax_error(self,error_id):
         """Handles all error messaging for all parser errors"""
-        print(self.error_count + 1, "errors found so far")
+        print("Errors found so far :", self.error_count + 1)
         if error_id == self.EXTRA_SEMICOLON:
             print("SYNTAX ERROR: Extra semicolons added")
             if not self.test:
