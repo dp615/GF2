@@ -145,9 +145,9 @@ class Scanner:
             self.advance()
         return symbol
 
-    def print_location(self,symbol,line):
+    def print_location(self,symbol):
         line=symbol.line
-        position_on_line=symbol.position_on_line
+        position_on_line=symbol.position_in_line
         self.position=self.file.tell()
         self.file.seek(0,0)
         print('Error on line '+ str(line+1))
