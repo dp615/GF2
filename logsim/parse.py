@@ -78,6 +78,7 @@ class Parser:
 
     def display_syntax_error(self,error_id):
         """Handles all error messaging for all parser errors"""
+        print(self.error_count + 1, "errors found so far")
         if error_id == self.EXTRA_SEMICOLON:
             print("SYNTAX ERROR: Extra semicolons added")
             if not self.test:
@@ -223,6 +224,7 @@ class Parser:
 
     def display_devices_error(self,error_id, device_name_symbol, device_type_symbol, device_parameter_symbol):
         """Handles all error messaging for all devices errors"""
+        print(self.error_count + 1, "errors found so far")
         if error_id == self.devices.DEVICE_PRESENT: 
             print('ERROR : Device by this name already exists')              
             self.inline_error_message(device_name_symbol)   
@@ -254,6 +256,7 @@ class Parser:
 
     def display_connect_error(self, error_id, output_device_symbol, output_symbol, input_device_symbol, input_symbol):
         """Handles all error messaging for all network errors"""
+        print(self.error_count + 1, "errors found so far")
         if error_id == self.network.DEVICE_ABSENT_ONE: 
             print('ERROR : Device name does not exist')              
             self.inline_error_message(output_device_symbol)   
@@ -290,6 +293,7 @@ class Parser:
     
     def display_monitors_error(self,error_id, monitor_symbol, monitor_output_symbol):
         """Handles all error messaging for all monitors errors"""
+        print(self.error_count + 1, "errors found so far")
         if error_id == self.monitors.NOT_OUTPUT: 
             print('ERROR : Can only monitor outputs')              
             self.inline_error_message(monitor_symbol)  
