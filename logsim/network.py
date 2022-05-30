@@ -353,7 +353,7 @@ class Network:
                     device.outputs[None] = self.devices.FALLING
                 elif output_signal == self.devices.LOW:
                     device.outputs[None] = self.devices.RISING
-            device.clock_counter = 1
+            device.clock_counter += 1
 
     def execute_network(self):
         """Execute all the devices in the network for one simulation cycle.
