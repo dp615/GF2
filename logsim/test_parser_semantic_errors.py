@@ -55,5 +55,12 @@ def test_parser_semantic_errors_connections(capsys):
     for i in range(6):
         assert  errors[i]   in out
 
-     
+names=Names()
+devices = Devices(names)
+network = Network(names, devices)
+monitors = Monitors(names, devices, network) 
+file_path=r'parser_semantic_error_tests/'+str(12)+'.txt'
+scanner=Scanner(file_path,names)
+parser = Parser(names, devices, network, monitors, scanner)
+parser.parse_network()
 

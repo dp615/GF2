@@ -282,19 +282,19 @@ class Parser:
         else:
             self.error_count += 1
             print('ERROR : Unregistered error id in parser code', error_id)
-    '''
+    
     def display_monitors_error(self,error_id, monitor_symbol, monitor_output_symbol):
-        if error_id == self.monitor.NOT_OUTPUT: 
+        if error_id == self.monitors.NOT_OUTPUT: 
             print('ERROR : error message')              
             self.inline_error_message(monitor_symbol)  
             self.error_count += 1
 
-        elif error_id == self.monitor.MONITOR_PRESENT: 
+        elif error_id == self.monitors.MONITOR_PRESENT: 
             print('ERROR : error message')              
             self.inline_error_message(monitor_symbol)  
             self.error_count += 1
 
-        elif error_id == self.monitor.network.DEVICE_ABSENT: 
+        elif error_id == self.monitors.network.DEVICE_ABSENT: 
             print('ERROR : error message')              
             self.inline_error_message(monitor_symbol)  
             self.error_count += 1
@@ -302,7 +302,7 @@ class Parser:
         else:
             self.error_count += 1
             print('Unregistered error id in parser code', error_id)
-    '''
+
     #Function that can be deleted after testing is done
     def display_symbol(self):
         ll = ['COMMA', 'SEMICOLON', 'EQUALS', 'DASH',
@@ -579,10 +579,9 @@ class Parser:
                     if error_type == self.devices.NO_ERROR:
                         pass
                     else:
-                        #self.display_monitors_error(error_type, 
+                        self.display_monitors_error(error_type, 
                                                     monitor_symbol, 
                                                     monitor_output_symbol)
-                        print('1')
                 ##
             elif not expect_semicolon:
                 pass
