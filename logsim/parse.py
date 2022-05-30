@@ -72,9 +72,9 @@ class Parser:
     def inline_error_message(self, symbol = None):
         """Calls to the scanner to print an error message at the right location"""
         if not symbol:
-            self.scanner.print_location(self.current_symbol.line,self.current_symbol.position_in_line)
+            self.scanner.print_location(self.current_symbol)
         else:
-            self.scanner.print_location(symbol.line,symbol.position_in_line)
+            self.scanner.print_location(symbol)
 
     def display_syntax_error(self,error_id):
         """Handles all error messaging for all parser errors"""
@@ -325,6 +325,8 @@ class Parser:
         """Reaches a safe symbol to resume parsing after an error
         
         Keyword Argument
+        in_block = True if stopping symbol is mainly semicolon
+                   False if stopping symbol is mainly END
         """
         safe_start = False
         while not safe_start:
@@ -367,6 +369,7 @@ class Parser:
         return
 
     def parse_devices(self):
+        """Parses the 'DEVICES' block of definition file"""
         self.parse_completion[0] = True
         while self.current_symbol.type == self.scanner.NAME:
             ###
@@ -450,6 +453,7 @@ class Parser:
             self.parse_devices()
 
     def parse_connections(self):
+        """Parses the 'CONNECTIONS' block of definition file"""
         self.parse_completion[1] = True
         while self.current_symbol.type == self.scanner.NAME:
             ##
@@ -552,6 +556,7 @@ class Parser:
             self.parse_connections()
 
     def parse_monitor(self):
+        """Parses the 'MONITORS' block of definition file"""
         self.parse_completion[2] = True
         while self.current_symbol.type == self.scanner.NAME:
             ##
