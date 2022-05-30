@@ -27,8 +27,8 @@ class Symbol:
         """Initialise symbol properties."""
         self.type = None
         self.id = None
-        self.line=None
-        self.position_in_line=None
+        self.line = None
+        self.position_in_line = None
 
 
 class Scanner:
@@ -61,105 +61,119 @@ class Scanner:
 
         self.names = names
 
-        self.symbol_type_list = [self.COMMA, self.SEMICOLON, self.EQUALS, self.DASH,
-        self.KEYWORD, self.NUMBER, self.NAME, self.DOT, self.EOF] = range(9)
+        self.symbol_type_list = [
+            self.COMMA,
+            self.SEMICOLON,
+            self.EQUALS,
+            self.DASH,
+            self.KEYWORD,
+            self.NUMBER,
+            self.NAME,
+            self.DOT,
+            self.EOF,
+        ] = range(9)
 
-        self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITOR", "MAIN_END","END"]
+        self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITOR", "MAIN_END", "END"]
 
-        [self.DEVICES_ID, self.CONNECT_ID, self.MONITOR_ID,self.MAIN_END_ID,
-        self.END_ID] = self.names.lookup(self.keywords_list)
+        [
+            self.DEVICES_ID,
+            self.CONNECT_ID,
+            self.MONITOR_ID,
+            self.MAIN_END_ID,
+            self.END_ID,
+        ] = self.names.lookup(self.keywords_list)
 
         self.current_character = " "
-        self.position=0
-        self.line=0
-        self.position_in_line=0
+        self.position = 0
+        self.line = 0
+        self.position_in_line = 0
 
     def skip_spaces_and_comments(self):
-        #skip white spaces and comments
-        no_of_hashtags=0
-        while self.current_character.isspace()==True or no_of_hashtags %2 != 0 or self.current_character=='#':
-            if self.current_character=='#':
-                no_of_hashtags+=1
+        # skip white spaces and comments
+        no_of_hashtags = 0
+        while (
+            self.current_character.isspace() == True
+            or no_of_hashtags % 2 != 0
+            or self.current_character == "#"
+        ):
+            if self.current_character == "#":
+                no_of_hashtags += 1
             self.advance()
 
     def get_name(self):
-        name=''
-        while self.current_character.isalnum()==True or self.current_character=='_':
-            name=name+self.current_character
+        name = ""
+        while self.current_character.isalnum() == True or self.current_character == "_":
+            name = name + self.current_character
             self.advance()
         return name
 
-
     def get_number(self):
-        number=''
-        while self.current_character.isdigit()==True:
-            number=number+self.current_character
+        number = ""
+        while self.current_character.isdigit() == True:
+            number = number + self.current_character
             self.advance()
         return int(number)
 
-
     def advance(self):
-        self.current_character=self.file.read(1)  
-        self.position_in_line+=1
-        if self.current_character=='\n':
-            self.line+=1
-            self.position_in_line=-1 
-            
+        self.current_character = self.file.read(1)
+        self.position_in_line += 1
+        if self.current_character == "\n":
+            self.line += 1
+            self.position_in_line = -1
 
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
 
         symbol = Symbol()
-        
-        self.skip_spaces_and_comments() # current character now not whitespace
-        symbol.position_in_line=self.position_in_line
-        symbol.line=self.line
-        if self.current_character.isalpha(): # name
+
+        self.skip_spaces_and_comments()  # current character now not whitespace
+        symbol.position_in_line = self.position_in_line
+        symbol.line = self.line
+        if self.current_character.isalpha():  # name
             name_string = self.get_name()
             if name_string in self.keywords_list:
                 symbol.type = self.KEYWORD
             else:
                 symbol.type = self.NAME
             [symbol.id] = self.names.lookup([name_string])
-        elif self.current_character.isdigit(): # number
+        elif self.current_character.isdigit():  # number
             symbol.id = self.get_number()
             symbol.type = self.NUMBER
-        elif self.current_character == "=": # punctuation
+        elif self.current_character == "=":  # punctuation
             symbol.type = self.EQUALS
             self.advance()
         elif self.current_character == ",":
-            symbol.type =self.COMMA
+            symbol.type = self.COMMA
             self.advance()
         elif self.current_character == ";":
-            symbol.type =self.SEMICOLON
+            symbol.type = self.SEMICOLON
             self.advance()
         elif self.current_character == "-":
-            symbol.type =self.DASH
+            symbol.type = self.DASH
             self.advance()
         elif self.current_character == ".":
-            symbol.type =self.DOT
+            symbol.type = self.DOT
             self.advance()
-        elif self.current_character == "": # end of file
+        elif self.current_character == "":  # end of file
             symbol.type = self.EOF
-        else: # not a valid character
+        else:  # not a valid character
             self.advance()
         return symbol
 
-    def print_location(self,symbol):
-        line=symbol.line
-        position_on_line=symbol.position_in_line
-        self.position=self.file.tell()
-        self.file.seek(0,0)
-        print('Error on line '+ str(line+1))
-        line_to_print=self.file.readlines()[line]
-        print(line_to_print,end='')
-        if line_to_print[-1] != '\n':
-            print('')
-        string=''
+    def print_location(self, symbol):
+        line = symbol.line
+        position_on_line = symbol.position_in_line
+        self.position = self.file.tell()
+        self.file.seek(0, 0)
+        print("Error on line " + str(line + 1))
+        line_to_print = self.file.readlines()[line]
+        print(line_to_print, end="")
+        if line_to_print[-1] != "\n":
+            print("")
+        string = ""
         for i in range(position_on_line):
-            string=string+' '
-        string=string+'^'
+            string = string + " "
+        string = string + "^"
         print(string)
         self.file.seek(self.position)
-
 
