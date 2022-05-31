@@ -261,96 +261,105 @@ class Parser:
             self.error_count += 1
             print('Unregistered error id in parser code', error_id)
 
-    def display_devices_error(self,error_id, device_name_symbol, device_type_symbol, device_parameter_symbol):
+    def display_devices_error(
+        self, error_id, device_name_symbol, device_type_symbol, device_parameter_symbol
+    ):
         """Handles all error messaging for all devices errors"""
         print("Errors found so far :", self.error_count + 1)
-        if error_id == self.devices.DEVICE_PRESENT: 
-            print('ERROR : Device by this name already exists')              
-            self.inline_error_message(device_name_symbol)   
+        if error_id == self.devices.DEVICE_PRESENT:
+            print("ERROR : Device by this name already exists")
+            self.inline_error_message(device_name_symbol)
             self.error_count += 1
 
-        elif error_id == self.devices.NO_QUALIFIER: 
-            print('ERROR : No qualifier given and device type requires one')              
-            self.inline_error_message(device_type_symbol)   
+        elif error_id == self.devices.NO_QUALIFIER:
+            print("ERROR : No qualifier given and device type requires one")
+            self.inline_error_message(device_type_symbol)
             self.error_count += 1
 
         elif error_id == self.devices.INVALID_QUALIFIER:
-            print('ERROR : Qualifier is invalid for device type')              
-            self.inline_error_message(device_parameter_symbol)   
+            print("ERROR : Qualifier is invalid for device type")
+            self.inline_error_message(device_parameter_symbol)
             self.error_count += 1
 
-        elif error_id == self.devices.QUALIFIER_PRESENT: 
-            print('ERROR : Qualifier given but one was not allowed with device type')              
-            self.inline_error_message(device_parameter_symbol)   
+        elif error_id == self.devices.QUALIFIER_PRESENT:
+            print("ERROR : Qualifier given but one was not allowed with device type")
+            self.inline_error_message(device_parameter_symbol)
             self.error_count += 1
 
-        elif error_id == self.devices.BAD_DEVICE: 
-            print('ERROR : Device Type given is not a valid device type')             
-            self.inline_error_message(device_type_symbol)   
+        elif error_id == self.devices.BAD_DEVICE:
+            print("ERROR : Device Type given is not a valid device type")
+            self.inline_error_message(device_type_symbol)
             self.error_count += 1
-        
+
         else:
             self.error_count += 1
-            print('ERROR : Unregistered error id in parser code', error_id)
+            print("ERROR : Unregistered error id in parser code", error_id)
 
-    def display_connect_error(self, error_id, output_device_symbol, output_symbol, input_device_symbol, input_symbol):
+    def display_connect_error(
+        self,
+        error_id,
+        output_device_symbol,
+        output_symbol,
+        input_device_symbol,
+        input_symbol,
+    ):
         """Handles all error messaging for all network errors"""
         print("Errors found so far :", self.error_count + 1)
-        if error_id == self.network.DEVICE_ABSENT_ONE: 
-            print('ERROR : Device name does not exist')              
-            self.inline_error_message(output_device_symbol)   
+        if error_id == self.network.DEVICE_ABSENT_ONE:
+            print("ERROR : Device name does not exist")
+            self.inline_error_message(output_device_symbol)
             self.error_count += 1
 
-        elif error_id == self.network.DEVICE_ABSENT_TWO: 
-            print('ERROR : Device name does not exist')              
-            self.inline_error_message(input_device_symbol)   
+        elif error_id == self.network.DEVICE_ABSENT_TWO:
+            print("ERROR : Device name does not exist")
+            self.inline_error_message(input_device_symbol)
             self.error_count += 1
 
-        elif error_id == self.network.INPUT_CONNECTED: 
-            print('ERROR : Input is already connected')              
-            self.inline_error_message(input_symbol)   
+        elif error_id == self.network.INPUT_CONNECTED:
+            print("ERROR : Input is already connected")
+            self.inline_error_message(input_symbol)
             self.error_count += 1
 
-        elif error_id == self.network.INPUT_TO_INPUT: 
-            print('ERROR : Cannot connect an input to an input')              
-            self.inline_error_message(output_symbol)   
+        elif error_id == self.network.INPUT_TO_INPUT:
+            print("ERROR : Cannot connect an input to an input")
+            self.inline_error_message(output_symbol)
             self.error_count += 1
 
-        elif error_id == self.network.PORT_ABSENT: 
-            print('ERROR : Port does not exist')              
-            self.inline_error_message(output_device_symbol)   
+        elif error_id == self.network.PORT_ABSENT:
+            print("ERROR : Port does not exist")
+            self.inline_error_message(output_device_symbol)
             self.error_count += 1
 
-        elif error_id == self.network.OUTPUT_TO_OUTPUT: 
-            print('ERROR : Cannot Connect output to output')              
-            self.inline_error_message(input_device_symbol)   
+        elif error_id == self.network.OUTPUT_TO_OUTPUT:
+            print("ERROR : Cannot Connect output to output")
+            self.inline_error_message(input_device_symbol)
             self.error_count += 1
 
         else:
             self.error_count += 1
-            print('ERROR : Unregistered error id in parser code', error_id)
-    
-    def display_monitors_error(self,error_id, monitor_symbol, monitor_output_symbol):
+            print("ERROR : Unregistered error id in parser code", error_id)
+
+    def display_monitors_error(self, error_id, monitor_symbol, monitor_output_symbol):
         """Handles all error messaging for all monitors errors"""
         print("Errors found so far :", self.error_count + 1)
-        if error_id == self.monitors.NOT_OUTPUT: 
-            print('ERROR : Can only monitor outputs')              
-            self.inline_error_message(monitor_symbol)  
+        if error_id == self.monitors.NOT_OUTPUT:
+            print("ERROR : Can only monitor outputs")
+            self.inline_error_message(monitor_symbol)
             self.error_count += 1
 
-        elif error_id == self.monitors.MONITOR_PRESENT: 
-            print('ERROR : Output already being monitored')              
-            self.inline_error_message(monitor_symbol)  
+        elif error_id == self.monitors.MONITOR_PRESENT:
+            print("ERROR : Output already being monitored")
+            self.inline_error_message(monitor_symbol)
             self.error_count += 1
 
-        elif error_id == self.monitors.network.DEVICE_ABSENT: 
-            print('ERROR : Device does not exist')              
-            self.inline_error_message(monitor_symbol)  
+        elif error_id == self.monitors.network.DEVICE_ABSENT:
+            print("ERROR : Device does not exist")
+            self.inline_error_message(monitor_symbol)
             self.error_count += 1
-        
+
         else:
             self.error_count += 1
-            print('Unregistered error id in parser code', error_id)
+            print("Unregistered error id in parser code", error_id)
             print(self.monitors.MONITOR_PRESENT)
 
     def next_symbol(self):
