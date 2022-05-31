@@ -268,7 +268,7 @@ class Parser:
         device_type_symbol,
         device_parameter_symbol
     ):
-        """Handles all error messaging for all devices errors"""
+        """Return error messages for devices errors."""
         print("Errors found so far :", self.error_count + 1)
         if error_id == self.devices.DEVICE_PRESENT:
             print("ERROR : Device by this name already exists")
@@ -307,7 +307,7 @@ class Parser:
         input_device_symbol,
         input_symbol,
     ):
-        """Handles all error messaging for all network errors"""
+        """ Return error messages for connection errors."""
         print("Errors found so far :", self.error_count + 1)
         if error_id == self.network.DEVICE_ABSENT_ONE:
             print("ERROR : Device name does not exist")
@@ -349,7 +349,7 @@ class Parser:
         monitor_symbol,
         monitor_output_symbol
         ):
-        """Handles all error messaging for all monitors errors"""
+        """Return error messages for monitor errors."""
         print("Errors found so far :", self.error_count + 1)
         if error_id == self.monitors.NOT_OUTPUT:
             print("ERROR : Can only monitor outputs")

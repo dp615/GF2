@@ -10,7 +10,6 @@ Names - maps variable names and string names to unique integers.
 
 
 class Names:
-
     """Map variable names and string names to unique integers.
 
     This class deals with storing grammatical keywords and user-defined words,
@@ -40,13 +39,11 @@ class Names:
 
     def __init__(self):
         """Initialise names list."""
-
         self.names = []
         self.error_code_count = 0  # how many error codes have been declared
 
     def unique_error_codes(self, num_error_codes):
         """Return a list of unique integer error codes."""
-
         if not isinstance(num_error_codes, int):
             raise TypeError('Expected num_error_codes to be an integer.'
                             )
@@ -59,7 +56,6 @@ class Names:
 
         If the name string is not present in the names list, return None.
         """
-
         if not isinstance(name_string, str):
             raise TypeError('argument should be a string')
         for i in range(len(self.names)):
@@ -72,7 +68,6 @@ class Names:
 
         If the name string is not present in the names list, add it.
         """
-
         if not isinstance(name_string_list, list):
             raise TypeError('argument must be a list')
         for i in range(len(name_string_list)):
@@ -96,12 +91,10 @@ class Names:
 
         If the name_id is not an index in the names list, return None.
         """
-
         if not isinstance(name_id, int):
             raise TypeError('Please provide a integer argument')
         if name_id < 0:
             raise ValueError('integer must be non-negative')
-        try:
+        if name_id < len(self.names):
             return self.names[name_id]
-        except:
-            return None
+        return None

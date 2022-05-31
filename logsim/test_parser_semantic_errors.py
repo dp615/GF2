@@ -9,11 +9,12 @@ from monitors import Monitors
 
 
 def test_parser_semantic_errors_devices(capsys):
+    """Check the correct errors are produced for faulty device sections."""
     errors = [
         "Device by this name already exists",
         "Qualifier is invalid for device type",
         "No qualifier given and device type requires one",
-        "Qualifier given but one was not allowed with device type",
+        "Qualifier not valid with device type",
         "Device Type given is not a valid device type",
     ]
     for i in range(5):
@@ -32,6 +33,9 @@ def test_parser_semantic_errors_devices(capsys):
 
 
 def test_parser_semantic_errors_connections(capsys):
+    """
+    Check the correct errors are produced for faulty connections sections.
+    """
     errors = [
         "ERROR : Device name does not exist",
         "ERROR : Device name does not exist",
@@ -57,6 +61,7 @@ def test_parser_semantic_errors_connections(capsys):
 
 
 def test_parser_semantic_errors_monitor(capsys):
+    """Check the correct errors are produced for faulty monitor sections."""
     errors = [
         "ERROR : Can only monitor outputs",
         "ERROR : Output already being monitored",

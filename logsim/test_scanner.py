@@ -4,6 +4,7 @@ from names import Names
 
 
 def test_scanner():
+    '''Check scanner correctly returns symbols for a text file.'''
     names = Names()
     scanner = Scanner(r"scanner_test_file.txt", names)
     types = [1, 6, 0, 6, 5, 3, 5, 2, 6, 6, 3, 6, 4, 7, 8]

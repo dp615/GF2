@@ -11,7 +11,6 @@ Symbol - encapsulates a symbol and stores its properties.
 
 
 class Symbol:
-
     """Encapsulate a symbol and store its properties.
 
     Parameters
@@ -32,7 +31,6 @@ class Symbol:
 
 
 class Scanner:
-
     """Read circuit definition file and translate the characters into symbols.
 
     Once supplied with the path to a valid definition file, the scanner
@@ -95,7 +93,7 @@ class Scanner:
         self.position_in_line = 0
 
     def skip_spaces_and_comments(self):
-        # skip white spaces and comments
+        """Skip white spaces and comments."""
         no_of_hashtags = 0
         while (
             self.current_character.isspace()
@@ -107,6 +105,7 @@ class Scanner:
             self.advance()
 
     def get_name(self):
+        """Return the next name in teh file as a string."""
         name = ""
         while (self.current_character.isalnum() or
                 self.current_character == "_"):
@@ -115,6 +114,7 @@ class Scanner:
         return name
 
     def get_number(self):
+        """Return the next number in the file."""
         number = ""
         while self.current_character.isdigit():
             number = number + self.current_character
@@ -122,6 +122,7 @@ class Scanner:
         return int(number)
 
     def advance(self):
+        """Read another character in the file."""
         self.current_character = self.file.read(1)
         self.position_in_line += 1
         if self.current_character == "\n":
@@ -130,9 +131,7 @@ class Scanner:
 
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
-
         symbol = Symbol()
-
         self.skip_spaces_and_comments()  # current character now not whitespace
         symbol.position_in_line = self.position_in_line
         symbol.line = self.line
@@ -168,6 +167,7 @@ class Scanner:
         return symbol
 
     def print_location(self, symbol):
+        """Print where the line a symbol is on with a caret."""
         line = symbol.line
         position_on_line = symbol.position_in_line
         self.position = self.file.tell()

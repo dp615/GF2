@@ -3,6 +3,7 @@ from names import Names
 
 
 def test_names_lookup():
+    '''Check Lookup function performs correctly.'''
     names = Names()
     assert names.lookup(['craft', 'arctic']) == [0, 1]
     assert names.lookup(['arctic', 'town', 'craft']) == [1, 2, 0]
@@ -11,6 +12,7 @@ def test_names_lookup():
 
 
 def test_names_lookup_errors():
+    '''Check Lookup function returns correct errors.'''
     names = Names()
     with pytest.raises(TypeError):
         names.lookup(1.4)
@@ -21,6 +23,7 @@ def test_names_lookup_errors():
 
 
 def test_names_query():
+    '''Check query function performs correctly.'''
     names = Names()
     names.lookup(['craft', 'arctic'])
     names.lookup(['arctic', 'town', 'craft'])
@@ -30,6 +33,7 @@ def test_names_query():
 
 
 def test_names_query_errors():
+    '''Check query function returns correct errors.'''
     names = Names()
     names.lookup(['craft', 'arctic', 'town'])
     with pytest.raises(TypeError):
@@ -41,6 +45,7 @@ def test_names_query_errors():
 
 
 def test_names_get_string():
+    '''Check get_string function performs correctly.'''
     names = Names()
     names.lookup(['craft', 'arctic', 'town'])
     assert names.get_name_string(2) == 'town'
@@ -49,6 +54,7 @@ def test_names_get_string():
 
 
 def test_names_get_string_errors():
+    '''Check get_string function returns correct errors.'''
     names = Names()
     with pytest.raises(TypeError):
         names.get_name_string('goat')
