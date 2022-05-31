@@ -307,7 +307,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                 self.help_text = f.readlines()
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        self.render_text("".join(self.help_text), 10, self.canvas_size[1] - 20)
+        self.render_text('Help Page:', 10, self.canvas_size[1] - 20, True)
+        self.render_text("".join(self.help_text), 10, self.canvas_size[1] - 30)
         GL.glFlush()
         self.SwapBuffers()
 
@@ -329,7 +330,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             return ''
 
         mon_name = self.parent.sig_mons[0]
-        self.render_text('Monitor to expand: '+mon_name, 10, self.canvas_size[1]-50)
+        self.render_text('Monitor to expand: '+mon_name+'   (top monitor on home page)', 10, self.canvas_size[1]-50)
         bool_exp = self.parent.graph.create_boolean_from_monitor(mon_name)
         if not bool_exp:
             self.render_text('Flip-Flop or circular definition in graph, try a different monitor or logic circuit', 10, self.canvas_size[1] - 90)
