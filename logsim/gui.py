@@ -11,7 +11,6 @@ Gui - configures the main window and all the widgets.
 import wx
 import wx.glcanvas as wxcanvas
 from OpenGL import GL, GLUT
-import os
 
 from names import Names
 from devices import Devices
@@ -19,6 +18,7 @@ from network import Network
 from monitors import Monitors
 from scanner import Scanner
 from parse import Parser
+from graph import Graph
 
 
 class MyGLCanvas(wxcanvas.GLCanvas):
@@ -67,7 +67,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.monitors = monitors
         self.devices = devices
         self.help_text = []
-        self.help_screen = False
+
+        # (home, help, cnf)
+        self.screen_type = (1, 0, 0)
 
         # Set colour palette
         self.bkgd_colour = (0.3, 0.3, 0.3)
@@ -193,10 +195,12 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.SwapBuffers()
 
     def render(self, text):
-        if self.help_screen:
+        if self.screen_type[1]:
             self.render_help()
-        else:
+        elif self.screen_type[0]:
             self.render_display(text)
+        else:
+            self.render_cnf()
 
     def on_paint(self, event):
         """Handle the paint event."""
@@ -307,6 +311,45 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glFlush()
         self.SwapBuffers()
 
+    def render_cnf(self):
+        self.canvas_size = self.GetClientSize()
+
+        if not self.init:
+            # Configure the viewport, modelview and projection matrices
+            self.init_gl()
+            self.init = True
+
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+        self.render_text('Conjunctive Normal Form Conveter:', 10, self.canvas_size[1]-20, True)
+
+        if len(self.parent.sig_mons) == 0:
+            self.render_text('Please monitor at least one signal', 10, self.canvas_size[1]-50)
+            GL.glFlush()
+            self.SwapBuffers()
+            return ''
+
+        mon_name = self.parent.sig_mons[0]
+        self.render_text('Monitor to expand: '+mon_name, 10, self.canvas_size[1]-50)
+        bool_exp = self.parent.graph.create_boolean_from_monitor(mon_name)
+        if not bool_exp:
+            self.render_text('Flip-Flop or circular definition in graph, try a different monitor or logic circuit', 10, self.canvas_size[1] - 90)
+            GL.glFlush()
+            self.SwapBuffers()
+            return ''
+
+        self.render_text(bool_exp+'\t\t\t(boolean expression) \t\t (XOR = *,  AND = ., OR = +, NOT = ¬)', 10, self.canvas_size[1] - 90)
+
+        bool_exp2 = self.parent.graph.expand_xors(bool_exp)
+        self.render_text(bool_exp2+'\t\t\t(expand XORs to ANDs/ORs)', 10, self.canvas_size[1] - 130)
+
+        bool_exp3 = self.parent.graph.distribute_ors(bool_exp2)
+        self.render_text(bool_exp3+'\t\t\t(distribute ORs over ANDs)', 10, self.canvas_size[1] - 170)
+
+        bool_exp4 = self.parent.graph.clean_up_to_cnf(bool_exp3)
+        self.render_text(bool_exp4[1:-1]+'\t\t\t(cleanup brackets (CNF))', 10, self.canvas_size[1] - 210)
+
+        GL.glFlush()
+        self.SwapBuffers()
 
 class Gui(wx.Frame):
     """Configure the main window and all the widgets.
@@ -351,6 +394,7 @@ class Gui(wx.Frame):
         self.open_id = 998
         self.help_id = 997
         self.home_id = 996
+        self.cnf_id = 995
 
         """
         # Configure the file menu
@@ -377,6 +421,7 @@ class Gui(wx.Frame):
         self.devices = devices
         self.network = network
         self.monitors = monitors
+        self.graph = Graph(self.names, self.devices, self.network, self.monitors)
 
         self.switch_ids = self.devices.find_devices(self.devices.SWITCH)
         self.switch_names = [self.names.get_name_string(i) for i in self.switch_ids]
@@ -387,6 +432,8 @@ class Gui(wx.Frame):
         toolbar = self.CreateToolBar()
         myimage = wx.ArtProvider.GetBitmap(wx.ART_GO_HOME, wx.ART_TOOLBAR)
         toolbar.AddTool(self.home_id, "Home", myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_EXECUTABLE_FILE, wx.ART_TOOLBAR)
+        toolbar.AddTool(self.cnf_id, "CNF", myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR)
         toolbar.AddTool(self.open_id, "Open file", myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_HELP, wx.ART_TOOLBAR)
@@ -511,14 +558,17 @@ class Gui(wx.Frame):
                 gui = Gui("Logic Simulator", new_path, names, devices, network,
                           monitors)
                 gui.Show(True)
-
         elif event.GetId() == self.help_id:
             self.reset_screen()
-            self.canvas.help_screen = not self.canvas.help_screen
+            self.canvas.screen_type = (0, 1, 0)
             self.canvas.render('')
         elif event.GetId() == self.home_id:
             self.reset_screen()
-            self.canvas.help_screen = False
+            self.canvas.screen_type = (1, 0, 0)
+            self.canvas.render('')
+        elif event.GetId() == self.cnf_id:
+            self.reset_screen()
+            self.canvas.screen_type = (0, 0, 1)
             self.canvas.render('')
 
     def on_menu(self, event):
@@ -552,12 +602,6 @@ class Gui(wx.Frame):
         """Handle the event when the user changes the spin control value."""
         spin_value = self.spin.GetValue()
         text = "".join(["New spin control value: ", str(spin_value)])
-        self.canvas.render(text)
-
-    def on_spin_cont(self, event):
-        """Handle the event when the user changes the spin control value."""
-        spin_value = self.spin_cont.GetValue()
-        text = "".join(["New continue spin control value: ", str(spin_value)])
         self.canvas.render(text)
 
     def on_run_button(self, event):
@@ -656,71 +700,3 @@ class Gui(wx.Frame):
         self.canvas.render('')
 
 
-class Graph():
-    """Defining the logsim graph (assuming it's already been parsed)"""
-    def __init__(self, names, devices, network, monitors):
-        self.names = names
-        self.devices = devices
-        self.network = network
-        self.monitors = monitors
-
-    def create_boolean_from_monitor(self, monitor_name):
-        """Generate boolean expression for monitor
-
-        will raise error if any circularity included (including flip-flops)"""
-        mon_id = self.names.query(monitor_name)
-        mon_dev = self.devices.get_device(mon_id)
-
-        dev_list = self.devices.find_devices()
-
-        # Check no flip flops / other 2-output devices
-        for dev in dev_list:
-            dev = self.devices.get_device(dev)
-            if len(dev.outputs) != 1 or len(dev.inputs) > 2:
-                print(dev.outputs)
-                print('Flip-Flop/Not etc. present')
-                return ''
-
-        # for ref: dev.inputs = {input_id: (connected_output_device_id, connected_output_port_id)}
-
-        def dfs(dev):
-            dev_ins = dev.inputs
-            if len(dev_ins) == 0:
-                return self.names.get_name_string(dev.device_id)
-            if len(dev_ins) == 1:  # not gate
-                [out_dev_id] = dev_ins
-                next_dev = self.devices.get_device(dev_ins[out_dev_id][0])
-                return '¬('+dfs(next_dev)+')'
-            i, j = dev_ins
-            i_dev = self.devices.get_device(dev_ins[i][0])
-            j_dev = self.devices.get_device(dev_ins[j][0])
-            middle_char = ['.', '+', '.', '+', '*'][dev.device_kind]
-            if dev.device_kind in (2, 3):
-                return '¬(' + dfs(i_dev) + middle_char + dfs(j_dev) + ')'
-            else:
-                return '(' + dfs(i_dev) + middle_char + dfs(j_dev) + ')'
-
-        return dfs(mon_dev)
-
-
-
-
-
-path = 'correct_example.txt'
-names = Names()
-devices = Devices(names)
-network = Network(names, devices)
-monitors = Monitors(names, devices, network)
-
-scanner = Scanner(path, names)
-parser = Parser(names, devices, network, monitors, scanner)
-
-#app = wx.App()
-#gui = Gui("Logic Simulator", path, names, devices, network, monitors)
-#gui.Show(True)
-#app.MainLoop()
-
-parser.parse_network()
-graph = Graph(names, devices, network, monitors)
-print(names.names)
-graph.create_boolean_from_monitor('G3')
