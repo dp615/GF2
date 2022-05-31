@@ -2,7 +2,8 @@ import pytest
 from scanner import Scanner
 from names import Names
 from parse import Parser
-from devices import Device, Devices
+from devices import Device
+from devices import Devices
 from network import Network
 from monitors import Monitors
 

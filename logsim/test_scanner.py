@@ -1,5 +1,6 @@
-from scanner import *
-from names import *
+from scanner import Scanner
+from scanner import Symbol
+from names import Names
 
 def test_scanner():
     names=Names()

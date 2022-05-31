@@ -81,11 +81,12 @@ class Names:
         output = []
         for i in range(len(name_string_list)):
             found = False
-            for j in range(len(self.names)):  # NB this works even when new string in list twice
+            for j in range(len(self.names)):
+                # NB this works even when new string in list twice
                 if self.names[j] == name_string_list[i]:
                     output.append(j)
                     found = True
-            if found == False:
+            if found is False:
                 self.names.append(name_string_list[i])
                 output.append(len(self.names) - 1)
         return output

@@ -73,7 +73,13 @@ class Scanner:
             self.EOF,
         ] = range(9)
 
-        self.keywords_list = ["DEVICES", "CONNECTIONS", "MONITOR", "MAIN_END", "END"]
+        self.keywords_list = [
+            "DEVICES",
+            "CONNECTIONS",
+            "MONITOR",
+            "MAIN_END",
+            "END"
+            ]
 
         [
             self.DEVICES_ID,
@@ -92,7 +98,7 @@ class Scanner:
         # skip white spaces and comments
         no_of_hashtags = 0
         while (
-            self.current_character.isspace() == True
+            self.current_character.isspace()
             or no_of_hashtags % 2 != 0
             or self.current_character == "#"
         ):
@@ -102,14 +108,15 @@ class Scanner:
 
     def get_name(self):
         name = ""
-        while self.current_character.isalnum() == True or self.current_character == "_":
+        while (self.current_character.isalnum() or
+                self.current_character == "_"):
             name = name + self.current_character
             self.advance()
         return name
 
     def get_number(self):
         number = ""
-        while self.current_character.isdigit() == True:
+        while self.current_character.isdigit():
             number = number + self.current_character
             self.advance()
         return int(number)
@@ -176,4 +183,3 @@ class Scanner:
         string = string + "^"
         print(string)
         self.file.seek(self.position)
-
