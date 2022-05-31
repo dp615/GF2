@@ -26,7 +26,7 @@ def test_names_query():
     names.lookup(['arctic', 'town', 'craft'])
     names.lookup(['craft'])
     assert names.query('arctic') == 1
-    assert names.query('ladel') == None
+    assert names.query('ladel') is None
 
 
 def test_names_query_errors():
@@ -45,7 +45,7 @@ def test_names_get_string():
     names.lookup(['craft', 'arctic', 'town'])
     assert names.get_name_string(2) == 'town'
     assert names.get_name_string(0) == 'craft'
-    assert names.get_name_string(3) == None
+    assert names.get_name_string(3) is None
 
 
 def test_names_get_string_errors():
