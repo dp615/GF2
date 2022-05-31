@@ -11,17 +11,37 @@ from parse import Parser
 """
 
 class Graph():
-    """Defining the logsim graph (assuming it's already been parsed)"""
+    """Define the logsim graph and make convert to conjunctive-normal-form
+
+    This class contains the methods for taking the parsed network and converting
+    to conjunctive-normal-form in anticipation of adding a SAT-solver if relevant.
+
+    Parameters:
+    -----------
+    names: instance of the names.Names() class.
+    devices: instance of the devices.Devices() class.
+    network: instance of the network.Network() class.
+    monitors: instance of the monitors.Monitors() class.
+
+    Public Methods:
+    ---------------
+    create_boolean_from_monitor(self, monitor_name): Produces a boolean
+                            expression string from the network in-use
+                            at the indicated monitor.
+
+    """
     def __init__(self, names, devices, network, monitors):
+        """Initialise the graph and graph dependencies."""
         self.names = names
         self.devices = devices
         self.network = network
         self.monitors = monitors
 
     def create_boolean_from_monitor(self, monitor_name):
-        """Generate boolean expression for monitor
+        """Generate boolean expression for monitor.
 
-        will return False if any circularity included (including flip-flops)"""
+        Will return False if any circularity included (including flip-flops).
+        """
         mon_id = self.names.query(monitor_name)
         mon_dev = self.devices.get_device(mon_id)
 
@@ -35,27 +55,51 @@ class Graph():
                 print('Flip-Flop/Not etc. present')
                 return False
 
+        dfs_calls = 0
+
         def dfs(dev):
             """Doesn't yet deal with circular definitions"""
+
+            # Make sure it doesn't get caught in a loop (circular definition)
+            global dfs_calls
+            dfs_calls += 1
+            if dfs_calls > 500:
+                return '@'
+
+            # Otherwise recursively build boolean expression string from device inputs
             dev_ins = dev.inputs
+
+            # Check if device is a switch
             if len(dev_ins) == 0:
                 return self.names.get_name_string(dev.device_id)
-            if len(dev_ins) == 1:  # not gate
+
+            # Check if device is a not gate
+            if len(dev_ins) == 1:
                 [out_dev_id] = dev_ins
                 next_dev = self.devices.get_device(dev_ins[out_dev_id][0])
                 return '¬('+dfs(next_dev)+')'
+
+            # Assume gate is one of AND, OR, NAND, NOR, XOR. Get input device IDs
             i, j = dev_ins
+
+            # Get device objects
             i_dev = self.devices.get_device(dev_ins[i][0])
             j_dev = self.devices.get_device(dev_ins[j][0])
+
+            # Produce string boolean expression calling dfs to build the expression below.
             middle_char = ['.', '+', '.', '+', '*'][dev.device_kind]
             if dev.device_kind in (2, 3):
                 return '¬(' + dfs(i_dev) + middle_char + dfs(j_dev) + ')'
             else:
                 return '(' + dfs(i_dev) + middle_char + dfs(j_dev) + ')'
 
-        return dfs(mon_dev)
+        bool_exp = dfs(mon_dev)
+        if '@' in bool_exp:
+            return False
+        return bool_exp
 
     def get_sub_exp_end(self, bool_exp, i, left=True):
+        """Get the end of the sub-expression."""
         if left:
             if bool_exp[i-1] == ')':
                 j = 2
@@ -88,7 +132,7 @@ class Graph():
             return k - 1
 
     def expand_xors(self, bool_exp):
-        """Expands XORs in a given expression into ANDs/ORs"""
+        """Expand XORs in a given expression into ANDs/ORs."""
         n_xor = bool_exp.count('*')
         n = len(bool_exp)
         for w in range(n_xor):
@@ -102,7 +146,7 @@ class Graph():
         return bool_exp
 
     def distribute_ors(self, bool_exp):
-        """Distribute ORs over ANDs in pursuit of conjunctive normal form"""
+        """Distribute ORs over ANDs in pursuit of conjunctive normal form."""
         bool_exp0 = 0
         while bool_exp0 != bool_exp:
             bool_exp0 = bool_exp
@@ -132,7 +176,10 @@ class Graph():
         return bool_exp
 
     def clean_up_to_cnf(self, bool_exp):
-        """Removes unnecessary brackets (destroys two-expression bracket syntax)"""
+        """Remove unnecessary brackets.
+
+        Note that it destroys two-expression bracket syntax).
+        """
         n = len(bool_exp)
         bool_exp2 = bool_exp[0]
         for i in range(1,n-1):
@@ -149,6 +196,7 @@ class Graph():
         return bool_exp2 + bool_exp[-1]
 
     def get_clauses(self, bool_exp):
+        """Get clauses from boolean expression string."""
         clauses = []
         n = len(bool_exp)
         cl = ''
@@ -161,19 +209,11 @@ class Graph():
                 cl += bool_exp[i]
         return clauses
 
-    def clause_sets_to_str(self, clauses):
-        bool_exp = '('
-        for i in clauses:
-            exp = ''
-            for j in i:
-                exp += j+'+'
-            bool_exp += '(' + exp[:-1] + ').'
-        return bool_exp[:-1] + ')'
-
     def get_literals_adc(self, clause):
-        """Gets literals in a string clause and
+        """Get clause literals and remove contradictions/redundancies.
 
-        deletes contradictions of form A+A and A+¬A"""
+        Deletes contradictions of form A+A and A+¬A.
+        """
         lits = []
         lits_neg = []
         useless_lits = []
@@ -212,6 +252,10 @@ class Graph():
         return lits, lits_neg
 
     def in_clause_clean_up(self, bool_exp):
+        """Clean up the expression within clauses.
+
+        Removes unnecessary brackets and contradictions/redundancy.
+        """
         bool_exp2 = '('
         clauses = self.get_clauses(bool_exp)
         for clause_exp in clauses:
@@ -225,6 +269,10 @@ class Graph():
         return bool_exp2[:-1] + ')'
 
     def out_clause_clean_up(self, bool_exp):
+        """Clean up the expression on the clause-to-clause level.
+
+        Removes unnecessary brackets and contradictions/redundancy.
+        """
         bool_exp2 = ''
         clauses = self.get_clauses(bool_exp)
         clause_lit_sets = []
@@ -246,47 +294,4 @@ class Graph():
                 bool_exp2 += '(' + exp[:-1] + ').'
         return '(' + bool_exp2[:-1] + ')'
 
-"""
-path = 'correct_example.txt'
-names = Names()
-devices = Devices(names)
-network = Network(names, devices)
-monitors = Monitors(names, devices, network)
 
-scanner = Scanner(path, names)
-parser = Parser(names, devices, network, monitors, scanner)
-
-
-parser.parse_network()
-graph = Graph(names, devices, network, monitors)
-
-
-#clause_exp = 'A0+¬A+B00'
-#print(clause_exp)
-#print(graph.get_literals_adc(clause_exp))
-
-
-#bool_exp = graph.create_boolean_from_monitor('G3')
-
-#bool_exp = '(((A0.A1)+(B1.B0))+(C0+C1))'
-#print(bool_exp)
-
-#print(graph.expand_xors(bool_exp))
-#print('0123456789012345678901234567890123456789012345678901234567890')
-#bool_exp = graph.expand_xors(bool_exp)
-#bool_exp = graph.distribute_ors(bool_exp)
-#bool_exp = graph.clean_up_to_cnf(bool_exp)
-#print(bool_exp)
-#print(graph.in_clause_clean_up(bool_exp))
-
-
-#print(bool_exp)
-
-#print(graph.clean_up_to_cnf(bool_exp))
-
-#print('---')
-
-#xor_test = '((A0*A1)+(A1*(A0+B)).(((S+R)*D)+((R+D)*(HFG))))'
-#print(xor_test)
-#print(graph.expand_xors(xor_test))
-"""

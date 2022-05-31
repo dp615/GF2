@@ -41,7 +41,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     render_trace(self, x, y, values, name): Draws signal output.
 
-    render(self, text): Handles all drawing operations.
+    render_display(self, text): Draws the home screen.
+
+    render(self, text): Decides which page to render and calls the relevant method.
 
     on_paint(self, event): Handles the paint event.
 
@@ -51,6 +53,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     render_text(self, text, x_pos, y_pos): Handles text drawing
                                            operations.
+
+    render_help(self): Renders the help page.
+
+    render_cnf(self): Renders the CNF page.
     """
 
     def __init__(self, parent, devices, monitors):
@@ -118,8 +124,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
     def render_graph_axes(self, x, y):
-        """Draw axis for a given signal output"""
-
+        """Draw axis for a given signal output."""
         time_step_no = len(self.parent.values[0])
         GL.glColor3f(self.axes_colour[0], self.axes_colour[1],
                      self.axes_colour[2])  # signal trace is blue
@@ -138,8 +143,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.render_text('1', x - 14, y + 19)
 
     def render_trace(self, x, y, values, name):
-        """Draw a signal output trace"""
-
+        """Draw a signal output trace."""
         self.render_text(name, 10, y + 5)
         GL.glColor3f(self.line_colour[0], self.line_colour[1],
                      self.line_colour[2])
@@ -160,7 +164,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def render_display(self, text):
         """Handle all drawing operations."""
-        #self.SetCurrent(self.context)
         self.canvas_size = self.GetClientSize()
 
         if not self.init:
@@ -195,6 +198,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.SwapBuffers()
 
     def render(self, text):
+        """Decide which screen type to render and render it."""
         if self.screen_type[1]:
             self.render_help()
         elif self.screen_type[0]:
@@ -217,13 +221,12 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def on_size(self, event):
         """Handle the canvas resize event."""
-        # Forces reconfiguration of the viewport, modelview and projection
-        # matrices on the next paint event
         self.init = False
 
     def on_mouse(self, event):
         """Handle mouse events."""
         text = ""
+
         # Calculate object coordinates of the mouse position
         self.canvas_size = self.GetClientSize()
         size = self.canvas_size
@@ -292,8 +295,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                 GLUT.glutBitmapCharacter(font, ord(character))
 
     def render_help(self):
-        """Render the help screen"""
-
+        """Render the help screen."""
         if not self.init:
             # Configure the viewport, modelview and projection matrices
             self.init_gl()
@@ -313,6 +315,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.SwapBuffers()
 
     def render_cnf(self):
+        """Render the CNF screen."""
         self.canvas_size = self.GetClientSize()
 
         if not self.init:
@@ -321,7 +324,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.init = True
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        self.render_text('Conjunctive Normal Form Conveter:', 10, self.canvas_size[1]-20, True)
+        self.render_text('Conjunctive Normal Form Converter:', 10, self.canvas_size[1]-20, True)
 
         if len(self.parent.sig_mons) == 0:
             self.render_text('Please monitor at least one signal', 10, self.canvas_size[1]-50)
@@ -370,28 +373,31 @@ class Gui(wx.Frame):
 
     Public methods
     --------------
-    on_menu(self, event): Event handler for the file menu.
+    reset_screen(self): Resets the screen to initial position and zoom.
+
+    toolbar_handler(self, event): Handles toolbar presses.
+
+    on_switch_choice(self, event): Handles switch choices.
+
+    on_switch_set(self, event): Handles switch set changes.
 
     on_spin(self, event): Event handler for when the user changes the spin
                            control value.
-
-    on_spin(self, event): Event handler for when the user changes the second
-                           spin controller.
 
     on_run_button(self, event): Event handler for when the user clicks the run
                                  button.
 
     on_continue_button(self, event): Event handler for when the user clicks the
-                                      continue button.
+                                    continue button.
 
-    run_network_and_get_values(self, time_steps): Executes the network for a
-                    given number of time steps and stores the monitored
-                    signals for each time step.
-
-    on_text_box(self, event): Event handler for when the user enters text.
+    run_network_and_get_values(self): Executes the network for and stores the
+                                    values and signal names.
 
     on_add_monitor_button(self, event): Event handler for when the user clicks
-                    the add_monitor button.
+                    the add-monitor button.
+
+    on_remove_monitor_button(self, event): Event handler for when the user clicks
+                    the remove-monitor button.
     """
 
     def __init__(self, title, path, names, devices, network, monitors):
@@ -532,14 +538,14 @@ class Gui(wx.Frame):
         self.canvas.render('')
 
     def reset_screen(self):
-        """Put screen back into its initial state"""
+        """Put screen back into its initial state."""
         self.canvas.pan_x = 0
         self.canvas.pan_y = 0
         self.canvas.zoom = 1
         self.canvas.init = False
 
     def toolbar_handler(self, event):
-        """Handles toolbar presses"""
+        """Handles toolbar presses."""
         if event.GetId() == self.quit_id:
             canc = wx.MessageBox('Are you sure you would like to quit?', 'Quit?', wx.ICON_INFORMATION | wx.CANCEL)
             if canc == 4:
@@ -578,17 +584,8 @@ class Gui(wx.Frame):
             self.canvas.screen_type = (0, 0, 1)
             self.canvas.render('')
 
-    def on_menu(self, event):
-        """Handle the event when the user selects a menu item."""
-        Id = event.GetId()
-        if Id == wx.ID_EXIT:
-            print('menu quit')
-            #self.Close(True)
-        if Id == wx.ID_ABOUT:
-            wx.MessageBox("Logic Simulator\nCreated by Mojisola Agboola\n2017",
-                          "About Logsim", wx.ICON_INFORMATION | wx.OK)
-
     def on_switch_choice(self, event):
+        """Handle the new-switch-choice event."""
         sw_name = self.switch_choice.GetValue()
         sw_val = self.switch_values[self.switch_names.index(sw_name)]
         if sw_val:
@@ -597,6 +594,7 @@ class Gui(wx.Frame):
             self.switch_set.SetValue(0)
 
     def on_switch_set(self, event):
+        """Handle the switch-set event."""
         sw_name = self.switch_choice.GetValue()
         sw_no = self.switch_names.index(sw_name)
         self.switch_values[sw_no] = [0, 1][self.switch_set.GetValue()]
@@ -631,16 +629,8 @@ class Gui(wx.Frame):
         text = "Continue button pressed. (self.time_steps=%d)" % self.time_steps
         self.canvas.render(text)
 
-    def run_network_and_get_values_test(self, time_steps):
-        """Run the network and get the monitored signal values"""
-        ## Test for now:
-        self.values = [[0, 0, 0, 1, 1, 1], [1, 1, 0, 0, 1, 0]]
-        self.trace_names = ['test 000111', 'test 110010']
-
     def run_network_and_get_values(self):
-        """Run the network and get the monitored signal values"""
-
-        # Add return False / True (deal with faulty execution)
+        """Run the network and get the monitored signal values."""
         self.devices.cold_startup()
         self.monitors.reset_monitors()
         for i in range(self.time_steps):
@@ -654,15 +644,8 @@ class Gui(wx.Frame):
             self.values.append(monitor_dict[(device_id, output_id)])
         self.trace_names = self.monitors.get_signal_names()[0]
 
-    def on_text_box(self, event):
-        """Handle the event when the user enters text."""
-        spin_value = self.spin.GetValue()
-        text_box_value = self.text_box.GetValue()
-        text = "".join(["New text box value: ", text_box_value])
-        self.canvas.render(text)
-
     def on_add_monitor_button(self, event):
-        """Handle the event when user clicks "add" """
+        """Handle the event when user clicks "add"."""
         mon_choice_name = self.add_monitor_choice.GetValue()
         if mon_choice_name not in self.sig_n_mons:
             return ''
@@ -684,7 +667,7 @@ class Gui(wx.Frame):
         self.canvas.render('')
 
     def on_remove_monitor_button(self, event):
-        """Handle the event when user clicks "add" """
+        """Handle the event when user clicks "remove"."""
         mon_choice_name = self.remove_monitor_choice.GetValue()
         if mon_choice_name not in self.sig_mons:
             return ''
