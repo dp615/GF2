@@ -1,13 +1,14 @@
 from typing import Any, Union
 
 #import numpy
-#from names import Names
-#from devices import Devices
-#from network import Network
-#from monitors import Monitors
-#from scanner import Scanner
-#from parse import Parser
-
+"""
+from names import Names
+from devices import Devices
+from network import Network
+from monitors import Monitors
+from scanner import Scanner
+from parse import Parser
+"""
 
 class Graph():
     """Defining the logsim graph (assuming it's already been parsed)"""
@@ -147,6 +148,104 @@ class Graph():
                 bool_exp2 += bool_exp[i]
         return bool_exp2 + bool_exp[-1]
 
+    def get_clauses(self, bool_exp):
+        clauses = []
+        n = len(bool_exp)
+        cl = ''
+        for i in range(n-1):
+            if bool_exp[i] == '(':
+                cl = ''
+            elif bool_exp[i] == ')':
+                clauses.append(cl)
+            else:
+                cl += bool_exp[i]
+        return clauses
+
+    def clause_sets_to_str(self, clauses):
+        bool_exp = '('
+        for i in clauses:
+            exp = ''
+            for j in i:
+                exp += j+'+'
+            bool_exp += '(' + exp[:-1] + ').'
+        return bool_exp[:-1] + ')'
+
+    def get_literals_adc(self, clause):
+        """Gets literals in a string clause and
+
+        deletes contradictions of form A+A and A+¬A"""
+        lits = []
+        lits_neg = []
+        useless_lits = []
+        n = len(clause)
+        breaks = [-1]
+        n_lits = 1
+        for i in range(n):
+            if clause[i] == '+':
+                breaks.append(i)
+                n_lits += 1
+        breaks.append(n)
+        for i in range(n_lits):
+            lit = clause[breaks[i]+1:breaks[i+1]]
+            if lit[0] == '¬':
+                if lit[1:] in lits:
+                    lits_index = lits.index(lit[1:])
+                    if not lits_neg[lits_index]:
+                        lits_neg.pop(lits_index)
+                        lits.pop(lits_index)
+                        useless_lits.append(lit[1:])
+                elif lit[1:] not in useless_lits:
+                    lits.append(lit[1:])
+                    lits_neg.append(1)
+            else:
+                if lit in lits:
+                    lits_index = lits.index(lit)
+                    if lits_neg[lits_index]:
+                        lits_neg.pop(lits_index)
+                        lits.pop(lits_index)
+                        useless_lits.append(lit)
+                elif lit not in useless_lits:
+                    lits.append(lit)
+                    lits_neg.append(0)
+        if len(useless_lits) > 0:
+            return ['1'], [0]
+        return lits, lits_neg
+
+    def in_clause_clean_up(self, bool_exp):
+        bool_exp2 = '('
+        clauses = self.get_clauses(bool_exp)
+        for clause_exp in clauses:
+            lits, lits_neg = self.get_literals_adc(clause_exp)
+            exp = ''
+            for i in range(len(lits)):
+                if lits_neg[i]:
+                    exp += '¬'
+                exp += lits[i] + '+'
+            bool_exp2 += '(' + exp[:-1] + ').'
+        return bool_exp2[:-1] + ')'
+
+    def out_clause_clean_up(self, bool_exp):
+        bool_exp2 = ''
+        clauses = self.get_clauses(bool_exp)
+        clause_lit_sets = []
+        for clause_exp in clauses:
+            lits, lits_neg = self.get_literals_adc(clause_exp)
+            if lits != ['1']:
+                clause_lit_sets.append(set())
+                for i in range(len(lits)):
+                    if lits_neg[i]:
+                        clause_lit_sets[-1].add('¬'+lits[i])
+                    else:
+                        clause_lit_sets[-1].add(lits[i])
+
+        for i in range(len(clause_lit_sets)):
+            if clause_lit_sets[i] not in clause_lit_sets[:i]:
+                exp = ''
+                for j in clause_lit_sets[i]:
+                    exp += j + '+'
+                bool_exp2 += '(' + exp[:-1] + ').'
+        return '(' + bool_exp2[:-1] + ')'
+
 """
 path = 'correct_example.txt'
 names = Names()
@@ -157,28 +256,33 @@ monitors = Monitors(names, devices, network)
 scanner = Scanner(path, names)
 parser = Parser(names, devices, network, monitors, scanner)
 
-#app = wx.App()
-#gui = Gui("Logic Simulator", path, names, devices, network, monitors)
-#gui.Show(True)
-#app.MainLoop()
 
 parser.parse_network()
 graph = Graph(names, devices, network, monitors)
-#print(names.names)
 
-#print(graph.create_boolean_from_monitor('G3'))
-bool_exp = graph.create_boolean_from_monitor('G3')
 
-bool_exp = '(((A0.A1)+(B1.B0))+(C0+C1))'
-print(bool_exp)
+#clause_exp = 'A0+¬A+B00'
+#print(clause_exp)
+#print(graph.get_literals_adc(clause_exp))
+
+
+#bool_exp = graph.create_boolean_from_monitor('G3')
+
+#bool_exp = '(((A0.A1)+(B1.B0))+(C0+C1))'
+#print(bool_exp)
 
 #print(graph.expand_xors(bool_exp))
 #print('0123456789012345678901234567890123456789012345678901234567890')
-bool_exp = graph.distribute_ors(bool_exp)
+#bool_exp = graph.expand_xors(bool_exp)
+#bool_exp = graph.distribute_ors(bool_exp)
+#bool_exp = graph.clean_up_to_cnf(bool_exp)
+#print(bool_exp)
+#print(graph.in_clause_clean_up(bool_exp))
 
-print(bool_exp)
 
-print(graph.clean_up_to_cnf(bool_exp))
+#print(bool_exp)
+
+#print(graph.clean_up_to_cnf(bool_exp))
 
 #print('---')
 

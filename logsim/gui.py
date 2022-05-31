@@ -337,16 +337,22 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.SwapBuffers()
             return ''
 
-        self.render_text(bool_exp+'\t\t\t(boolean expression) \t\t (XOR = *,  AND = ., OR = +, NOT = ¬)', 10, self.canvas_size[1] - 90)
+        self.render_text(bool_exp+'\t \t \t(boolean expression) \t\t (XOR = *,  AND = ., OR = +, NOT = ¬)', 10, self.canvas_size[1] - 90)
 
         bool_exp2 = self.parent.graph.expand_xors(bool_exp)
-        self.render_text(bool_exp2+'\t\t\t(expand XORs to ANDs/ORs)', 10, self.canvas_size[1] - 130)
+        self.render_text(bool_exp2+'\t \t \t(expand XORs to ANDs/ORs)', 10, self.canvas_size[1] - 130)
 
         bool_exp3 = self.parent.graph.distribute_ors(bool_exp2)
-        self.render_text(bool_exp3+'\t\t\t(distribute ORs over ANDs)', 10, self.canvas_size[1] - 170)
+        self.render_text(bool_exp3+'\t \t \t(distribute ORs over ANDs)', 10, self.canvas_size[1] - 170)
 
         bool_exp4 = self.parent.graph.clean_up_to_cnf(bool_exp3)
-        self.render_text(bool_exp4[1:-1]+'\t\t\t(cleanup brackets (CNF))', 10, self.canvas_size[1] - 210)
+        self.render_text(bool_exp4[1:-1]+'\t \t \t(cleanup brackets (CNF))', 10, self.canvas_size[1] - 210)
+
+        bool_exp5 = self.parent.graph.in_clause_clean_up(bool_exp4)
+        self.render_text(bool_exp5[1:-1] + '\t \t \t(destroy in-clause redundancy)', 10, self.canvas_size[1] - 250)
+
+        bool_exp6 = self.parent.graph.out_clause_clean_up(bool_exp5)
+        self.render_text(bool_exp6[1:-1] + '\t \t \t(destroy clause-level redundancy)', 10, self.canvas_size[1] - 290)
 
         GL.glFlush()
         self.SwapBuffers()
