@@ -262,7 +262,11 @@ class Parser:
             print('Unregistered error id in parser code', error_id)
 
     def display_devices_error(
-        self, error_id, device_name_symbol, device_type_symbol, device_parameter_symbol
+        self,
+        error_id,
+        device_name_symbol,
+        device_type_symbol,
+        device_parameter_symbol
     ):
         """Handles all error messaging for all devices errors"""
         print("Errors found so far :", self.error_count + 1)
@@ -282,7 +286,7 @@ class Parser:
             self.error_count += 1
 
         elif error_id == self.devices.QUALIFIER_PRESENT:
-            print("ERROR : Qualifier given but one was not allowed with device type")
+            print("ERROR : Qualifier not valid with device type")
             self.inline_error_message(device_parameter_symbol)
             self.error_count += 1
 
@@ -339,7 +343,12 @@ class Parser:
             self.error_count += 1
             print("ERROR : Unregistered error id in parser code", error_id)
 
-    def display_monitors_error(self, error_id, monitor_symbol, monitor_output_symbol):
+    def display_monitors_error(
+        self,
+        error_id,
+        monitor_symbol,
+        monitor_output_symbol
+        ):
         """Handles all error messaging for all monitors errors"""
         print("Errors found so far :", self.error_count + 1)
         if error_id == self.monitors.NOT_OUTPUT:
