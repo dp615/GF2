@@ -125,7 +125,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def render_graph_axes(self, x, y):
         """Draw axis for a given signal output."""
-
         time_step_no = len(self.parent.values[0])
         GL.glColor3f(self.axes_colour[0], self.axes_colour[1],
                      self.axes_colour[2])  # signal trace is blue
@@ -145,7 +144,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def render_trace(self, x, y, values, name):
         """Draw a signal output trace."""
-
         self.render_text(name, 10, y + 5)
         GL.glColor3f(self.line_colour[0], self.line_colour[1],
                      self.line_colour[2])
@@ -166,7 +164,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def render_display(self, text):
         """Handle all drawing operations."""
-        #self.SetCurrent(self.context)
         self.canvas_size = self.GetClientSize()
 
         if not self.init:
@@ -224,13 +221,12 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def on_size(self, event):
         """Handle the canvas resize event."""
-        # Forces reconfiguration of the viewport, modelview and projection
-        # matrices on the next paint event
         self.init = False
 
     def on_mouse(self, event):
         """Handle mouse events."""
         text = ""
+
         # Calculate object coordinates of the mouse position
         self.canvas_size = self.GetClientSize()
         size = self.canvas_size
@@ -300,7 +296,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def render_help(self):
         """Render the help screen."""
-
         if not self.init:
             # Configure the viewport, modelview and projection matrices
             self.init_gl()
@@ -378,28 +373,31 @@ class Gui(wx.Frame):
 
     Public methods
     --------------
-    on_menu(self, event): Event handler for the file menu.
+    reset_screen(self): Resets the screen to initial position and zoom.
+
+    toolbar_handler(self, event): Handles toolbar presses.
+
+    on_switch_choice(self, event): Handles switch choices.
+
+    on_switch_set(self, event): Handles switch set changes.
 
     on_spin(self, event): Event handler for when the user changes the spin
                            control value.
-
-    on_spin(self, event): Event handler for when the user changes the second
-                           spin controller.
 
     on_run_button(self, event): Event handler for when the user clicks the run
                                  button.
 
     on_continue_button(self, event): Event handler for when the user clicks the
-                                      continue button.
+                                    continue button.
 
-    run_network_and_get_values(self, time_steps): Executes the network for a
-                    given number of time steps and stores the monitored
-                    signals for each time step.
-
-    on_text_box(self, event): Event handler for when the user enters text.
+    run_network_and_get_values(self): Executes the network for and stores the
+                                    values and signal names.
 
     on_add_monitor_button(self, event): Event handler for when the user clicks
-                    the add_monitor button.
+                    the add-monitor button.
+
+    on_remove_monitor_button(self, event): Event handler for when the user clicks
+                    the remove-monitor button.
     """
 
     def __init__(self, title, path, names, devices, network, monitors):
@@ -633,7 +631,6 @@ class Gui(wx.Frame):
 
     def run_network_and_get_values(self):
         """Run the network and get the monitored signal values."""
-
         self.devices.cold_startup()
         self.monitors.reset_monitors()
         for i in range(self.time_steps):
