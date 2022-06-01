@@ -335,12 +335,13 @@ class Graph:
         return '(' + bool_exp2[:-1] + ')'
 
     def add_new_line_breaks(self, bool_exp):
+        """Add line-breaks in boolean expression."""
         if len(bool_exp) < 80:
             return bool_exp, 0
         c = 0
         breaks = []
         for i in range(len(bool_exp)):
-            c+=1
+            c += 1
             if c > 70:
                 if bool_exp[i] == '(':
                     if bool_exp[i-1] == '¬':
