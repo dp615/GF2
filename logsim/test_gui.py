@@ -78,4 +78,3 @@ def test4():
                   monitors)
         gui.Show(True)
         app.MainLoop()
-

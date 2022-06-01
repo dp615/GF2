@@ -176,7 +176,6 @@ class Graph:
             xor_exp += '(¬' + bool_exp[i - j:i] + '+¬' + \
                        bool_exp[i + 1:i + k + 1] + ')'
             bool_exp = bool_exp[:i - j] + xor_exp + bool_exp[i + k + 1:]
-
         return bool_exp
 
     def distribute_ors(self, bool_exp):
