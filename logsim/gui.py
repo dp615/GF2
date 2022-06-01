@@ -108,7 +108,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def init_gl(self):
         """Configure and initialise the OpenGL context."""
         size = self.GetClientSize()
-        self.SetCurrent(self.context)
+
+        if self.IsShownOnScreen():
+            self.SetCurrent(self.context)
         GL.glDrawBuffer(GL.GL_BACK)
         GL.glViewport(0, 0, size.width, size.height)
         GL.glMatrixMode(GL.GL_PROJECTION)
@@ -194,7 +196,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.render_graph_axes(display_x, display_ys[j])
 
         GL.glFlush()
-        self.SwapBuffers()
+        if self.IsShownOnScreen():
+            self.SwapBuffers()
 
     def render(self, text):
         """Decide which screen type to render and render it."""
