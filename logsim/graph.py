@@ -150,8 +150,11 @@ class Graph:
                     j += 1
             return j - 1
         else:
-            if bool_exp[i + 1] == '(':
-                k = 2
+            k = 1
+            while bool_exp[i + k] == '¬':
+                k += 1
+            if bool_exp[i + k] == '(':
+                k += 1
                 bracket_count = 1
                 while bracket_count:
                     if bool_exp[i + k] == '(':
@@ -176,6 +179,24 @@ class Graph:
             xor_exp += '(¬' + bool_exp[i - j:i] + '+¬' + \
                        bool_exp[i + 1:i + k + 1] + ')'
             bool_exp = bool_exp[:i - j] + xor_exp + bool_exp[i + k + 1:]
+        return bool_exp
+
+    def demorgan_push(self, bool_exp):
+        """Push De Morgan laws to force negations down to literal level."""
+        while '¬(' in bool_exp:
+            i = bool_exp.index('¬(')
+            j = self.get_sub_exp_end(bool_exp, i + 1, False)
+            symb = bool_exp[i+2+j]
+            if symb == '+':
+                new_symb = '.'
+            else:
+                new_symb = '+'
+            bool_exp = bool_exp[:i]+'(¬'+bool_exp[i + 2:i + 2 + j] + \
+                new_symb + '¬' + bool_exp[i + 3 + j:]
+
+            for ii in range(len(bool_exp) - 2, -1, -1):
+                if bool_exp[ii] == '¬' and bool_exp[ii+1] == '¬':
+                    bool_exp = bool_exp[:ii] + bool_exp[ii+2:]
         return bool_exp
 
     def distribute_ors(self, bool_exp):
@@ -217,21 +238,28 @@ class Graph:
     def clean_up_to_cnf(self, bool_exp):
         """Remove unnecessary brackets.
 
-        Note that it destroys two-expression bracket syntax).
+        Note that it destroys two-expression bracket syntax.
         """
         n = len(bool_exp)
-        bool_exp2 = bool_exp[0]
-        for i in range(1, n - 1):
-            if bool_exp[i:i + 2] == '((':
-                bool_exp2 += ''
-            elif bool_exp[i - 1:i + 1] == '))':
-                bool_exp2 += ''
-            elif bool_exp[i:i + 2] == ')+':
-                bool_exp2 += ''
-            elif bool_exp[i - 1:i + 1] == '+(':
-                bool_exp2 += ''
-            else:
-                bool_exp2 += bool_exp[i]
+        bool_exp2 = ''
+        count = 0
+        while bool_exp2 + bool_exp[-1] != bool_exp:
+            count += 1
+            if count != 1:
+                bool_exp = bool_exp2 + bool_exp[-1]
+            bool_exp2 = bool_exp[0]
+            n = len(bool_exp)
+            for i in range(1, n - 1):
+                if bool_exp[i:i + 2] == '((':
+                    bool_exp2 += ''
+                elif bool_exp[i - 1:i + 1] == '))':
+                    bool_exp2 += ''
+                elif bool_exp[i:i + 2] == ')+':
+                    bool_exp2 += ''
+                elif bool_exp[i - 1:i + 1] == '+(':
+                    bool_exp2 += ''
+                else:
+                    bool_exp2 += bool_exp[i]
         return bool_exp2 + bool_exp[-1]
 
     def get_clauses(self, bool_exp):
@@ -333,7 +361,7 @@ class Graph:
                 bool_exp2 += '(' + exp[:-1] + ').'
         return '(' + bool_exp2[:-1] + ')'
 
-    def add_new_line_breaks(self, bool_exp):
+    def add_new_line_breaks(self, bool_exp, line_length_limit=50):
         """Add line-breaks in boolean expression."""
         if len(bool_exp) < 80:
             return bool_exp, 0
@@ -341,7 +369,7 @@ class Graph:
         breaks = []
         for i in range(len(bool_exp)):
             c += 1
-            if c > 70:
+            if c > line_length_limit:
                 if bool_exp[i] == '(':
                     if bool_exp[i-1] == '¬':
                         breaks.append(i-1)

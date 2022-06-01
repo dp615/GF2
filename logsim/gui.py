@@ -324,18 +324,20 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.render_text('Conjunctive Normal Form Converter:', 10,
-                         self.canvas_size[1]-20, True)
+                         self.canvas_size[1] - 20, True)
 
         if len(self.parent.sig_mons) == 0:
             self.render_text('Please monitor at least one signal', 10,
-                             self.canvas_size[1]-50)
+                             self.canvas_size[1] - 50)
             GL.glFlush()
             self.SwapBuffers()
             return ''
 
         mon_name = self.parent.sig_mons[0]
-        self.render_text('Monitor to expand: '+mon_name+'   (top monitor on '
-                         'home page)', 10, self.canvas_size[1]-50)
+        self.render_text(
+            'Monitor to expand: ' + mon_name + '   (top monitor on '
+                                               'home page)', 10,
+            self.canvas_size[1] - 50)
         bool_exp = self.parent.graph.create_boolean_from_monitor(mon_name)
         if not bool_exp:
             self.render_text('Flip-Flop or circular definition in graph, try '
@@ -348,49 +350,50 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         extra_lines = 0
         bool_exp_show, new_extra_lines = \
             self.parent.graph.add_new_line_breaks(bool_exp)
-        self.render_text(bool_exp_show+'\n \t\t(boolean expression) \t\t '
-                         '(XOR = *,  AND = ., OR = +, NOT = ¬)', 10,
-                         self.canvas_size[1] - 30 - line_gap - extra_lines*20)
+        self.render_text(
+            bool_exp_show + '\n \t\t(boolean expression) \t\t '
+            '(XOR = *,  AND = ., OR = +, NOT = ¬)', 10, self.canvas_size[1] -
+            30 - line_gap - extra_lines * 20
+            )
         extra_lines += new_extra_lines
 
         bool_exp2 = self.parent.graph.expand_xors(bool_exp)
+        bool_exp2 = self.parent.graph.demorgan_push(bool_exp2)
         bool_exp_show, new_extra_lines = \
             self.parent.graph.add_new_line_breaks(bool_exp2)
-        self.render_text(bool_exp_show+'\n \t\t(expand XORs to ANDs/ORs)', 10,
+        self.render_text(bool_exp_show + '\n \t\t(expand XORs to ANDs/ORs)',
+                         10,
                          self.canvas_size[1] - 30 - line_gap * 2 -
                          extra_lines * 20)
         extra_lines += new_extra_lines
 
         bool_exp3 = self.parent.graph.distribute_ors(bool_exp2)
-        bool_exp_show, new_extra_lines = \
-            self.parent.graph.add_new_line_breaks(bool_exp3)
-        self.render_text(bool_exp_show+'\n \t\t(distribute ORs over ANDs)', 10,
-                         self.canvas_size[1] - 30 - line_gap * 3 -
-                         extra_lines * 20)
-        extra_lines += new_extra_lines
-
         bool_exp4 = self.parent.graph.clean_up_to_cnf(bool_exp3)
         bool_exp_show, new_extra_lines = \
             self.parent.graph.add_new_line_breaks(bool_exp4)
-        self.render_text(bool_exp_show[1:-1]+'\n \t\t(cleanup brackets (CNF))',
-                         10, self.canvas_size[1] - 30 - line_gap * 4 -
-                         extra_lines * 20)
+        self.render_text(
+            bool_exp_show[1:-1] + '\n \t\t(distribute ORs over ANDs'
+                                  ' and cleanup brackets (CNF))',
+            10, self.canvas_size[1] - 30 - line_gap * 3 -
+            extra_lines * 20)
         extra_lines += new_extra_lines
 
         bool_exp5 = self.parent.graph.in_clause_clean_up(bool_exp4)
         bool_exp_show, new_extra_lines = \
             self.parent.graph.add_new_line_breaks(bool_exp5)
-        self.render_text(bool_exp_show[1:-1] + '\n \t\t(destroy in-clause '
-                         'redundancy)', 10, self.canvas_size[1] -
-                         30 - line_gap * 5 - extra_lines * 20)
+        self.render_text(bool_exp_show[1:-1] + '\n \t\t(destroy trivial '
+                                               'in-clause redundancy)', 10,
+                         self.canvas_size[1] -
+                         30 - line_gap * 4 - extra_lines * 20)
         extra_lines += new_extra_lines
 
         bool_exp6 = self.parent.graph.out_clause_clean_up(bool_exp5)
         bool_exp_show, new_extra_lines = \
             self.parent.graph.add_new_line_breaks(bool_exp6)
         self.render_text(bool_exp_show[1:-1] + '\n \t\t(destroy clause-level'
-                         ' redundancy)', 10, self.canvas_size[1] -
-                         30 - line_gap * 6 - extra_lines * 20)
+                                               ' redundancy)', 10,
+                         self.canvas_size[1] -
+                         30 - line_gap * 5 - extra_lines * 20)
         extra_lines += new_extra_lines
 
         GL.glFlush()
@@ -680,7 +683,7 @@ class Gui(wx.Frame):
         mon_choice_name = self.add_monitor_choice.GetValue()
         if '.' in mon_choice_name:
             dot_index = mon_choice_name.index('.')
-            output_id = self.names.query(mon_choice_name[dot_index+1:])
+            output_id = self.names.query(mon_choice_name[dot_index + 1:])
             mon_choice_name_strt = mon_choice_name[:dot_index]
         else:
             mon_choice_name_strt = mon_choice_name
@@ -688,7 +691,7 @@ class Gui(wx.Frame):
 
         if mon_choice_name not in self.sig_n_mons:
             return ''
-        self.canvas.render('Add: '+str(mon_choice_name))
+        self.canvas.render('Add: ' + str(mon_choice_name))
 
         device_id = self.names.query(mon_choice_name_strt)
         self.monitors.make_monitor(device_id, output_id)
@@ -709,7 +712,7 @@ class Gui(wx.Frame):
         mon_choice_name = self.remove_monitor_choice.GetValue()
         if '.' in mon_choice_name:
             dot_index = mon_choice_name.index('.')
-            output_id = self.names.query(mon_choice_name[dot_index+1:])
+            output_id = self.names.query(mon_choice_name[dot_index + 1:])
             mon_choice_name_strt = mon_choice_name[:dot_index]
         else:
             mon_choice_name_strt = mon_choice_name
@@ -717,7 +720,7 @@ class Gui(wx.Frame):
 
         if mon_choice_name not in self.sig_mons:
             return ''
-        self.canvas.render('Remove: '+str(mon_choice_name))
+        self.canvas.render('Remove: ' + str(mon_choice_name))
 
         device_id = self.names.query(mon_choice_name_strt)
         self.monitors.remove_monitor(device_id, output_id)
