@@ -74,15 +74,16 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.monitors = monitors
         self.devices = devices
         self.help_text = []
+        self.oscillating = False
 
         # (home, help, cnf)
         self.screen_type = (1, 0, 0)
 
         # Set colour palette
-        self.bkgd_colour = (0.3, 0.3, 0.3)
-        self.line_colour = (0.9, 0.9, 0.5)
-        self.text_colour = (0.9, 0.9, 0.9)
-        self.axes_colour = (0.9, 0.9, 0.9)
+        self.bkgd_colour = (0.1, 0.1, 0.1)
+        self.line_colour = (0.9, 0.5, 0.1)
+        self.text_colour = (0.8, 0.8, 0.8)
+        self.axes_colour = (0.5, 0.5, 0.5)
 
         # Initialise canvas size variable
         self.canvas_size = self.GetClientSize()
@@ -108,8 +109,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def init_gl(self):
         """Configure and initialise the OpenGL context."""
         size = self.GetClientSize()
-
-        if self.IsShownOnScreen():
+        if not self.IsShownOnScreen():
             self.SetCurrent(self.context)
         GL.glDrawBuffer(GL.GL_BACK)
         GL.glViewport(0, 0, size.width, size.height)
@@ -190,10 +190,14 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         title_text = "Monitored Signal Display"
         self.render_text(title_text, 10, self.canvas_size[1] - 20, title=True)
 
-        for j in range(signal_no):
-            self.render_trace(display_x, display_ys[j], self.parent.values[j],
-                              self.parent.trace_names[j])
-            self.render_graph_axes(display_x, display_ys[j])
+        if self.oscillating:
+            self.render_text('Network Oscillating...', 10,
+                             self.canvas_size[1] - 60)
+        else:
+            for j in range(signal_no):
+                self.render_trace(display_x, display_ys[j], self.parent.values[j],
+                                  self.parent.trace_names[j])
+                self.render_graph_axes(display_x, display_ys[j])
 
         GL.glFlush()
         if self.IsShownOnScreen():
@@ -294,8 +298,12 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.canvas_size = self.GetClientSize()
 
         if not self.help_text:
-            with open('logsim/help.txt', 'r') as f:
-                self.help_text = f.readlines()
+            try:
+                with open('logsim/help.txt', 'r') as f:
+                    self.help_text = f.readlines()
+            except FileNotFoundError:
+                with open('help.txt', 'r') as f:
+                    self.help_text = f.readlines()
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.render_text('Help Page:', 10, self.canvas_size[1] - 20, True)
@@ -558,7 +566,7 @@ class Gui(wx.Frame):
         self.canvas.init = False
 
     def toolbar_handler(self, event):
-        """Handles toolbar presses."""
+        """Handle toolbar presses."""
         if event.GetId() == self.quit_id:
             canc = wx.MessageBox('Are you sure you would like to quit?',
                                  'Quit?', wx.ICON_INFORMATION | wx.CANCEL)
@@ -649,10 +657,14 @@ class Gui(wx.Frame):
         """Run the network and get the monitored signal values."""
         self.devices.cold_startup()
         self.monitors.reset_monitors()
+        osc_here = False
         for i in range(self.time_steps):
             if not self.network.execute_network():
-                break
+                self.canvas.oscillating = True
+                osc_here = True
             self.monitors.record_signals()
+        if not osc_here:
+            self.canvas.oscillating = False
         self.values = []
 
         monitor_dict = self.monitors.monitors_dictionary
@@ -718,5 +730,3 @@ class Gui(wx.Frame):
         if self.sig_mons:
             self.remove_monitor_choice.SetValue(self.sig_mons[0])
         self.canvas.render('')
-
-
