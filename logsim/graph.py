@@ -7,7 +7,7 @@ class Graph:
 
     This class contains the methods for taking the parsed network and
     converting to conjunctive-normal-form in anticipation of adding a
-     SAT-solver if relevant.
+    SAT-solver if relevant.
 
     Parameters:
     -----------
