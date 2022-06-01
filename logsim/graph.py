@@ -1,20 +1,11 @@
-from typing import Any, Union
-
-#import numpy
-"""
-from names import Names
-from devices import Devices
-from network import Network
-from monitors import Monitors
-from scanner import Scanner
-from parse import Parser
-"""
+"""Define Graph class to help with CNF capability."""
 
 class Graph():
-    """Define the logsim graph and make convert to conjunctive-normal-form
+    """Define the logsim graph and make convert to conjunctive-normal-form.
 
-    This class contains the methods for taking the parsed network and converting
-    to conjunctive-normal-form in anticipation of adding a SAT-solver if relevant.
+    This class contains the methods for taking the parsed network and
+    converting to conjunctive-normal-form in anticipation of adding a
+     SAT-solver if relevant.
 
     Parameters:
     -----------
@@ -29,7 +20,46 @@ class Graph():
                             expression string from the network in-use
                             at the indicated monitor.
 
+    get_sub_exp_end(self, bool_exp, i, left=True): Gets the endpoint
+                            of the current subexpression, in the
+                            direction indicated and at the bracket-
+                            level of the start point.
+
+    expand_xors(self, bool_exp): Converts all the XOR gates in the given
+                            boolean expression string to ANDs, ORs and
+                            NOTs.
+
+    distribute_ors(self, bool_exp): Distributes all the ORs over the
+                            ANDs in the boolean expression string to
+                            give an expression in conjunctive normal
+                            form.
+
+    clean_up_to_cnf(self, bool_exp): Removes all the unnecessary brackets
+                            and returns the boolean expression string in
+                            conjunctive normal form.
+
+    get_clauses(self, bool_exp): Gets all the clauses from a given
+                            boolean expression string and returns them
+                            as a list of strings.
+
+    get_literals_adc(self, clause): Gets the literals within a given
+                            clause string 'and destroys contradictions'
+                            meaning setting literals containing both a
+                            literal and its negation to '1' and removing
+                            duplicate literals within a clause.
+
+    in_clause_clean_up(self, bool_exp): Ties together the above methods
+                            to remove unnecessary brackets and
+                            redundancies on the literal level within
+                            clauses and returns the expression in
+                            string form.
+
+    out_clause_clean_up(self, bool_exp): Ties together the above methods
+                            to remove unnecessary brackets and
+                            redundancies on the clause level and returns
+                            the expression in string form.
     """
+
     def __init__(self, names, devices, network, monitors):
         """Initialise the graph and graph dependencies."""
         self.names = names
@@ -55,13 +85,10 @@ class Graph():
                 print('Flip-Flop/Not etc. present')
                 return False
 
-        dfs_calls = 0
-
-        def dfs(dev):
+        def dfs(dev, dfs_calls):
             """Doesn't yet deal with circular definitions"""
 
             # Make sure it doesn't get caught in a loop (circular definition)
-            global dfs_calls
             dfs_calls += 1
             if dfs_calls > 500:
                 return '@'
@@ -77,7 +104,7 @@ class Graph():
             if len(dev_ins) == 1:
                 [out_dev_id] = dev_ins
                 next_dev = self.devices.get_device(dev_ins[out_dev_id][0])
-                return '¬('+dfs(next_dev)+')'
+                return '¬('+dfs(next_dev, dfs_calls)+')'
 
             # Assume gate is one of AND, OR, NAND, NOR, XOR. Get input device IDs
             i, j = dev_ins
@@ -89,11 +116,11 @@ class Graph():
             # Produce string boolean expression calling dfs to build the expression below.
             middle_char = ['.', '+', '.', '+', '*'][dev.device_kind]
             if dev.device_kind in (2, 3):
-                return '¬(' + dfs(i_dev) + middle_char + dfs(j_dev) + ')'
+                return '¬(' + dfs(i_dev, dfs_calls) + middle_char + dfs(j_dev, dfs_calls) + ')'
             else:
-                return '(' + dfs(i_dev) + middle_char + dfs(j_dev) + ')'
+                return '(' + dfs(i_dev, dfs_calls) + middle_char + dfs(j_dev, dfs_calls) + ')'
 
-        bool_exp = dfs(mon_dev)
+        bool_exp = dfs(mon_dev, 0)
         if '@' in bool_exp:
             return False
         return bool_exp
