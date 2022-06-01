@@ -24,7 +24,7 @@ G3 - G5.I2 ;
 END
 
 MONITOR
-G5 ;
+G4 ;
 END
 
 MAIN_END
