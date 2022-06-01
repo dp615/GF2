@@ -44,7 +44,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     render_display(self, text): Draws the home screen.
 
-    render(self, text): Decides which page to render and calls the relevant method.
+    render(self, text): Decides which page to render and calls the relevant
+                        method.
 
     on_paint(self, event): Handles the paint event.
 
@@ -195,7 +196,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                              self.canvas_size[1] - 60)
         else:
             for j in range(signal_no):
-                self.render_trace(display_x, display_ys[j], self.parent.values[j],
+                self.render_trace(display_x, display_ys[j],
+                                  self.parent.values[j],
                                   self.parent.trace_names[j])
                 self.render_graph_axes(display_x, display_ys[j])
 
@@ -355,44 +357,45 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         bool_exp_show, new_extra_lines = \
             self.parent.graph.add_new_line_breaks(bool_exp2)
         self.render_text(bool_exp_show+'\n \t\t(expand XORs to ANDs/ORs)', 10,
-                         self.canvas_size[1] - 30 - line_gap * 2
-                         - extra_lines * 20)
+                         self.canvas_size[1] - 30 - line_gap * 2 -
+                         extra_lines * 20)
         extra_lines += new_extra_lines
 
         bool_exp3 = self.parent.graph.distribute_ors(bool_exp2)
         bool_exp_show, new_extra_lines = \
             self.parent.graph.add_new_line_breaks(bool_exp3)
         self.render_text(bool_exp_show+'\n \t\t(distribute ORs over ANDs)', 10,
-                         self.canvas_size[1] - 30 - line_gap * 3
-                         - extra_lines * 20)
+                         self.canvas_size[1] - 30 - line_gap * 3 -
+                         extra_lines * 20)
         extra_lines += new_extra_lines
 
         bool_exp4 = self.parent.graph.clean_up_to_cnf(bool_exp3)
         bool_exp_show, new_extra_lines = \
             self.parent.graph.add_new_line_breaks(bool_exp4)
         self.render_text(bool_exp_show[1:-1]+'\n \t\t(cleanup brackets (CNF))',
-                         10, self.canvas_size[1] - 30 - line_gap * 4
-                         - extra_lines * 20)
+                         10, self.canvas_size[1] - 30 - line_gap * 4 -
+                         extra_lines * 20)
         extra_lines += new_extra_lines
 
         bool_exp5 = self.parent.graph.in_clause_clean_up(bool_exp4)
         bool_exp_show, new_extra_lines = \
             self.parent.graph.add_new_line_breaks(bool_exp5)
         self.render_text(bool_exp_show[1:-1] + '\n \t\t(destroy in-clause '
-                         'redundancy)', 10, self.canvas_size[1]
-                         - 30 - line_gap * 5 - extra_lines * 20)
+                         'redundancy)', 10, self.canvas_size[1] -
+                         30 - line_gap * 5 - extra_lines * 20)
         extra_lines += new_extra_lines
 
         bool_exp6 = self.parent.graph.out_clause_clean_up(bool_exp5)
         bool_exp_show, new_extra_lines = \
             self.parent.graph.add_new_line_breaks(bool_exp6)
         self.render_text(bool_exp_show[1:-1] + '\n \t\t(destroy clause-level'
-                         ' redundancy)', 10, self.canvas_size[1]
-                         - 30 - line_gap * 6 - extra_lines * 20)
+                         ' redundancy)', 10, self.canvas_size[1] -
+                         30 - line_gap * 6 - extra_lines * 20)
         extra_lines += new_extra_lines
 
         GL.glFlush()
         self.SwapBuffers()
+
 
 class Gui(wx.Frame):
     """Configure the main window and all the widgets.
@@ -429,8 +432,8 @@ class Gui(wx.Frame):
     on_add_monitor_button(self, event): Event handler for when the user clicks
                     the add-monitor button.
 
-    on_remove_monitor_button(self, event): Event handler for when the user clicks
-                    the remove-monitor button.
+    on_remove_monitor_button(self, event): Event handler for when the user
+                    clicks the remove-monitor button.
     """
 
     def __init__(self, title, path, names, devices, network, monitors):
