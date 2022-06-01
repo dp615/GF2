@@ -82,6 +82,16 @@ def test_expand_xors():
     assert graph.expand_xors('((A*B)+(C.A))') == '(((A+B).(¬A+¬B))+(C.A))'
 
 
+def test_demorgan_push():
+    """Check that demogan_push(...) runs correctly."""
+    names, devices, network, monitors = init_modules()
+    graph = Graph(names, devices, network, monitors)
+
+    assert graph.demorgan_push('(A+B)') == '(A+B)'
+    assert graph.demorgan_push('¬(A+¬B)') == '(¬A.B)'
+    assert graph.demorgan_push('¬(¬(A+¬B).¬C)') == '((A+¬B)+C)'
+
+
 def test_distribute_ors():
     """Check that distribute_ors(...) runs correctly."""
     names, devices, network, monitors = init_modules()
@@ -130,7 +140,7 @@ def test_in_clause_clean_up():
     graph = Graph(names, devices, network, monitors)
 
     assert graph.in_clause_clean_up('((A+B+C).(D+E+F))') == '((A+B+C).' \
-        '(D+E+F))'
+                                                            '(D+E+F))'
     assert graph.in_clause_clean_up('((A+A+A).(A+B+¬A))') == '((A).(1))'
     assert graph.in_clause_clean_up('((B).(A).(B+¬A))') == '((B).(A).(B+¬A))'
 
@@ -150,16 +160,17 @@ def test_add_new_line_breaks():
     names, devices, network, monitors = init_modules()
     graph = Graph(names, devices, network, monitors)
 
-    assert graph.add_new_line_breaks('('*80) == ((70 * '(') + '\n\t' +
-                                                 ('(' * 10), 1)
-    assert graph.add_new_line_breaks('('*(71*17))[1] == 17
-    assert graph.add_new_line_breaks('1'*1000+'(000)')[0] == ('1' * 1000) + \
-        '\n\t' + '(000)'
+    assert graph.add_new_line_breaks('(' * 80, 50) == ((50 * '(') + '\n\t' +
+                                                       ('(' * 30), 1)
+    assert graph.add_new_line_breaks('(' * (71 * 17), 70)[1] == 17
+    assert graph.add_new_line_breaks('1' * 1000 + '(000)', 500)[0] == \
+        ('1' * 1000) + '\n\t' + '(000)'
 
 
 test_create_boolean_from_monitor()
 test_get_sub_exp_end()
 test_expand_xors()
+test_demorgan_push()
 test_distribute_ors()
 test_clean_up_to_cnf()
 test_get_clauses()
