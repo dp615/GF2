@@ -17,7 +17,6 @@ from scanner import Symbol
 
 
 class Parser:
-
     """Parse the definition file and build the logic network.
 
     The parser deals with error handling. It analyses the syntactic and
@@ -100,7 +99,7 @@ class Parser:
         self.error_count = 0
 
     def copy_symbol(self):
-        """Returns a copy Symbol class instance of the current symbol"""
+        """Return a copy Symbol class instance of the current symbol."""
         symbol = Symbol()
         symbol.type = int(self.current_symbol.type)
         symbol.id = int(self.current_symbol.id)
@@ -109,14 +108,14 @@ class Parser:
         return symbol
 
     def inline_error_message(self, symbol = None):
-        """Calls to the scanner to print an error message at the right location"""
+        """Call to the scanner to print an error message at the right location."""
         if not symbol:
             self.scanner.print_location(self.current_symbol)
         else:
             self.scanner.print_location(symbol)
 
     def display_syntax_error(self,error_id):
-        """Handles all error messaging for all parser errors"""
+        """Return error messages for syntax and parser errors."""
         print("Errors found so far :", self.error_count + 1)
         if error_id == self.EXTRA_SEMICOLON:
             print("ERROR: Extra semicolons added")
@@ -307,7 +306,7 @@ class Parser:
         input_device_symbol,
         input_symbol,
     ):
-        """ Return error messages for connection errors."""
+        """Return error messages for connection errors."""
         print("Errors found so far :", self.error_count + 1)
         if error_id == self.network.DEVICE_ABSENT_ONE:
             print("ERROR : Device name does not exist")
@@ -372,11 +371,11 @@ class Parser:
             print(self.monitors.MONITOR_PRESENT)
 
     def next_symbol(self):
-        """Changes current symbol to next symbol from scanner"""
+        """Change current symbol to next symbol from scanner."""
         self.current_symbol = self.scanner.get_symbol()
 
     def next_scan_start(self, in_block = True):
-        """Reaches a safe symbol to resume parsing after an error
+        """Reach a safe symbol to resume parsing after an error.
         
         Keyword Argument
         in_block = True if stopping symbol is mainly semicolon
@@ -426,7 +425,7 @@ class Parser:
         return
 
     def parse_devices(self):
-        """Parses the 'DEVICES' block of definition file"""
+        """Parse the 'DEVICES' block of definition file."""
         self.parse_completion[0] = True
         while self.current_symbol.type == self.scanner.NAME:
             ###
@@ -510,7 +509,7 @@ class Parser:
             self.parse_devices()
 
     def parse_connections(self):
-        """Parses the 'CONNECTIONS' block of definition file"""
+        """Parse the 'CONNECTIONS' block of definition file."""
         self.parse_completion[1] = True
         while self.current_symbol.type == self.scanner.NAME:
             ##
@@ -613,7 +612,7 @@ class Parser:
             self.parse_connections()
 
     def parse_monitor(self):
-        """Parses the 'MONITORS' block of definition file"""
+        """Parse the 'MONITORS' block of definition file."""
         self.parse_completion[2] = True
         while self.current_symbol.type == self.scanner.NAME:
             monitor_symbol = self.copy_symbol()
@@ -680,7 +679,8 @@ class Parser:
     def parse_network(self):
         """Parse the circuit definition file.
         
-        Returns True if no errors found."""
+        Returns True if no errors found.
+        """
         self.next_symbol()
         if self.current_symbol.type == self.scanner.KEYWORD and self.current_symbol.id == self.scanner.DEVICES_ID:
             self.next_symbol()
