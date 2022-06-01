@@ -11,25 +11,24 @@ def test_parser(capsys):
     devices = Devices(names)
     network = Network(names, devices)
     monitors = Monitors(names, devices, network)
-    error_output =["SYNTAX ERROR: Extra semicolons added",
-                "SYNTAX ERROR : DEVICES already called",
-                "SYNTAX ERROR : CONNECTIONS already Called",
-                "SYNTAX ERROR : MONITOR already called",
-                "SYNTAX ERROR : Not a number",
-                "SYNTAX ERROR : Expected a semicolon here",
-                "SYNTAX ERROR : Not a valid device name",
-                "SYNTAX ERROR : Expected an equals sign here",
-                "SYNTAX ERROR : Expected an 'END' statement",
-                "SYNTAX ERROR : Not a valid supported device type",
-                "SYNTAX ERROR : Not a valid type of output label",
-                "SYNTAX ERROR : Expected a dot here",
-                "SYNTAX ERROR : Expected a dash here",
-                "SYNTAX ERROR : Expected a 'DEVICES' statement here",
-                "SYNTAX ERROR : Expected a 'CONNECTIONS' statement here",
-                "SYNTAX ERROR : Expected a 'MONITOR' statement here",
-                "SYNTAX ERROR : Expected a 'MAIN_END' statement here",
-                "SYNTAX ERROR : Unexpected 'END' statement",
-                "SYNTAX ERROR : Invalid input label"]
+    error_output =["ERROR: Extra semicolons added",
+                "ERROR : DEVICES already called",
+                "ERROR : CONNECTIONS already Called",
+                "ERROR : MONITOR already called",
+                "ERROR : Not a number",
+                "ERROR : Expected a semicolon here",
+                "ERROR : Not a valid device name",
+                "ERROR : Expected an equals sign here",
+                "ERROR : Expected an 'END' statement",
+                "ERROR : Not a valid supported device type",
+                "ERROR : Not a valid type of output label",
+                "ERROR : Expected a dot here",
+                "ERROR : Expected a dash here",
+                "ERROR : Expected a 'CONNECTIONS' statement here",
+                "ERROR : Expected a 'MONITOR' statement here",
+                "ERROR : Expected a 'MAIN_END' statement here",
+                "ERROR : Unexpected 'END' statement",
+                "ERROR : Invalid input label"]
 
     for i in range (1):
         if i not in [1,2,3]:
