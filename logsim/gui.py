@@ -176,7 +176,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.parent.trace_names = ['N/A']
             self.parent.values = [[]]
 
-        display_ys = [self.canvas_size[1] - 100 - 80 * j for j in range(len(self.parent.values))]
+        display_ys = [self.canvas_size[1] - 100 - 80 * j for j in
+                      range(len(self.parent.values))]
         display_x = 120
         signal_no = len(self.parent.trace_names)
 
@@ -186,9 +187,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         # Draw title
         title_text = "Monitored Signal Display"
         self.render_text(title_text, 10, self.canvas_size[1] - 20, title=True)
-
-        # Draw specified text at position (10, 10)
-        self.render_text(text, 10, 10)
 
         for j in range(signal_no):
             self.render_trace(display_x, display_ys[j], self.parent.values[j],
@@ -247,7 +245,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             text = "".join(["Mouse left canvas at: ", str(event.GetX()),
                             ", ", str(event.GetY())])
         if event.Dragging():
-            self.pan_x += event.GetX() - self.last_mouse_x
             self.pan_y -= event.GetY() - self.last_mouse_y
             self.last_mouse_x = event.GetX()
             self.last_mouse_y = event.GetY()
@@ -255,24 +252,12 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             text = "".join(["Mouse dragged to: ", str(event.GetX()),
                             ", ", str(event.GetY()), ". Pan is now: ",
                             str(self.pan_x), ", ", str(self.pan_y)])
-        if event.GetWheelRotation() < 0:
-            self.zoom *= (1.0 + (
-                    event.GetWheelRotation() / (20 * event.GetWheelDelta())))
-            # Adjust pan so as to zoom around the mouse position
-            self.pan_x -= (self.zoom - old_zoom) * ox
-            self.pan_y -= (self.zoom - old_zoom) * oy
+        if event.GetWheelRotation():
+            self.pan_y -= event.GetWheelRotation()
             self.init = False
-            text = "".join(["Negative mouse wheel rotation. Zoom is now: ",
-                            str(self.zoom)])
-        if event.GetWheelRotation() > 0:
-            self.zoom /= (1.0 - (
-                    event.GetWheelRotation() / (20 * event.GetWheelDelta())))
-            # Adjust pan so as to zoom around the mouse position
-            self.pan_x -= (self.zoom - old_zoom) * ox
-            self.pan_y -= (self.zoom - old_zoom) * oy
-            self.init = False
-            text = "".join(["Positive mouse wheel rotation. Zoom is now: ",
-                            str(self.zoom)])
+            text = ""
+
+        self.pan_y = max(0, self.pan_y)
         if text:
             self.render(text)
         else:
@@ -315,7 +300,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glFlush()
         self.SwapBuffers()
 
-    def render_cnf(self):
+    def render_cnf(self, line_gap=60):
         """Render the CNF screen."""
         self.canvas_size = self.GetClientSize()
 
@@ -325,39 +310,75 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.init = True
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        self.render_text('Conjunctive Normal Form Converter:', 10, self.canvas_size[1]-20, True)
+        self.render_text('Conjunctive Normal Form Converter:', 10,
+                         self.canvas_size[1]-20, True)
 
         if len(self.parent.sig_mons) == 0:
-            self.render_text('Please monitor at least one signal', 10, self.canvas_size[1]-50)
+            self.render_text('Please monitor at least one signal', 10,
+                             self.canvas_size[1]-50)
             GL.glFlush()
             self.SwapBuffers()
             return ''
 
         mon_name = self.parent.sig_mons[0]
-        self.render_text('Monitor to expand: '+mon_name+'   (top monitor on home page)', 10, self.canvas_size[1]-50)
+        self.render_text('Monitor to expand: '+mon_name+'   (top monitor on '
+                         'home page)', 10, self.canvas_size[1]-50)
         bool_exp = self.parent.graph.create_boolean_from_monitor(mon_name)
         if not bool_exp:
-            self.render_text('Flip-Flop or circular definition in graph, try a different monitor or logic circuit', 10, self.canvas_size[1] - 90)
+            self.render_text('Flip-Flop or circular definition in graph, try '
+                             'a different logic circuit', 10,
+                             self.canvas_size[1] - 50 - line_gap)
             GL.glFlush()
             self.SwapBuffers()
             return ''
 
-        self.render_text(bool_exp+'\t \t \t(boolean expression) \t\t (XOR = *,  AND = ., OR = +, NOT = ¬)', 10, self.canvas_size[1] - 90)
+        extra_lines = 0
+        bool_exp_show, new_extra_lines = \
+            self.parent.graph.add_new_line_breaks(bool_exp)
+        self.render_text(bool_exp_show+'\n \t\t(boolean expression) \t\t '
+                         '(XOR = *,  AND = ., OR = +, NOT = ¬)', 10,
+                         self.canvas_size[1] - 30 - line_gap - extra_lines*20)
+        extra_lines += new_extra_lines
 
         bool_exp2 = self.parent.graph.expand_xors(bool_exp)
-        self.render_text(bool_exp2+'\t \t \t(expand XORs to ANDs/ORs)', 10, self.canvas_size[1] - 130)
+        bool_exp_show, new_extra_lines = \
+            self.parent.graph.add_new_line_breaks(bool_exp2)
+        self.render_text(bool_exp_show+'\n \t\t(expand XORs to ANDs/ORs)', 10,
+                         self.canvas_size[1] - 30 - line_gap * 2
+                         - extra_lines * 20)
+        extra_lines += new_extra_lines
 
         bool_exp3 = self.parent.graph.distribute_ors(bool_exp2)
-        self.render_text(bool_exp3+'\t \t \t(distribute ORs over ANDs)', 10, self.canvas_size[1] - 170)
+        bool_exp_show, new_extra_lines = \
+            self.parent.graph.add_new_line_breaks(bool_exp3)
+        self.render_text(bool_exp_show+'\n \t\t(distribute ORs over ANDs)', 10,
+                         self.canvas_size[1] - 30 - line_gap * 3
+                         - extra_lines * 20)
+        extra_lines += new_extra_lines
 
         bool_exp4 = self.parent.graph.clean_up_to_cnf(bool_exp3)
-        self.render_text(bool_exp4[1:-1]+'\t \t \t(cleanup brackets (CNF))', 10, self.canvas_size[1] - 210)
+        bool_exp_show, new_extra_lines = \
+            self.parent.graph.add_new_line_breaks(bool_exp4)
+        self.render_text(bool_exp_show[1:-1]+'\n \t\t(cleanup brackets (CNF))',
+                         10, self.canvas_size[1] - 30 - line_gap * 4
+                         - extra_lines * 20)
+        extra_lines += new_extra_lines
 
         bool_exp5 = self.parent.graph.in_clause_clean_up(bool_exp4)
-        self.render_text(bool_exp5[1:-1] + '\t \t \t(destroy in-clause redundancy)', 10, self.canvas_size[1] - 250)
+        bool_exp_show, new_extra_lines = \
+            self.parent.graph.add_new_line_breaks(bool_exp5)
+        self.render_text(bool_exp_show[1:-1] + '\n \t\t(destroy in-clause '
+                         'redundancy)', 10, self.canvas_size[1]
+                         - 30 - line_gap * 5 - extra_lines * 20)
+        extra_lines += new_extra_lines
 
         bool_exp6 = self.parent.graph.out_clause_clean_up(bool_exp5)
-        self.render_text(bool_exp6[1:-1] + '\t \t \t(destroy clause-level redundancy)', 10, self.canvas_size[1] - 290)
+        bool_exp_show, new_extra_lines = \
+            self.parent.graph.add_new_line_breaks(bool_exp6)
+        self.render_text(bool_exp_show[1:-1] + '\n \t\t(destroy clause-level'
+                         ' redundancy)', 10, self.canvas_size[1]
+                         - 30 - line_gap * 6 - extra_lines * 20)
+        extra_lines += new_extra_lines
 
         GL.glFlush()
         self.SwapBuffers()
@@ -410,16 +431,6 @@ class Gui(wx.Frame):
         self.home_id = 996
         self.cnf_id = 995
 
-        """
-        # Configure the file menu
-        fileMenu = wx.Menu()
-        menuBar = wx.MenuBar()
-        fileMenu.Append(wx.ID_ABOUT, "&About")
-        fileMenu.Append(wx.ID_EXIT, "&Exit")
-        menuBar.Append(fileMenu, "&File")
-        self.SetMenuBar(menuBar)
-        """
-
         # Canvas for drawing signals
         self.canvas = MyGLCanvas(self, devices, monitors)
 
@@ -435,18 +446,22 @@ class Gui(wx.Frame):
         self.devices = devices
         self.network = network
         self.monitors = monitors
-        self.graph = Graph(self.names, self.devices, self.network, self.monitors)
+        self.graph = Graph(self.names, self.devices, self.network,
+                           self.monitors)
 
         self.switch_ids = self.devices.find_devices(self.devices.SWITCH)
-        self.switch_names = [self.names.get_name_string(i) for i in self.switch_ids]
-        self.switch_values = [self.devices.get_switch_value(i) for i in self.switch_ids]
+        self.switch_names = [self.names.get_name_string(i) for i in
+                             self.switch_ids]
+        self.switch_values = [self.devices.get_switch_value(i) for i in
+                              self.switch_ids]
         self.sig_mons, self.sig_n_mons = self.monitors.get_signal_names()
 
         # Toolbar setup
         toolbar = self.CreateToolBar()
         myimage = wx.ArtProvider.GetBitmap(wx.ART_GO_HOME, wx.ART_TOOLBAR)
         toolbar.AddTool(self.home_id, "Home", myimage)
-        myimage = wx.ArtProvider.GetBitmap(wx.ART_EXECUTABLE_FILE, wx.ART_TOOLBAR)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_EXECUTABLE_FILE,
+                                           wx.ART_TOOLBAR)
         toolbar.AddTool(self.cnf_id, "CNF", myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR)
         toolbar.AddTool(self.open_id, "Open file", myimage)
@@ -463,39 +478,36 @@ class Gui(wx.Frame):
         self.spin = wx.SpinCtrl(self, wx.ID_ANY, "10")
         self.run_button = wx.Button(self, wx.ID_ANY, "Run")
 
-        #self.text_cont_cycles = wx.StaticText(self, wx.ID_ANY, "Continue:")
-        #self.spin_cont = wx.SpinCtrl(self, wx.ID_ANY, "3")
         self.continue_button = wx.Button(self, wx.ID_ANY, "Continue")
 
         self.text_switch_control = wx.StaticText(self, wx.ID_ANY, "Switch On:")
-        #self.text_switch_set = wx.StaticText(self, wx.ID_ANY, "On?:")
-        self.switch_choice = wx.ComboBox(self, wx.ID_ANY, "<SWITCH>", choices=self.switch_names)
+        self.switch_choice = wx.ComboBox(self, wx.ID_ANY, "<SWITCH>",
+                                         choices=self.switch_names)
         self.switch_choice.SetValue(self.switch_names[0])
         self.switch_set = wx.CheckBox(self, wx.ID_ANY)
 
-        self.text_add_monitor = wx.StaticText(self, wx.ID_ANY, "Signal Monitors:")
-        #self.text_box = wx.TextCtrl(self, wx.ID_ANY, "",
-        #                            style=wx.TE_PROCESS_ENTER)
+        self.text_add_monitor = wx.StaticText(self, wx.ID_ANY,
+                                              "Signal Monitors:")
+
         self.add_monitor_button = wx.Button(self, wx.ID_ANY, "Add")
         self.remove_monitor_button = wx.Button(self, wx.ID_ANY, "Remove")
-        self.add_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>", choices=self.sig_n_mons)
-        self.remove_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>", choices=self.sig_mons)
+        self.add_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>",
+                                              choices=self.sig_n_mons)
+        self.remove_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>",
+                                                 choices=self.sig_mons)
         self.add_monitor_choice.SetValue(self.sig_n_mons[0])
         self.remove_monitor_choice.SetValue(self.sig_mons[0])
 
         # Bind events to widgets
-        #self.Bind(wx.EVT_MENU, self.on_menu)
         self.spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
-        #self.spin_cont.Bind(wx.EVT_SPINCTRL, self.on_spin_cont)
 
         self.run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
         self.continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
         self.add_monitor_button.Bind(wx.EVT_BUTTON, self.on_add_monitor_button)
-        self.remove_monitor_button.Bind(wx.EVT_BUTTON, self.on_remove_monitor_button)
+        self.remove_monitor_button.Bind(wx.EVT_BUTTON,
+                                        self.on_remove_monitor_button)
         self.switch_choice.Bind(wx.EVT_COMBOBOX, self.on_switch_choice)
         self.switch_set.Bind(wx.EVT_CHECKBOX, self.on_switch_set)
-
-        #self.text_box.Bind(wx.EVT_TEXT_ENTER, self.on_text_box)
 
         # Configure sizers for layout
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -513,20 +525,17 @@ class Gui(wx.Frame):
         side_sizer.Add(side_sizer3, 1, wx.ALL, 5)
         side_sizer3.Add(self.run_button, 1, wx.ALL, 5)
 
-        #side_sizer.Add(self.text_cont_cycles, 1, wx.ALL, 10)
-        #side_sizer.Add(self.spin_cont, 1, wx.ALL, 5)
         side_sizer3.Add(self.continue_button, 1, wx.ALL, 5)
 
         side_sizer.Add(self.text_switch_control, 1, wx.ALL, 10)
         side_sizer.Add(side_sizer4, 1, wx.ALL, 5)
         side_sizer4.Add(self.switch_choice, 1, wx.ALL, 5)
-        #side_sizer4.Add(self.text_switch_set, 1, wx.ALL, 5)
         side_sizer4.Add(self.switch_set, 1, wx.ALL, 5)
 
         side_sizer.Add(self.text_add_monitor, 1, wx.ALL, 10)
         side_sizer.Add(side_sizer1, 1, wx.ALL, 5)
         side_sizer.Add(side_sizer2, 1, wx.ALL, 5)
-        #side_sizer.Add(self.text_box, 1, wx.ALL, 5)
+
         side_sizer1.Add(self.add_monitor_choice, 1, wx.ALL, 5)
         side_sizer1.Add(self.add_monitor_button, 1, wx.ALL, 5)
         side_sizer2.Add(self.remove_monitor_choice, 1, wx.ALL, 5)
@@ -548,12 +557,15 @@ class Gui(wx.Frame):
     def toolbar_handler(self, event):
         """Handles toolbar presses."""
         if event.GetId() == self.quit_id:
-            canc = wx.MessageBox('Are you sure you would like to quit?', 'Quit?', wx.ICON_INFORMATION | wx.CANCEL)
+            canc = wx.MessageBox('Are you sure you would like to quit?',
+                                 'Quit?', wx.ICON_INFORMATION | wx.CANCEL)
             if canc == 4:
                 self.Close(True)
         elif event.GetId() == self.open_id:
-            openFileDialog = wx.FileDialog(self, "Open txt file", "", "", wildcard="TXT files (*.txt)|*.txt",
-                                           style=wx.FD_OPEN + wx.FD_FILE_MUST_EXIST)
+            openFileDialog = wx.FileDialog(self, "Open txt file", "", "",
+                                           wildcard="TXT files (*.txt)|*.txt",
+                                           style=wx.FD_OPEN +
+                                                 wx.FD_FILE_MUST_EXIST)
             self.reset_screen()
             if openFileDialog.ShowModal() == wx.ID_CANCEL:
                 print("The user cancelled")
@@ -600,7 +612,7 @@ class Gui(wx.Frame):
         sw_no = self.switch_names.index(sw_name)
         self.switch_values[sw_no] = [0, 1][self.switch_set.GetValue()]
         sw_id = self.names.query(sw_name)
-        self.devices.set_switch(sw_id, self.switch_set.GetValue())  # SET ACTUAL SWITCH
+        self.devices.set_switch(sw_id, self.switch_set.GetValue())
         self.run_network_and_get_values()
         self.canvas.render('')
 
@@ -627,7 +639,7 @@ class Gui(wx.Frame):
         self.time_steps += spin_cont_value
         self.run_network_and_get_values()
 
-        text = "Continue button pressed. (self.time_steps=%d)" % self.time_steps
+        text = "Continue button pressed. (time_steps=%d)" % self.time_steps
         self.canvas.render(text)
 
     def run_network_and_get_values(self):
@@ -648,12 +660,19 @@ class Gui(wx.Frame):
     def on_add_monitor_button(self, event):
         """Handle the event when user clicks "add"."""
         mon_choice_name = self.add_monitor_choice.GetValue()
+        if '.' in mon_choice_name:
+            dot_index = mon_choice_name.index('.')
+            output_id = self.names.query(mon_choice_name[dot_index+1:])
+            mon_choice_name_strt = mon_choice_name[:dot_index]
+        else:
+            mon_choice_name_strt = mon_choice_name
+            output_id = None
+
         if mon_choice_name not in self.sig_n_mons:
             return ''
         self.canvas.render('Add: '+str(mon_choice_name))
 
-        device_id = self.names.query(mon_choice_name)
-        output_id = None
+        device_id = self.names.query(mon_choice_name_strt)
         self.monitors.make_monitor(device_id, output_id)
         self.run_network_and_get_values()
 
@@ -670,12 +689,19 @@ class Gui(wx.Frame):
     def on_remove_monitor_button(self, event):
         """Handle the event when user clicks "remove"."""
         mon_choice_name = self.remove_monitor_choice.GetValue()
+        if '.' in mon_choice_name:
+            dot_index = mon_choice_name.index('.')
+            output_id = self.names.query(mon_choice_name[dot_index+1:])
+            mon_choice_name_strt = mon_choice_name[:dot_index]
+        else:
+            mon_choice_name_strt = mon_choice_name
+            output_id = None
+
         if mon_choice_name not in self.sig_mons:
             return ''
         self.canvas.render('Remove: '+str(mon_choice_name))
 
-        device_id = self.names.query(mon_choice_name)
-        output_id = None
+        device_id = self.names.query(mon_choice_name_strt)
         self.monitors.remove_monitor(device_id, output_id)
         self.run_network_and_get_values()
 
