@@ -72,7 +72,8 @@ class Scanner:
             self.NAME,
             self.DOT,
             self.EOF,
-        ] = range(9)
+            self.UNTERMINATED_COMMENT
+        ] = range(10)
 
         self.keywords_list = [
             "DEVICES",
@@ -94,21 +95,32 @@ class Scanner:
         self.position = 0
         self.line = 0
         self.position_in_line = 0
+        self.last_hash_line =0
+        self.last_hash_position_in_line =0
 
     def skip_spaces_and_comments(self):
         """Skip white spaces and comments."""
         no_of_hashtags = 0
         while (
-            self.current_character.isspace()
+            (self.current_character.isspace()
             or no_of_hashtags % 2 != 0
-            or self.current_character == "#"
+            or self.current_character == "#" ) 
+            and self.current_character!= ''
         ):
             if self.current_character == "#":
                 no_of_hashtags += 1
+                self.last_hash_line=self.line
+                self.last_hash_position_in_line=self.position_in_line
+            
+                
+            
             self.advance()
+        if self.current_character == '' and no_of_hashtags % 2 != 0:
+            return False
+        return True
 
     def get_name(self):
-        """Return the next name in teh file as a string."""
+        """Return the next name in the file as a string."""
         name = ""
         while (self.current_character.isalnum() or
                 self.current_character == "_"):
@@ -135,7 +147,12 @@ class Scanner:
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         symbol = Symbol()
-        self.skip_spaces_and_comments()  # current character now not whitespace
+        if self.skip_spaces_and_comments() == False:  # current character now not whitespace
+            symbol.type = self.UNTERMINATED_COMMENT
+            symbol.position_in_line = self.last_hash_position_in_line
+            symbol.line = self.last_hash_line
+            self.advance()
+            return symbol
         symbol.position_in_line = self.position_in_line
         symbol.line = self.line
         if self.current_character.isalpha():  # name
