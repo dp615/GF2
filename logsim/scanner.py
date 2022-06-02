@@ -57,6 +57,7 @@ class Scanner:
             self.file = open(path, "r")
             self.file.seek(0, 0)
         except FileNotFoundError:
+            print('File not found: please enter a valid file path. Use "logsim.py -h" for help.')
             sys.exit()
 
         self.names = names
