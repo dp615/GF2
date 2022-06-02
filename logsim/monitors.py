@@ -39,6 +39,14 @@ class Monitors:
     get_signal_names(self): Returns two lists of signal names: monitored and
                             not monitored.
 
+    get_input_ids_and_names(self): Returns list of device-id, device-input-id
+                                   pairs and a list of device input names.
+
+    get_connection_ids_and_names(self): Returns list of connection ids of form
+                                        ((out_device_id, out_port_id),
+                                         (in_device_id, in_port_id)) and a
+                                        list of connection names.
+
     reset_monitors(self): Clears the memory of all monitors.
 
     get_margin(self): Returns the length of the longest monitor's name.
@@ -128,6 +136,49 @@ class Monitors:
                     non_monitored_signal_list.append(signal_name)
 
         return [monitored_signal_list, non_monitored_signal_list]
+
+    def get_input_ids_and_names(self):
+        """Return list of device input ids and list of input names.
+
+        Output of form ([(device_id, output_id)...], ["G0.I1", "G2.I3"...]
+        """
+        input_id_list = []
+        input_name_list = []
+        for device in self.devices.devices_list:
+            device_id = device.device_id
+            device_name = self.names.get_name_string(device_id)
+            for input_id in device.inputs:
+                input_name = self.names.get_name_string(input_id)
+                input_id_list.append((device_id, input_id))
+                input_name_list.append(device_name + '.' + input_name)
+        return input_id_list, input_name_list
+
+    def get_connection_ids_and_names(self):
+        """Return list of connection ids and list of connection names.
+
+        Output of form ([((out_id, out_port_id), (in_id, in_port_id))...],
+                        ["A0 - G1.I1", "FF.Q - G2.I9"...])
+        """
+        connection_id_list = []
+        connection_name_list = []
+        input_id_list, input_name_list = self.get_input_ids_and_names()
+        for i in range(len(input_id_list)):
+            input_device = self.devices.get_device(input_id_list[i][0])
+            out_device_id, out_device_port_id = input_device.inputs[
+                input_id_list[i][1]]
+            out_device_name = self.names.get_name_string(out_device_id)
+            if out_device_port_id is None:
+                connection_name_list.append(out_device_name + ' - ' +
+                                            input_name_list[i])
+                connection_id_list.append(((out_device_id, out_device_port_id),
+                                           input_id_list[i]))
+            else:
+                out_device_port_name = self.names.get_name_string(
+                    out_device_port_id)
+                connection_name_list.append(out_device_name + '.' +
+                                            out_device_port_name + ' - ' +
+                                            input_name_list[i])
+        return connection_id_list, connection_name_list
 
     def reset_monitors(self):
         """Clear the memory of all the monitors.
