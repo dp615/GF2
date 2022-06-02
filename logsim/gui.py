@@ -110,7 +110,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def init_gl(self):
         """Configure and initialise the OpenGL context."""
         size = self.GetClientSize()
-        if not self.IsShownOnScreen():
+        if self.IsShownOnScreen():
             self.SetCurrent(self.context)
         GL.glDrawBuffer(GL.GL_BACK)
         GL.glViewport(0, 0, size.width, size.height)
