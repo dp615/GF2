@@ -108,8 +108,9 @@ class Parser:
             self.NO_MAIN_END,
             self.NOT_EXPECT_END,
             self.INVALID_INPUTLABEL,
-            self.INCOMPLETE_NETWORK
-        ] = self.names.unique_error_codes(20)
+            self.INCOMPLETE_NETWORK,
+            self.UNTERMINATED_COMMENT
+        ] = self.names.unique_error_codes(21)
 
         self.error_count = 0
 
@@ -127,7 +128,8 @@ class Parser:
         if not symbol:
             self.scanner.print_location(self.current_symbol)
         else:
-            self.scanner.print_location(symbol)
+            if not symbol.id == self.scanner.EOF:
+                self.scanner.print_location(symbol)
 
     def display_syntax_error(self, error_id):
         """Return error messages for syntax and parser errors."""
@@ -249,6 +251,11 @@ class Parser:
                 self.inline_error_message()
             self.next_scan_start()
 
+        elif error_id == self.UNTERMINATED_COMMENT:
+            print("ERROR : Unterminated Comment present")
+            if not self.test:
+                self.inline_error_message()
+
         elif error_id == self.INCOMPLETE_NETWORK:
             print("ERROR : Not all inputs are connected")
 
@@ -354,6 +361,9 @@ class Parser:
     def next_symbol(self):
         """Change current symbol to next symbol from scanner."""
         self.current_symbol = self.scanner.get_symbol()
+        if self.current_symbol.id == self.scanner.UNTERMINATED_COMMENT:
+            self.display_syntax_error(self.UNTERMINATED_COMMENT)
+            self.current_symbol = self.scanner.get_symbol()
 
     def next_scan_start(self, in_block=True):
         """Reach a safe symbol to resume parsing after an error.
