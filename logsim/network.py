@@ -164,6 +164,16 @@ class Network:
 
         return error_type
 
+    def delete_connection(self, device_id, port_id):
+        """Remove any input to specified port of device"""
+        device = self.devices.get_device(device_id)
+        if device is None:
+            error_type = self.DEVICE_ABSENT
+        else:
+            device.inputs[port_id] = None
+            error_type = self.NO_ERROR
+        return error_type
+
     def check_network(self):
         """Return True if all inputs in the network are connected."""
         for device_id in self.devices.find_devices():
