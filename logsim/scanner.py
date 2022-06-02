@@ -71,8 +71,8 @@ class Scanner:
             self.NUMBER,
             self.NAME,
             self.DOT,
-            self.EOF,
-            self.UNTERMINATED_COMMENT
+            self.UNTERMINATED_COMMENT,
+            self.EOF
         ] = range(10)
 
         self.keywords_list = [
@@ -148,6 +148,7 @@ class Scanner:
         """Translate the next sequence of characters into a symbol."""
         symbol = Symbol()
         if self.skip_spaces_and_comments() == False:  # current character now not whitespace
+            print('here')
             symbol.type = self.UNTERMINATED_COMMENT
             symbol.position_in_line = self.last_hash_position_in_line
             symbol.line = self.last_hash_line
