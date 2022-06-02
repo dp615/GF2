@@ -128,8 +128,7 @@ class Parser:
         if not symbol:
             self.scanner.print_location(self.current_symbol)
         else:
-            if not symbol.id == self.scanner.EOF:
-                self.scanner.print_location(symbol)
+            self.scanner.print_location(symbol)
 
     def display_syntax_error(self, error_id):
         """Return error messages for syntax and parser errors."""

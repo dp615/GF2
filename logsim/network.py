@@ -241,7 +241,10 @@ class Network:
                 return False
             input_signal_list.append(input_signal)
 
-            if device.device_kind != self.devices.XOR:
+            if (
+                device.device_kind != self.devices.XOR 
+                or device.device_kind != self.devices.NOT
+            ):
                 if input_signal != x:
                     output_signal = self.invert_signal(y)
                     break
@@ -253,6 +256,12 @@ class Network:
                 output_signal = self.devices.LOW
             else:
                 output_signal = self.devices.HIGH
+
+        if device.device_kind == self.devices.NOT:
+            if input_signal_list[0] == self.devices.LOW:
+                output_signal = self.devices.HIGH
+            else:
+                output_signal = self.devices.LOW
 
         # Update and store the new signal
         signal = self.get_output_signal(device_id, None)
