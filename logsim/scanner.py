@@ -195,12 +195,12 @@ class Scanner:
         lines=self.file.readlines()
         if symbol.type == self.EOF:
             position_in_line -= 1
-            while position_on_line !< len(lines[line] and line!= 0):
+            while position_on_line >= len(lines[line] and line!= 0):
                 line -= 1
                 position_on_line=len(lines[line])-1
             if line == 0:
                 line=None
-                position_on_line = None:
+                position_on_line = None
 
         if line != None:
             print("Error on line " + str(line + 1))
