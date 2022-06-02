@@ -76,6 +76,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.devices = devices
         self.help_text = []
         self.oscillating = False
+        self.not_connected = False
 
         # (home, help, cnf)
         self.screen_type = (1, 0, 0)
@@ -110,7 +111,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def init_gl(self):
         """Configure and initialise the OpenGL context."""
         size = self.GetClientSize()
-        if self.IsShownOnScreen():
+        if not self.IsShownOnScreen():
             self.SetCurrent(self.context)
         GL.glDrawBuffer(GL.GL_BACK)
         GL.glViewport(0, 0, size.width, size.height)
@@ -191,7 +192,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         title_text = "Monitored Signal Display"
         self.render_text(title_text, 10, self.canvas_size[1] - 20, title=True)
 
-        if self.oscillating:
+        if self.not_connected:
+            self.render_text('Not all inputs connected...', 10,
+                             self.canvas_size[1] - 60)
+        elif self.oscillating:
             self.render_text('Network Oscillating...', 10,
                              self.canvas_size[1] - 60)
         else:
@@ -255,6 +259,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                             ", ", str(event.GetY())])
         if event.Dragging():
             self.pan_y -= event.GetY() - self.last_mouse_y
+            self.pan_x += event.GetX() - self.last_mouse_x
             self.last_mouse_x = event.GetX()
             self.last_mouse_y = event.GetY()
             self.init = False
@@ -267,6 +272,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             text = ""
 
         self.pan_y = max(0, self.pan_y)
+        self.pan_x = min(0, self.pan_x)
         if text:
             self.render(text)
         else:
@@ -437,6 +443,12 @@ class Gui(wx.Frame):
 
     on_remove_monitor_button(self, event): Event handler for when the user
                     clicks the remove-monitor button.
+
+    on_add_connection_button(self, event): Event handler for when the user
+                    decides to add a connection.
+
+    on_remove_connection_button(self, event): Event handler for when the user
+                    decides to remove a connection.
     """
 
     def __init__(self, title, path, names, devices, network, monitors):
@@ -472,6 +484,21 @@ class Gui(wx.Frame):
         self.switch_values = [self.devices.get_switch_value(i) for i in
                               self.switch_ids]
         self.sig_mons, self.sig_n_mons = self.monitors.get_signal_names()
+
+        # Setup Add/Remove connection section of the display
+        self.all_input_ids, self.all_input_names = \
+            self.monitors.get_input_ids_and_names()
+        self.input_connected = [(self.network.get_connected_output(device_id,
+                                                                   input_id)
+                                 is not None) for (device_id, input_id) in
+                                self.all_input_ids]
+
+        self.con_ids, self.con_names = \
+            self.monitors.get_connection_ids_and_names()
+        self.con_strts = self.sig_mons[:] + self.sig_n_mons[:]
+        input_number = len(self.all_input_names)
+        self.con_ends = [self.all_input_names[i] for i in range(input_number)
+                         if not self.input_connected[i]]
 
         # Toolbar setup
         toolbar = self.CreateToolBar()
@@ -512,8 +539,32 @@ class Gui(wx.Frame):
                                               choices=self.sig_n_mons)
         self.remove_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>",
                                                  choices=self.sig_mons)
-        self.add_monitor_choice.SetValue(self.sig_n_mons[0])
-        self.remove_monitor_choice.SetValue(self.sig_mons[0])
+        if len(self.sig_n_mons):
+            self.add_monitor_choice.SetValue(self.sig_n_mons[0])
+        if len(self.sig_mons):
+            self.remove_monitor_choice.SetValue(self.sig_mons[0])
+
+        self.text_connection_monitor = wx.StaticText(self, wx.ID_ANY,
+                                                     "Circuit Connections:")
+
+        self.add_connection_button = wx.Button(self, wx.ID_ANY, "Add")
+        self.remove_connection_button = wx.Button(self, wx.ID_ANY, "Remove")
+        self.add_connection_strt_choice = wx.ComboBox(self, wx.ID_ANY,
+                                                      "<CON.STRT>",
+                                                      choices=self.con_strts)
+        self.add_connection_end_choice = wx.ComboBox(self, wx.ID_ANY,
+                                                     "<CON.END>",
+                                                     choices=self.con_ends)
+        self.remove_connection_choice = wx.ComboBox(self, wx.ID_ANY,
+                                                    "<CON>",
+                                                    choices=self.con_names)
+        if len(self.con_strts):
+            self.add_connection_strt_choice.SetValue(self.con_strts[0])
+        if len(self.con_ends):
+            self.add_connection_end_choice.SetValue(self.con_ends[0])
+        if len(self.con_names):
+            self.remove_connection_choice.SetValue(self.con_names[0])
+
 
         # Bind events to widgets
         self.spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
@@ -523,6 +574,10 @@ class Gui(wx.Frame):
         self.add_monitor_button.Bind(wx.EVT_BUTTON, self.on_add_monitor_button)
         self.remove_monitor_button.Bind(wx.EVT_BUTTON,
                                         self.on_remove_monitor_button)
+        self.add_connection_button.Bind(wx.EVT_BUTTON,
+                                        self.on_add_connection_button)
+        self.remove_connection_button.Bind(wx.EVT_BUTTON,
+                                           self.on_remove_connection_button)
         self.switch_choice.Bind(wx.EVT_COMBOBOX, self.on_switch_choice)
         self.switch_set.Bind(wx.EVT_CHECKBOX, self.on_switch_set)
 
@@ -533,6 +588,8 @@ class Gui(wx.Frame):
         side_sizer2 = wx.BoxSizer(wx.HORIZONTAL)
         side_sizer3 = wx.BoxSizer(wx.HORIZONTAL)
         side_sizer4 = wx.BoxSizer(wx.HORIZONTAL)
+        side_sizer5 = wx.BoxSizer(wx.HORIZONTAL)
+        side_sizer6 = wx.BoxSizer(wx.HORIZONTAL)
 
         main_sizer.Add(self.canvas, 5, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(side_sizer, 1, wx.ALL, 5)
@@ -557,6 +614,16 @@ class Gui(wx.Frame):
         side_sizer1.Add(self.add_monitor_button, 1, wx.ALL, 5)
         side_sizer2.Add(self.remove_monitor_choice, 1, wx.ALL, 5)
         side_sizer2.Add(self.remove_monitor_button, 1, wx.ALL, 5)
+
+        side_sizer.Add(self.text_connection_monitor, 1, wx.ALL, 10)
+        side_sizer.Add(side_sizer5, 1, wx.ALL, 5)
+        side_sizer.Add(side_sizer6, 1, wx.ALL, 5)
+
+        side_sizer5.Add(self.add_connection_strt_choice, 1, wx.ALL, 5)
+        side_sizer5.Add(self.add_connection_end_choice, 1, wx.ALL, 5)
+        side_sizer5.Add(self.add_connection_button, 1, wx.ALL, 5)
+        side_sizer6.Add(self.remove_connection_choice, 1, wx.ALL, 5)
+        side_sizer6.Add(self.remove_connection_button, 1, wx.ALL, 5)
 
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
@@ -661,6 +728,9 @@ class Gui(wx.Frame):
 
     def run_network_and_get_values(self):
         """Run the network and get the monitored signal values."""
+        self.canvas.not_connected = self.network.check_network()
+        if self.canvas.not_connected:
+            return ''
         self.devices.cold_startup()
         self.monitors.reset_monitors()
         osc_here = False
@@ -679,7 +749,7 @@ class Gui(wx.Frame):
         self.trace_names = self.monitors.get_signal_names()[0]
 
     def on_add_monitor_button(self, event):
-        """Handle the event when user clicks "add"."""
+        """Handle the event when user decides to add a monitor."""
         mon_choice_name = self.add_monitor_choice.GetValue()
         if '.' in mon_choice_name:
             dot_index = mon_choice_name.index('.')
@@ -708,7 +778,7 @@ class Gui(wx.Frame):
         self.canvas.render('')
 
     def on_remove_monitor_button(self, event):
-        """Handle the event when user clicks "remove"."""
+        """Handle the event when user decides to remove a monitor."""
         mon_choice_name = self.remove_monitor_choice.GetValue()
         if '.' in mon_choice_name:
             dot_index = mon_choice_name.index('.')
@@ -736,3 +806,71 @@ class Gui(wx.Frame):
         if self.sig_mons:
             self.remove_monitor_choice.SetValue(self.sig_mons[0])
         self.canvas.render('')
+
+    def on_add_connection_button(self, event):
+        """Handle the event when user wants to add a connection."""
+        out_name = self.add_connection_strt_choice.GetValue()
+        in_name = self.add_connection_strt_choice.GetValue()
+        if '.' in out_name:
+            dot_index = out_name.index('.')
+            out_dev_id = self.names.query(out_name[:dot_index])
+            out_port_id = self.names.query(out_name[dot_index+1:])
+        else:
+            out_dev_id = self.names.query(out_name)
+            out_port_id = None
+        in_dev_id, in_port_id = self.all_input_ids[
+            self.all_input_names.index(in_name)]
+        self.network.make_connection(out_dev_id, out_port_id, in_dev_id,
+                                     in_port_id)
+
+        self.all_input_ids, self.all_input_names = \
+            self.monitors.get_input_ids_and_names()
+        self.input_connected = [(self.network.get_connected_output(device_id,
+                                                                   input_id)
+                                 is not None) for (device_id, input_id) in
+                                self.all_input_ids]
+
+        self.con_ids, self.con_names = \
+            self.monitors.get_connection_ids_and_names()
+        self.con_strts = self.sig_mons[:] + self.sig_n_mons[:]
+        input_number = len(self.all_input_names)
+        self.con_ends = [self.all_input_names[i] for i in range(input_number)
+                         if not self.input_connected[i]]
+
+        self.add_connection_strt_choice.SetItems(self.con_strts)
+        self.add_connection_end_choice.SetItems(self.con_ends)
+        self.remove_connection_choice.SetItems(self.con_names)
+
+        if len(self.con_strts):
+            self.add_connection_strt_choice.SetValue(self.con_strts[0])
+        if len(self.con_ends):
+            self.add_connection_end_choice.SetValue(self.con_ends[0])
+        if len(self.con_names):
+            self.remove_connection_choice.SetValue(self.con_names[0])
+
+        self.run_network_and_get_values()
+
+    def on_remove_connection_button(self, event):
+        """Handle the event when the user wants to remove a connection."""
+
+        # REMOVE CONNECTION
+
+        self.con_ids, self.con_names = \
+            self.monitors.get_connection_ids_and_names()
+        self.con_strts = self.sig_mons[:] + self.sig_n_mons[:]
+        input_number = len(self.all_input_names)
+        self.con_ends = [self.all_input_names[i] for i in range(input_number)
+                         if not self.input_connected[i]]
+
+        self.add_connection_strt_choice.SetItems(self.con_strts)
+        self.add_connection_end_choice.SetItems(self.con_ends)
+        self.remove_connection_choice.SetItems(self.con_names)
+
+        if len(self.con_strts):
+            self.add_connection_strt_choice.SetValue(self.con_strts[0])
+        if len(self.con_ends):
+            self.add_connection_end_choice.SetValue(self.con_ends[0])
+        if len(self.con_names):
+            self.remove_connection_choice.SetValue(self.con_names[0])
+
+        self.run_network_and_get_values()
