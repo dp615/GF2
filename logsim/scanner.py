@@ -11,6 +11,7 @@ Symbol - encapsulates a symbol and stores its properties.
 
 import sys
 
+
 class Symbol:
     """Encapsulate a symbol and store its properties.
 
