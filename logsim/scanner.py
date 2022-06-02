@@ -192,14 +192,25 @@ class Scanner:
         position_on_line = symbol.position_in_line
         self.position = self.file.tell()
         self.file.seek(0, 0)
-        print("Error on line " + str(line + 1))
-        line_to_print = self.file.readlines()[line]
-        print(line_to_print, end="")
-        if line_to_print[-1] != "\n":
-            print("")
-        string = ""
-        for i in range(position_on_line):
-            string = string + " "
-        string = string + "^"
-        print(string)
+        lines=self.file.readlines()
+        if symbol.type == self.EOF:
+            position_in_line -= 1
+            while position_on_line !< len(lines[line] and line!= 0):
+                line -= 1
+                position_on_line=len(lines[line])-1
+            if line == 0:
+                line=None
+                position_on_line = None:
+
+        if line != None:
+            print("Error on line " + str(line + 1))
+            line_to_print = lines[line]
+            print(line_to_print, end="")
+            if line_to_print[-1] != "\n":
+                print("")
+            string = ""
+            for i in range(position_on_line):
+                string = string + " "
+            string = string + "^"
+            print(string)
         self.file.seek(self.position)
