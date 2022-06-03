@@ -360,7 +360,7 @@ class Parser:
     def next_symbol(self):
         """Change current symbol to next symbol from scanner."""
         self.current_symbol = self.scanner.get_symbol()
-        if self.current_symbol.id == self.scanner.UNTERMINATED_COMMENT:
+        if self.current_symbol.type == self.scanner.UNTERMINATED_COMMENT:
             self.display_syntax_error(self.UNTERMINATED_COMMENT)
             self.current_symbol = self.scanner.get_symbol()
 
