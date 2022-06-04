@@ -134,132 +134,96 @@ class Parser:
         """Return error messages for syntax and parser errors."""
         self.error_count += 1
         print("Errors found so far :", self.error_count)
+        advance = False  # True if next_symbol needs to be called
+        restart = True   # True if next_scan_start needs to be called
+        in_block = True  # Parameter for next_scan_start
         if error_id == self.EXTRA_SEMICOLON:
             print("ERROR: Extra semicolons added")
-            if not self.test:
-                self.inline_error_message()
+            restart = False
 
         elif error_id == self.EXTRA_DEVICES:
             print("ERROR : DEVICES already called")
-            if not self.test:
-                self.inline_error_message()
-            self.next_symbol()
-            self.next_scan_start(in_block=False)
+            advance = True
+            in_block = False
 
         elif error_id == self.EXTRA_CONNECT:
             print("ERROR : CONNECTIONS already Called")
-            if not self.test:
-                self.inline_error_message()
-            self.next_symbol()
-            self.next_scan_start(in_block=False)
+            advance = True
+            in_block = False
 
         elif error_id == self.EXTRA_MONITOR:
             print("ERROR : MONITOR already called")
-            if not self.test:
-                self.inline_error_message()
-            self.next_symbol()
-            self.next_scan_start(in_block=False)
+            advance = True
+            in_block = False
 
         elif error_id == self.NO_NUMBER:
             print("ERROR : Not a number")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start()
 
         elif error_id == self.NO_SEMICOLON:
             print("ERROR : Expected a semicolon here")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start()
 
         elif error_id == self.INVALID_DEVICENAME:
             print("ERROR : Not a valid device name")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start()
 
         elif error_id == self.NO_EQUALS:
             print("ERROR : Expected an equals sign here")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start()
 
         elif error_id == self.NO_END:
             print("ERROR : Expected an 'END' statement")
-            if not self.test:
-                self.inline_error_message()
+            restart = False
 
         elif error_id == self.INVALID_DEVICETYPE:
             print("ERROR : Not a valid supported device type")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start()
 
         elif error_id == self.INVALID_OUTPUTLABEL:
             print("ERROR : Not a valid type of output label")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start()
 
         elif error_id == self.NO_DOT:
             print("ERROR : Expected a dot here")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start()
 
         elif error_id == self.NO_DASH:
             print("ERROR : Expected a dash here")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start()
 
         elif error_id == self.EXPECT_DEVICES:
             print("ERROR : Expected a 'DEVICES' statement here")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start(in_block=False)
+            in_block = False
 
         elif error_id == self.EXPECT_CONNECT:
             print("ERROR : Expected a 'CONNECTIONS' statement here")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start(in_block=False)
+            in_block = False
 
         elif error_id == self.EXPECT_MONITOR:
             print("ERROR : Expected a 'MONITOR' statement here")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start(in_block=False)
+            in_block = False
 
         elif error_id == self.NO_MAIN_END:
             print("ERROR : Expected a 'MAIN_END' statement here")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start(in_block=False)
+            in_block = False
 
         elif error_id == self.NOT_EXPECT_END:
             print("ERROR : Unexpected 'END' statement")
-            if not self.test:
-                self.inline_error_message()
-            self.next_symbol()
-            self.next_scan_start()
+            advance = True
 
         elif error_id == self.INVALID_INPUTLABEL:
             print("ERROR : Invalid input label")
-            if not self.test:
-                self.inline_error_message()
-            self.next_scan_start()
 
         elif error_id == self.UNTERMINATED_COMMENT:
             print("ERROR : Unterminated Comment present")
-            if not self.test:
-                self.inline_error_message()
+            restart = False
 
         elif error_id == self.INCOMPLETE_NETWORK:
             print("ERROR : Not all inputs are connected")
+            return  # No inline error message for incomplete network
 
         else:
             print('Unregistered error id in parser code', error_id)
+
+        if not self.test:
+            self.inline_error_message()
+        if advance:
+            self.next_symbol()
+        if restart:
+            self.next_scan_start(in_block=in_block)
 
     def display_devices_error(
         self,
