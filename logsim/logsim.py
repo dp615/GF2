@@ -14,6 +14,7 @@ import getopt
 import sys
 
 import wx
+from unidecode import unidecode
 
 from names import Names
 from devices import Devices
@@ -84,7 +85,7 @@ def main(arg_list):
 
             locale.AddCatalogLookupPathPrefix('./locale')
 
-            print(locale.AddCatalog('gui'))
+            locale.AddCatalog('gui')
             gui = Gui("Logic Simulator", path, names, devices, network,
                       monitors)
             gui.Show(True)

@@ -113,7 +113,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         size = self.GetClientSize()
 
         # Include "not" below for windows but leave it out for linux
-        if not self.IsShownOnScreen():
+        if self.IsShownOnScreen():
             self.SetCurrent(self.context)
         GL.glDrawBuffer(GL.GL_BACK)
         GL.glViewport(0, 0, size.width, size.height)

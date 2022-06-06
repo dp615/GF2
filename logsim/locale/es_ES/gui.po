@@ -108,7 +108,7 @@ msgstr "Remover"
 
 #: gui.py:596
 msgid "Circuit Connections:"
-msgstr ""
+msgstr "Conexiones del circuito:"
 
 
 
