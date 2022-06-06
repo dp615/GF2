@@ -31,7 +31,17 @@ class Translation(wx.Frame):
         print(_("hello"))
         self.Centre()
         self.Show(True)
-
+import builtins
 app = wx.App()
+
+builtins._ = wx.GetTranslation
+
+locale = wx.Locale()
+
+locale.Init(wx.LANGUAGE_DEFAULT)
+
+locale.AddCatalogLookupPathPrefix('./locale')
+
+locale.AddCatalog('gui')
 Translation(None, -1, 'Translation')
 app.MainLoop()

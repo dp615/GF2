@@ -1,0 +1,165 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-06-06 13:09+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: gui.py:192
+msgid "Monitored Signal Display"
+msgstr ""
+
+#: gui.py:196
+msgid "Not all inputs connected..."
+msgstr ""
+
+#: gui.py:199
+msgid "Network Oscillating..."
+msgstr ""
+
+#: gui.py:319
+msgid "Help Page:"
+msgstr ""
+
+#: gui.py:334
+msgid "Conjunctive Normal Form Converter:"
+msgstr ""
+
+#: gui.py:338
+msgid "Please monitor at least one signal"
+msgstr ""
+
+#: gui.py:346
+msgid "Monitor to expand: "
+msgstr ""
+
+#: gui.py:346
+msgid "   (top monitor on home page)"
+msgstr ""
+
+#: gui.py:351
+msgid ""
+"Flip-Flop or circular definition in graph, try a different logic circuit"
+msgstr ""
+
+#: gui.py:552
+msgid "Home"
+msgstr ""
+
+#: gui.py:554
+msgid "Logic Description"
+msgstr ""
+
+#: gui.py:557
+msgid "CNF"
+msgstr ""
+
+#: gui.py:559
+msgid "Open file"
+msgstr ""
+
+#: gui.py:561
+msgid "Help"
+msgstr ""
+
+#: gui.py:563
+msgid "Exit"
+msgstr ""
+
+#: gui.py:569
+msgid "Cycles to run:"
+msgstr ""
+
+#: gui.py:571
+msgid "Run"
+msgstr ""
+
+#: gui.py:573
+msgid "Continue"
+msgstr ""
+
+#: gui.py:575
+msgid "Switch On:"
+msgstr ""
+
+#: gui.py:582
+msgid "Signal Monitors:"
+msgstr ""
+
+#: gui.py:584 gui.py:598
+msgid "Add"
+msgstr ""
+
+#: gui.py:585 gui.py:599
+msgid "Remove"
+msgstr ""
+
+#: gui.py:586 gui.py:588
+msgid "<SIGNAL>"
+msgstr ""
+
+#: gui.py:596
+msgid "Circuit Connections:"
+msgstr ""
+
+#: gui.py:601
+msgid "<CON.STRT>"
+msgstr ""
+
+#: gui.py:607
+msgid "<CON>"
+msgstr ""
+
+#: gui.py:694
+msgid "Are you sure you would like to quit?"
+msgstr ""
+
+#: gui.py:695
+msgid "Quit?"
+msgstr ""
+
+#: gui.py:699
+msgid "Open txt file"
+msgstr ""
+
+#: gui.py:705
+msgid "The user cancelled"
+msgstr ""
+
+#: gui.py:708
+msgid "File chosen="
+msgstr ""
+
+#: gui.py:760
+msgid "New spin control value: "
+msgstr ""
+
+#: gui.py:770
+#, python-format
+msgid "Run button pressed. (self.time_steps=%d)"
+msgstr ""
+
+#: gui.py:780
+#, python-format
+msgid "Continue button pressed. (time_steps=%d)"
+msgstr ""
+
+#: gui.py:818
+msgid "Add: "
+msgstr ""
+
+#: gui.py:847
+msgid "Remove: "
+msgstr ""
