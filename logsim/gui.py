@@ -111,7 +111,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def init_gl(self):
         """Configure and initialise the OpenGL context."""
         size = self.GetClientSize()
-        if self.IsShownOnScreen():
+
+        # Include "not" below for windows but leave it out for linux
+        if not self.IsShownOnScreen():
             self.SetCurrent(self.context)
         GL.glDrawBuffer(GL.GL_BACK)
         GL.glViewport(0, 0, size.width, size.height)
@@ -335,7 +337,14 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                          self.canvas_size[1] - 20, True)
 
         if len(self.parent.sig_mons) == 0:
-            self.render_text(_('Please monitor at least one signal'), 10,
+            self.render_text('Please monitor at least one signal.', 10,
+                             self.canvas_size[1] - 50)
+            GL.glFlush()
+            self.SwapBuffers()
+            return ''
+
+        elif self.not_connected:
+            self.render_text('Not all device inputs connected.', 10,
                              self.canvas_size[1] - 50)
             GL.glFlush()
             self.SwapBuffers()
@@ -348,8 +357,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.canvas_size[1] - 50)
         bool_exp = self.parent.graph.create_boolean_from_monitor(mon_name)
         if not bool_exp:
-            self.render_text(_('Flip-Flop or circular definition in graph, try '
-                             'a different logic circuit'), 10,
+            self.render_text(_('Flip-Flop or circular definition in graph, try'
+                             ' a different logic circuit'), 10,
                              self.canvas_size[1] - 50 - line_gap)
             GL.glFlush()
             self.SwapBuffers()
@@ -370,8 +379,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         bool_exp_show, new_extra_lines = \
             self.parent.graph.add_new_line_breaks(bool_exp2)
         self.render_text(bool_exp_show + '\n \t\t(expand XORs to ANDs/ORs)',
-                         10,
-                         self.canvas_size[1] - 30 - line_gap * 2 -
+                         10, self.canvas_size[1] - 30 - line_gap * 2 -
                          extra_lines * 20)
         extra_lines += new_extra_lines
 
@@ -409,9 +417,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def build_logic_file(self):
         """Build new logic description file."""
-
         device_ids = self.parent.devices.find_devices()
         device_print = ''
+
         for i in range(len(device_ids)):
             device = self.parent.devices.get_device(device_ids[i])
             dev_type = self.parent.names.names[device.device_kind]
@@ -537,8 +545,7 @@ class Gui(wx.Frame):
                                                                    input_id)
                                  is not None) for (device_id, input_id) in
                                 self.all_input_ids]
-        print(self.all_input_names)
-        print(self.all_input_ids)
+
         self.con_ids, self.con_names = \
             self.monitors.get_connection_ids_and_names()
         self.con_strts = self.sig_mons[:] + self.sig_n_mons[:]
@@ -554,7 +561,7 @@ class Gui(wx.Frame):
         toolbar.AddTool(self.logic_id, _("Logic Description"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_EXECUTABLE_FILE,
                                            wx.ART_TOOLBAR)
-        toolbar.AddTool(self.cnf_id,_("CNF"), myimage)
+        toolbar.AddTool(self.cnf_id, _("CNF"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR)
         toolbar.AddTool(self.open_id, _("Open file"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_HELP, wx.ART_TOOLBAR)
@@ -572,7 +579,8 @@ class Gui(wx.Frame):
 
         self.continue_button = wx.Button(self, wx.ID_ANY, _("Continue"))
 
-        self.text_switch_control = wx.StaticText(self, wx.ID_ANY, _("Switch On:"))
+        self.text_switch_control = wx.StaticText(self, wx.ID_ANY,
+                                                 _("Switch On:"))
         self.switch_choice = wx.ComboBox(self, wx.ID_ANY, "<SWITCH>",
                                          choices=self.switch_names)
         self.switch_choice.SetValue(self.switch_names[0])
@@ -585,7 +593,8 @@ class Gui(wx.Frame):
         self.remove_monitor_button = wx.Button(self, wx.ID_ANY, _("Remove"))
         self.add_monitor_choice = wx.ComboBox(self, wx.ID_ANY, _("<SIGNAL>"),
                                               choices=self.sig_n_mons)
-        self.remove_monitor_choice = wx.ComboBox(self, wx.ID_ANY, _("<SIGNAL>"),
+        self.remove_monitor_choice = wx.ComboBox(self, wx.ID_ANY,
+                                                 _("<SIGNAL>"),
                                                  choices=self.sig_mons)
         if len(self.sig_n_mons):
             self.add_monitor_choice.SetValue(self.sig_n_mons[0])
@@ -612,7 +621,6 @@ class Gui(wx.Frame):
             self.add_connection_end_choice.SetValue(self.con_ends[0])
         if len(self.con_names):
             self.remove_connection_choice.SetValue(self.con_names[0])
-
 
         # Bind events to widgets
         self.spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
@@ -699,7 +707,7 @@ class Gui(wx.Frame):
             openFileDialog = wx.FileDialog(self, _("Open txt file"), "", "",
                                            wildcard="TXT files (*.txt)|*.txt",
                                            style=wx.FD_OPEN +
-                                                 wx.FD_FILE_MUST_EXIST)
+                                           wx.FD_FILE_MUST_EXIST)
             self.reset_screen()
             if openFileDialog.ShowModal() == wx.ID_CANCEL:
                 print(_("The user cancelled"))
@@ -905,7 +913,6 @@ class Gui(wx.Frame):
 
     def on_remove_connection_button(self, event):
         """Handle the event when the user wants to remove a connection."""
-
         con_name = self.remove_connection_choice.GetValue()
 
         con_id = self.con_ids[self.con_names.index(con_name)][1]
