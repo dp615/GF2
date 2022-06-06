@@ -21,15 +21,14 @@ class Translation(wx.Frame):
         panel = wx.Panel(self, -1)
 
         mylocale = wx.Locale()
-        print(mylocale.Init(language=wx.LANGUAGE_SPANISH))
         mylocale.AddCatalogLookupPathPrefix('.')
-        print(mylocale.AddCatalog('es_ES'))
-
+        print(mylocale.AddCatalog('tester'))
+        #wx.Translations.SetLanguage=wx.LANGUAGE_SPANISH
         _ = wx.GetTranslation
-
+        
         wx.StaticText(panel, -1, _("hello"), (10, 10))
         #wx.StaticText(panel, -1, wx.GetTranslation('hello'), (10, 10))
-
+        print(_("hello"))
         self.Centre()
         self.Show(True)
 
