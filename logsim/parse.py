@@ -333,53 +333,54 @@ class Parser:
         """
         safe_start = False
         while not safe_start:
-            if (
-                self.current_symbol.type == self.scanner.SEMICOLON
-                and in_block
-            ):
-                self.next_symbol()
-                while self.current_symbol.type == self.scanner.SEMICOLON:
-                    self.display_syntax_error(self.EXTRA_SEMICOLON)
+            if self.current_symbol.type == self.scanner.EOF:
+                safe_start = True
+
+            elif in_block:
+                if self.current_symbol.type == self.scanner.SEMICOLON:
                     self.next_symbol()
-                safe_start = True
-
-            elif self.current_symbol.type == self.scanner.EOF:
-                safe_start = True
-
-            elif self.current_symbol.type == self.scanner.KEYWORD:
-                if not in_block:
-                    if self.current_symbol.id == self.scanner.DEVICES_ID:
-                        if not self.parse_completion[0]:
-                            safe_start = True
-                        else:
-                            # SYNTAX ERROR (DEVICES ALREADY CALLED)
-                            self.display_syntax_error(self.EXTRA_DEVICES)
-
-                    elif self.current_symbol.id == self.scanner.CONNECT_ID:
-                        if not self.parse_completion[1]:
-                            safe_start = True
-                        else:
-                            # SYNTAX ERROR (CONNECTIONS ALREADY CALLED)
-                            self.display_syntax_error(self.EXTRA_CONNECT)
-
-                    elif self.current_symbol.id == self.scanner.MONITOR_ID:
-                        if not self.parse_completion[2]:
-                            safe_start = True
-                        else:
-                            # SYNTAX ERROR (MONITOR ALREADY CALLED)
-                            self.display_syntax_error(self.EXTRA_MONITOR)
-
-                    elif self.current_symbol.id == self.scanner.MAIN_END_ID:
-                        safe_start = True
+                    while self.current_symbol.type == self.scanner.SEMICOLON:
+                        self.display_syntax_error(self.EXTRA_SEMICOLON)
+                        self.next_symbol()
+                    safe_start = True
 
                 elif (
-                    self.current_symbol.id == self.scanner.END_ID
-                    and in_block
+                    self.current_symbol.type == self.scanner.KEYWORD
+                    and self.current_symbol.id == self.scanner.END_ID
                 ):
                     safe_start = True
 
                 else:
+                    self.next_symbol()
+
+            elif (
+                not in_block 
+                and self.current_symbol.type == self.scanner.KEYWORD
+            ):
+                if self.current_symbol.id == self.scanner.DEVICES_ID:
+                    if not self.parse_completion[0]:
+                        safe_start = True
+                    else:
+                        # SYNTAX ERROR (DEVICES ALREADY CALLED)
+                        self.display_syntax_error(self.EXTRA_DEVICES)
+
+                elif self.current_symbol.id == self.scanner.CONNECT_ID:
+                    if not self.parse_completion[1]:
+                        safe_start = True
+                    else:
+                        # SYNTAX ERROR (CONNECTIONS ALREADY CALLED)
+                        self.display_syntax_error(self.EXTRA_CONNECT)
+
+                elif self.current_symbol.id == self.scanner.MONITOR_ID:
+                    if not self.parse_completion[2]:
+                        safe_start = True
+                    else:
+                        # SYNTAX ERROR (MONITOR ALREADY CALLED)
+                        self.display_syntax_error(self.EXTRA_MONITOR)
+
+                elif self.current_symbol.id == self.scanner.MAIN_END_ID:
                     safe_start = True
+                else:
                     self.next_symbol()
             else:
                 self.next_symbol()
@@ -524,7 +525,7 @@ class Parser:
         if self.current_symbol.type == self.scanner.KEYWORD:
             if self.current_symbol.id == self.scanner.END_ID:
                 # Checking if all inputs are connected
-                if not self.network.check_network():
+                if self.error_count == 0 and not self.network.check_network():
                     self.display_syntax_error(self.INCOMPLETE_NETWORK)
                 self.next_symbol()
                 return
