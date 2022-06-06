@@ -22,8 +22,8 @@ class Translation(wx.Frame):
 
         mylocale = wx.Locale()
         print(mylocale.Init(language=wx.LANGUAGE_SPANISH))
-        mylocale.AddCatalogLookupPathPrefix('')
-        print(mylocale.AddCatalog('messages-le_ES.po'))
+        mylocale.AddCatalogLookupPathPrefix('.')
+        print(mylocale.AddCatalog('es_ES'))
 
         _ = wx.GetTranslation
 
