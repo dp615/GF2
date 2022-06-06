@@ -78,8 +78,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.oscillating = False
         self.not_connected = False
 
-        # (home, help, cnf)
-        self.screen_type = (1, 0, 0)
+        # (home, help, cnf, logic)
+        self.screen_type = (1, 0, 0, 0)
 
         # Set colour palette
         self.bkgd_colour = (0.1, 0.1, 0.1)
@@ -215,8 +215,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.render_help()
         elif self.screen_type[0]:
             self.render_display(text)
-        else:
+        elif self.screen_type[2]:
             self.render_cnf()
+        else:
+            self.render_logic()
 
     def on_paint(self, event):
         """Handle the paint event."""
@@ -405,6 +407,48 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glFlush()
         self.SwapBuffers()
 
+    def build_logic_file(self):
+        """Build new logic description file."""
+
+        device_ids = self.parent.devices.find_devices()
+        device_print = ''
+        for i in range(len(device_ids)):
+            device = self.parent.devices.get_device(device_ids[i])
+            dev_type = self.parent.names.names[device.device_kind]
+            device_print += '\n' + dev_type
+            if dev_type == 'SWITCH':
+                device_print += ', ' + str(int(
+                    self.parent.devices.get_switch_value(device_ids[i])))
+            elif dev_type in ('AND', 'OR', 'NOR', 'NAND'):
+                device_print += ', '+str(len(device.inputs))
+            device_print += ' = ' + self.parent.names.names[device_ids[i]] + \
+                            ';'
+        device_print += '\nEND\n'
+
+        out_string = 'DEVICES'
+        out_string += device_print
+        out_string += '\nCONNECTIONS\n'
+        out_string += ';\n'.join(self.parent.con_names)
+        out_string += ';\nEND\n\nMONITOR\n'
+        out_string += ';\n'.join(self.parent.sig_mons)
+        out_string += ';\nEND\n\nMAIN_END'
+        return out_string
+
+    def render_logic(self):
+        """Render the new logic description file screen."""
+        self.canvas_size = self.GetClientSize()
+
+        if not self.init:
+            # Configure the viewport, modelview and projection matrices
+            self.init_gl()
+            self.init = True
+
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+
+        self.render_text(self.build_logic_file(), 10, self.canvas_size[1] - 20)
+        GL.glFlush()
+        self.SwapBuffers()
+
 
 class Gui(wx.Frame):
     """Configure the main window and all the widgets.
@@ -459,6 +503,7 @@ class Gui(wx.Frame):
         self.help_id = 997
         self.home_id = 996
         self.cnf_id = 995
+        self.logic_id = 994
 
         # Canvas for drawing signals
         self.canvas = MyGLCanvas(self, devices, monitors)
@@ -492,7 +537,8 @@ class Gui(wx.Frame):
                                                                    input_id)
                                  is not None) for (device_id, input_id) in
                                 self.all_input_ids]
-
+        print(self.all_input_names)
+        print(self.all_input_ids)
         self.con_ids, self.con_names = \
             self.monitors.get_connection_ids_and_names()
         self.con_strts = self.sig_mons[:] + self.sig_n_mons[:]
@@ -504,6 +550,8 @@ class Gui(wx.Frame):
         toolbar = self.CreateToolBar()
         myimage = wx.ArtProvider.GetBitmap(wx.ART_GO_HOME, wx.ART_TOOLBAR)
         toolbar.AddTool(self.home_id, "Home", myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_FLOPPY, wx.ART_TOOLBAR)
+        toolbar.AddTool(self.logic_id, "Logic Description", myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_EXECUTABLE_FILE,
                                            wx.ART_TOOLBAR)
         toolbar.AddTool(self.cnf_id, "CNF", myimage)
@@ -590,6 +638,7 @@ class Gui(wx.Frame):
         side_sizer4 = wx.BoxSizer(wx.HORIZONTAL)
         side_sizer5 = wx.BoxSizer(wx.HORIZONTAL)
         side_sizer6 = wx.BoxSizer(wx.HORIZONTAL)
+        side_sizer7 = wx.BoxSizer(wx.HORIZONTAL)
 
         main_sizer.Add(self.canvas, 5, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(side_sizer, 1, wx.ALL, 5)
@@ -618,12 +667,13 @@ class Gui(wx.Frame):
         side_sizer.Add(self.text_connection_monitor, 1, wx.ALL, 10)
         side_sizer.Add(side_sizer5, 1, wx.ALL, 5)
         side_sizer.Add(side_sizer6, 1, wx.ALL, 5)
+        side_sizer.Add(side_sizer7, 1, wx.ALL, 5)
 
         side_sizer5.Add(self.add_connection_strt_choice, 1, wx.ALL, 5)
         side_sizer5.Add(self.add_connection_end_choice, 1, wx.ALL, 5)
-        side_sizer5.Add(self.add_connection_button, 1, wx.ALL, 5)
-        side_sizer6.Add(self.remove_connection_choice, 1, wx.ALL, 5)
-        side_sizer6.Add(self.remove_connection_button, 1, wx.ALL, 5)
+        side_sizer6.Add(self.add_connection_button, 1, wx.ALL, 5)
+        side_sizer7.Add(self.remove_connection_choice, 1, wx.ALL, 5)
+        side_sizer7.Add(self.remove_connection_button, 1, wx.ALL, 5)
 
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
@@ -670,15 +720,19 @@ class Gui(wx.Frame):
                 gui.Show(True)
         elif event.GetId() == self.help_id:
             self.reset_screen()
-            self.canvas.screen_type = (0, 1, 0)
+            self.canvas.screen_type = (0, 1, 0, 0)
             self.canvas.render('')
         elif event.GetId() == self.home_id:
             self.reset_screen()
-            self.canvas.screen_type = (1, 0, 0)
+            self.canvas.screen_type = (1, 0, 0, 0)
             self.canvas.render('')
         elif event.GetId() == self.cnf_id:
             self.reset_screen()
-            self.canvas.screen_type = (0, 0, 1)
+            self.canvas.screen_type = (0, 0, 1, 0)
+            self.canvas.render('')
+        elif event.GetId() == self.logic_id:
+            self.reset_screen()
+            self.canvas.screen_type = (0, 0, 0, 1)
             self.canvas.render('')
 
     def on_switch_choice(self, event):
@@ -728,7 +782,7 @@ class Gui(wx.Frame):
 
     def run_network_and_get_values(self):
         """Run the network and get the monitored signal values."""
-        self.canvas.not_connected = self.network.check_network()
+        self.canvas.not_connected = not self.network.check_network()
         if self.canvas.not_connected:
             return ''
         self.devices.cold_startup()
@@ -810,7 +864,7 @@ class Gui(wx.Frame):
     def on_add_connection_button(self, event):
         """Handle the event when user wants to add a connection."""
         out_name = self.add_connection_strt_choice.GetValue()
-        in_name = self.add_connection_strt_choice.GetValue()
+        in_name = self.add_connection_end_choice.GetValue()
         if '.' in out_name:
             dot_index = out_name.index('.')
             out_dev_id = self.names.query(out_name[:dot_index])
@@ -823,8 +877,6 @@ class Gui(wx.Frame):
         self.network.make_connection(out_dev_id, out_port_id, in_dev_id,
                                      in_port_id)
 
-        self.all_input_ids, self.all_input_names = \
-            self.monitors.get_input_ids_and_names()
         self.input_connected = [(self.network.get_connected_output(device_id,
                                                                    input_id)
                                  is not None) for (device_id, input_id) in
@@ -849,11 +901,21 @@ class Gui(wx.Frame):
             self.remove_connection_choice.SetValue(self.con_names[0])
 
         self.run_network_and_get_values()
+        self.canvas.render('')
 
     def on_remove_connection_button(self, event):
         """Handle the event when the user wants to remove a connection."""
 
-        # REMOVE CONNECTION
+        con_name = self.remove_connection_choice.GetValue()
+
+        con_id = self.con_ids[self.con_names.index(con_name)][1]
+
+        self.network.delete_connection(con_id[0], con_id[1])
+
+        self.input_connected = [(self.network.get_connected_output(device_id,
+                                                                   input_id)
+                                 is not None) for (device_id, input_id) in
+                                self.all_input_ids]
 
         self.con_ids, self.con_names = \
             self.monitors.get_connection_ids_and_names()
@@ -874,3 +936,4 @@ class Gui(wx.Frame):
             self.remove_connection_choice.SetValue(self.con_names[0])
 
         self.run_network_and_get_values()
+        self.canvas.render('')

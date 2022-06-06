@@ -164,8 +164,11 @@ class Monitors:
         input_id_list, input_name_list = self.get_input_ids_and_names()
         for i in range(len(input_id_list)):
             input_device = self.devices.get_device(input_id_list[i][0])
-            out_device_id, out_device_port_id = input_device.inputs[
-                input_id_list[i][1]]
+            in_dev_ins = input_device.inputs[input_id_list[i][1]]
+            if in_dev_ins is None:
+                continue
+            else:
+                out_device_id, out_device_port_id = in_dev_ins
             out_device_name = self.names.get_name_string(out_device_id)
             if out_device_port_id is None:
                 connection_name_list.append(out_device_name + ' - ' +
@@ -178,6 +181,8 @@ class Monitors:
                 connection_name_list.append(out_device_name + '.' +
                                             out_device_port_name + ' - ' +
                                             input_name_list[i])
+                connection_id_list.append(((out_device_id, None),
+                                           input_id_list[i]))
         return connection_id_list, connection_name_list
 
     def reset_monitors(self):
