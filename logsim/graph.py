@@ -92,7 +92,7 @@ class Graph:
             # Make sure it doesn't get caught in a loop (circular
             # definition)
             dfs_calls += 1
-            if dfs_calls > 500:
+            if dfs_calls > 200:
                 return '@'
 
             # Otherwise recursively build boolean expression string from
@@ -107,7 +107,7 @@ class Graph:
             if len(dev_ins) == 1:
                 [out_dev_id] = dev_ins
                 next_dev = self.devices.get_device(dev_ins[out_dev_id][0])
-                return '¬(' + dfs(next_dev, dfs_calls) + ')'
+                return '¬' + dfs(next_dev, dfs_calls)
 
             # Assume gate is one of AND, OR, NAND, NOR, XOR.
             # Get input device IDs

@@ -335,7 +335,14 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                          self.canvas_size[1] - 20, True)
 
         if len(self.parent.sig_mons) == 0:
-            self.render_text(_('Please monitor at least one signal'), 10,
+            self.render_text('Please monitor at least one signal.', 10,
+                             self.canvas_size[1] - 50)
+            GL.glFlush()
+            self.SwapBuffers()
+            return ''
+
+        elif self.not_connected:
+            self.render_text('Not all device inputs connected.', 10,
                              self.canvas_size[1] - 50)
             GL.glFlush()
             self.SwapBuffers()
@@ -409,9 +416,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def build_logic_file(self):
         """Build new logic description file."""
-
         device_ids = self.parent.devices.find_devices()
         device_print = ''
+
         for i in range(len(device_ids)):
             device = self.parent.devices.get_device(device_ids[i])
             dev_type = self.parent.names.names[device.device_kind]
@@ -537,8 +544,7 @@ class Gui(wx.Frame):
                                                                    input_id)
                                  is not None) for (device_id, input_id) in
                                 self.all_input_ids]
-        print(self.all_input_names)
-        print(self.all_input_ids)
+
         self.con_ids, self.con_names = \
             self.monitors.get_connection_ids_and_names()
         self.con_strts = self.sig_mons[:] + self.sig_n_mons[:]
@@ -612,7 +618,6 @@ class Gui(wx.Frame):
             self.add_connection_end_choice.SetValue(self.con_ends[0])
         if len(self.con_names):
             self.remove_connection_choice.SetValue(self.con_names[0])
-
 
         # Bind events to widgets
         self.spin.Bind(wx.EVT_SPINCTRL, self.on_spin)
