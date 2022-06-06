@@ -14,7 +14,6 @@ import getopt
 import sys
 
 import wx
-from unidecode import unidecode
 
 from names import Names
 from devices import Devices
