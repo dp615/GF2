@@ -19,7 +19,7 @@ msgstr ""
 
 #: gui.py:192
 msgid "Monitored Signal Display"
-msgstr "Pantalla de señal monitoreada - ҤӘҴ"
+msgstr "Pantalla de señal monitoreada"
 
 #: gui.py:196
 msgid "Not all inputs connected..."
@@ -80,7 +80,7 @@ msgstr "Salida"
 
 #: gui.py:569
 msgid "Cycles to run:"
-msgstr "Ciclos a ejecutar:"
+msgstr "Ciclos a ejecutar:   (اَلْعَرَبِيَّةُ"
 
 #: gui.py:571
 msgid "Run"
