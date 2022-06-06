@@ -106,11 +106,10 @@ class Parser:
             self.EXPECT_CONNECT,
             self.EXPECT_MONITOR,
             self.NO_MAIN_END,
-            self.NOT_EXPECT_END,
             self.INVALID_INPUTLABEL,
             self.INCOMPLETE_NETWORK,
             self.UNTERMINATED_COMMENT
-        ] = self.names.unique_error_codes(21)
+        ] = self.names.unique_error_codes(20)
 
         self.error_count = 0
 
@@ -200,9 +199,6 @@ class Parser:
             print("ERROR : Expected a 'MAIN_END' statement here")
             in_block = False
 
-        elif error_id == self.NOT_EXPECT_END:
-            print("ERROR : Unexpected 'END' statement")
-            advance = True
 
         elif error_id == self.INVALID_INPUTLABEL:
             print("ERROR : Invalid input label")
@@ -351,13 +347,7 @@ class Parser:
                 safe_start = True
 
             elif self.current_symbol.type == self.scanner.KEYWORD:
-                if (
-                    self.current_symbol.id == self.scanner.END_ID
-                    and not in_block
-                ):
-                    self.display_syntax_error(self.NOT_EXPECT_END)
-
-                elif not in_block:
+                if not in_block:
                     if self.current_symbol.id == self.scanner.DEVICES_ID:
                         if not self.parse_completion[0]:
                             safe_start = True
