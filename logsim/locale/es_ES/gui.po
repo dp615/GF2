@@ -19,7 +19,7 @@ msgstr ""
 
 #: gui.py:192
 msgid "Monitored Signal Display"
-msgstr ""
+msgstr "Pantalla de señal monitoreada - ҤӘҴ"
 
 #: gui.py:196
 msgid "Not all inputs connected..."
@@ -27,139 +27,129 @@ msgstr ""
 
 #: gui.py:199
 msgid "Network Oscillating..."
-msgstr ""
+msgstr "Red Oscilante..."
 
 #: gui.py:319
 msgid "Help Page:"
-msgstr ""
+msgstr "Página de ayuda:"
 
 #: gui.py:334
 msgid "Conjunctive Normal Form Converter:"
-msgstr ""
+msgstr "Convertidor de forma normal conjuntiva:"
 
 #: gui.py:338
 msgid "Please monitor at least one signal"
-msgstr ""
+msgstr "Supervise al menos una señal"
 
 #: gui.py:346
 msgid "Monitor to expand: "
-msgstr ""
+msgstr "Supervisar para ampliar:"
 
 #: gui.py:346
 msgid "   (top monitor on home page)"
-msgstr ""
+msgstr "  (monitor superior en la página de inicio)"
 
 #: gui.py:351
 msgid ""
 "Flip-Flop or circular definition in graph, try a different logic circuit"
-msgstr ""
+msgstr "Flip-Flop o definición circular en el gráfico, pruebe con un circuito lógico diferente"
 
 #: gui.py:552
 msgid "Home"
-msgstr ""
+msgstr "Hogar"
 
 #: gui.py:554
 msgid "Logic Description"
-msgstr ""
+msgstr "Descripción lógica"
 
 #: gui.py:557
 msgid "CNF"
-msgstr ""
+msgstr "CNF"
 
 #: gui.py:559
 msgid "Open file"
-msgstr ""
+msgstr "Abrir documento"
 
 #: gui.py:561
 msgid "Help"
-msgstr ""
+msgstr "Ayuda"
 
 #: gui.py:563
 msgid "Exit"
-msgstr ""
+msgstr "Salida"
 
 #: gui.py:569
 msgid "Cycles to run:"
-msgstr ""
+msgstr "Ciclos a ejecutar:"
 
 #: gui.py:571
 msgid "Run"
-msgstr ""
+msgstr "Correr"
 
 #: gui.py:573
 msgid "Continue"
-msgstr ""
+msgstr "Continuar"
 
 #: gui.py:575
 msgid "Switch On:"
-msgstr ""
+msgstr "Encender:"
 
 #: gui.py:582
 msgid "Signal Monitors:"
-msgstr ""
+msgstr "Monitores de señal:"
 
 #: gui.py:584 gui.py:598
 msgid "Add"
-msgstr ""
+msgstr "Agregar"
 
 #: gui.py:585 gui.py:599
 msgid "Remove"
-msgstr ""
-
-#: gui.py:586 gui.py:588
-msgid "<SIGNAL>"
-msgstr ""
+msgstr "Remover"
 
 #: gui.py:596
 msgid "Circuit Connections:"
 msgstr ""
 
-#: gui.py:601
-msgid "<CON.STRT>"
-msgstr ""
 
-#: gui.py:607
-msgid "<CON>"
-msgstr ""
 
 #: gui.py:694
 msgid "Are you sure you would like to quit?"
-msgstr ""
+msgstr "Conexiones del circuito:"
 
 #: gui.py:695
 msgid "Quit?"
-msgstr ""
+msgstr "¿Abandonar?"
 
 #: gui.py:699
 msgid "Open txt file"
-msgstr ""
+msgstr "Abrir archivo de texto"
 
 #: gui.py:705
 msgid "The user cancelled"
-msgstr ""
+msgstr "El usuario canceló"
 
 #: gui.py:708
 msgid "File chosen="
-msgstr ""
+msgstr "Archivo elegido="
 
 #: gui.py:760
 msgid "New spin control value: "
-msgstr ""
+msgstr "Nuevo valor de control de giro:"
 
 #: gui.py:770
 #, python-format
-msgid "Run button pressed. (self.time_steps=%d)"
-msgstr ""
+msgid "Run button pressed."
+msgstr "Botón Ejecutar presionado."
 
 #: gui.py:780
 #, python-format
-msgid "Continue button pressed. (time_steps=%d)"
-msgstr ""
+msgid "Continue button pressed."
+msgstr "Botón continuar pulsado."
 
 #: gui.py:818
 msgid "Add: "
-msgstr ""
+msgstr "Agregar:"
 
 #: gui.py:847
 msgid "Remove: "
-msgstr ""
+msgstr "Remover: "
