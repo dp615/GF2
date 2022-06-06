@@ -19,144 +19,144 @@ msgstr ""
 
 #: parse.py:137 parse.py:235 parse.py:269 parse.py:305
 msgid "Errors found so far :"
-msgstr ""
+msgstr "Errores encontrados hasta ahora:"
 
 #: parse.py:142
 msgid "ERROR: Extra semicolons added"
-msgstr ""
+msgstr "ERROR: Se agregaron puntos y coma adicionales"
 
 #: parse.py:146
 msgid "ERROR : DEVICES already called"
-msgstr ""
+msgstr "ERROR: DISPOSITIVOS ya llamados"
 
 #: parse.py:151
 msgid "ERROR : CONNECTIONS already Called"
-msgstr ""
+msgstr "ERROR: CONEXIONES ya llamadas"
 
 #: parse.py:156
 msgid "ERROR : MONITOR already called"
-msgstr ""
+msgstr "ERROR: MONITOR ya llamado"
 
 #: parse.py:161
 msgid "ERROR : Not a number"
-msgstr ""
+msgstr "ERROR: No es un número"
 
 #: parse.py:164
 msgid "ERROR : Expected a semicolon here"
-msgstr ""
+msgstr "ERROR: Se esperaba un punto y coma aquí"
 
 #: parse.py:167
 msgid "ERROR : Not a valid device name"
-msgstr ""
+msgstr "ERROR: No es un nombre de dispositivo válido"
 
 #: parse.py:170
 msgid "ERROR : Expected an equals sign here"
-msgstr ""
+msgstr "ERROR: Se esperaba un signo igual aquí"
 
 #: parse.py:173
 msgid "ERROR : Expected an 'END' statement"
-msgstr ""
+msgstr "ERROR: se esperaba una declaración 'END'"
 
 #: parse.py:177
 msgid "ERROR : Not a valid supported device type"
-msgstr ""
+msgstr "ERROR: No es un tipo de dispositivo compatible válido"
 
 #: parse.py:180
 msgid "ERROR : Not a valid type of output label"
-msgstr ""
+msgstr "ERROR: No es un tipo válido de etiqueta de salida"
 
 #: parse.py:183
 msgid "ERROR : Expected a dot here"
-msgstr ""
+msgstr "ERROR: Se esperaba un punto aquí"
 
 #: parse.py:186
 msgid "ERROR : Expected a dash here"
-msgstr ""
+msgstr "ERROR: Se esperaba un guión aquí"
 
 #: parse.py:189
 msgid "ERROR : Expected a 'DEVICES' statement here"
-msgstr ""
+msgstr "ERROR: Se esperaba una declaración de 'DEVICES' aquí"
 
 #: parse.py:193
 msgid "ERROR : Expected a 'CONNECTIONS' statement here"
-msgstr ""
+msgstr "ERROR: Se esperaba una declaración de 'CONNECTIONS' aquí"
 
 #: parse.py:197
 msgid "ERROR : Expected a 'MONITOR' statement here"
-msgstr ""
+msgstr "ERROR: Se esperaba una declaración 'MONITOR' aquí"
 
 #: parse.py:201
 msgid "ERROR : Expected a 'MAIN_END' statement here"
-msgstr ""
+msgstr "ERROR: Se esperaba una declaración 'MAIN_END' aquí"
 
 #: parse.py:206
 msgid "ERROR : Invalid input label"
-msgstr ""
+msgstr "ERROR: etiqueta de entrada no válida"
 
 #: parse.py:209
 msgid "ERROR : Unterminated Comment present"
-msgstr ""
+msgstr "ERROR: comentario no terminado presente"
 
 #: parse.py:213
 msgid "ERROR : Not all inputs are connected"
-msgstr ""
+msgstr "ERROR: No todas las entradas están conectadas"
 
 #: parse.py:217 parse.py:319
 msgid "Unregistered error id in parser code"
-msgstr ""
+msgstr "ID de error no registrado en el código del analizador"
 
 #: parse.py:237
 msgid "ERROR : Device by this name already exists"
-msgstr ""
+msgstr "ERROR: el dispositivo con este nombre ya existe"
 
 #: parse.py:241
 msgid "ERROR : No qualifier given and device type requires one"
-msgstr ""
+msgstr "ERROR: No se proporcionó ningún calificador y el tipo de dispositivo requiere uno"
 
 #: parse.py:245
 msgid "ERROR : Qualifier is invalid for device type"
-msgstr ""
+msgstr "ERROR: el calificador no es válido para el tipo de dispositivo"
 
 #: parse.py:249
 msgid "ERROR : Qualifier not valid with device type"
-msgstr ""
+msgstr "ERROR: el calificador no es válido con el tipo de dispositivo"
 
 #: parse.py:253
 msgid "ERROR : Device Type given is not a valid device type"
-msgstr ""
+msgstr "ERROR: el tipo de dispositivo proporcionado no es un tipo de dispositivo válido"
 
 #: parse.py:257 parse.py:295
 msgid "ERROR : Unregistered error id in parser code"
-msgstr ""
+msgstr "ERROR: ID de error no registrado en el código del analizador"
 
 #: parse.py:271 parse.py:275
 msgid "ERROR : Device name does not exist"
-msgstr ""
+msgstr "ERROR: el nombre del dispositivo no existe"
 
 #: parse.py:279
 msgid "ERROR : Input is already connected"
-msgstr ""
+msgstr "ERROR: la entrada ya está conectada"
 
 #: parse.py:283
 msgid "ERROR : Cannot connect an input to an input"
-msgstr ""
+msgstr "ERROR: No se puede conectar una entrada a una entrada"
 
 #: parse.py:287
 msgid "ERROR : Port does not exist"
-msgstr ""
+msgstr "ERROR: El puerto no existe"
 
 #: parse.py:291
 msgid "ERROR : Cannot Connect output to output"
-msgstr ""
+msgstr "ERROR: No se puede conectar la salida a la salida"
 
 #: parse.py:307
 msgid "ERROR : Can only monitor outputs"
-msgstr ""
+msgstr "ERROR: solo se pueden monitorear las salidas"
 
 #: parse.py:311
 msgid "ERROR : Output already being monitored"
-msgstr ""
+msgstr "ERROR: La salida ya está siendo monitoreada"
 
 #: parse.py:315
 msgid "ERROR : Device does not exist"
-msgstr ""
+msgstr "ERROR: El dispositivo no existe"
