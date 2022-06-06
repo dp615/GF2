@@ -111,7 +111,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     def init_gl(self):
         """Configure and initialise the OpenGL context."""
         size = self.GetClientSize()
-        if not self.IsShownOnScreen():
+        if self.IsShownOnScreen():
             self.SetCurrent(self.context)
         GL.glDrawBuffer(GL.GL_BACK)
         GL.glViewport(0, 0, size.width, size.height)
@@ -189,14 +189,14 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         # Draw title
-        title_text = "Monitored Signal Display"
+        title_text = _("Monitored Signal Display")
         self.render_text(title_text, 10, self.canvas_size[1] - 20, title=True)
 
         if self.not_connected:
-            self.render_text('Not all inputs connected...', 10,
+            self.render_text(_('Not all inputs connected...'), 10,
                              self.canvas_size[1] - 60)
         elif self.oscillating:
-            self.render_text('Network Oscillating...', 10,
+            self.render_text(_('Network Oscillating...'), 10,
                              self.canvas_size[1] - 60)
         else:
             for j in range(signal_no):
@@ -316,7 +316,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                     self.help_text = f.readlines()
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        self.render_text('Help Page:', 10, self.canvas_size[1] - 20, True)
+        self.render_text(_('Help Page:'), 10, self.canvas_size[1] - 20, True)
         self.render_text("".join(self.help_text), 10, self.canvas_size[1] - 30)
         GL.glFlush()
         self.SwapBuffers()
@@ -331,7 +331,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.init = True
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        self.render_text('Conjunctive Normal Form Converter:', 10,
+        self.render_text(_('Conjunctive Normal Form Converter:'), 10,
                          self.canvas_size[1] - 20, True)
 
         if len(self.parent.sig_mons) == 0:
@@ -350,13 +350,13 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         mon_name = self.parent.sig_mons[0]
         self.render_text(
-            'Monitor to expand: ' + mon_name + '   (top monitor on '
-                                               'home page)', 10,
+            _('Monitor to expand: ') + mon_name + _('   (top monitor on '
+                                               'home page)'), 10,
             self.canvas_size[1] - 50)
         bool_exp = self.parent.graph.create_boolean_from_monitor(mon_name)
         if not bool_exp:
-            self.render_text('Flip-Flop or circular definition in graph, try '
-                             'a different logic circuit', 10,
+            self.render_text(_('Flip-Flop or circular definition in graph, try '
+                             'a different logic circuit'), 10,
                              self.canvas_size[1] - 50 - line_gap)
             GL.glFlush()
             self.SwapBuffers()
@@ -555,43 +555,43 @@ class Gui(wx.Frame):
         # Toolbar setup
         toolbar = self.CreateToolBar()
         myimage = wx.ArtProvider.GetBitmap(wx.ART_GO_HOME, wx.ART_TOOLBAR)
-        toolbar.AddTool(self.home_id, "Home", myimage)
+        toolbar.AddTool(self.home_id, _("Home"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_FLOPPY, wx.ART_TOOLBAR)
-        toolbar.AddTool(self.logic_id, "Logic Description", myimage)
+        toolbar.AddTool(self.logic_id, _("Logic Description"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_EXECUTABLE_FILE,
                                            wx.ART_TOOLBAR)
-        toolbar.AddTool(self.cnf_id, "CNF", myimage)
+        toolbar.AddTool(self.cnf_id,_("CNF"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR)
-        toolbar.AddTool(self.open_id, "Open file", myimage)
+        toolbar.AddTool(self.open_id, _("Open file"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_HELP, wx.ART_TOOLBAR)
-        toolbar.AddTool(self.help_id, "Help", myimage)
+        toolbar.AddTool(self.help_id, _("Help"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_QUIT, wx.ART_TOOLBAR)
-        toolbar.AddTool(self.quit_id, "Exit", myimage)
+        toolbar.AddTool(self.quit_id, _("Exit"), myimage)
         toolbar.Bind(wx.EVT_TOOL, self.toolbar_handler)
         toolbar.Realize()
         self.ToolBar = toolbar
 
         # Configure the widgets
-        self.text_cycles = wx.StaticText(self, wx.ID_ANY, "Cycles to run:")
+        self.text_cycles = wx.StaticText(self, wx.ID_ANY, _("Cycles to run:"))
         self.spin = wx.SpinCtrl(self, wx.ID_ANY, "10")
-        self.run_button = wx.Button(self, wx.ID_ANY, "Run")
+        self.run_button = wx.Button(self, wx.ID_ANY, _("Run"))
 
-        self.continue_button = wx.Button(self, wx.ID_ANY, "Continue")
+        self.continue_button = wx.Button(self, wx.ID_ANY, _("Continue"))
 
-        self.text_switch_control = wx.StaticText(self, wx.ID_ANY, "Switch On:")
+        self.text_switch_control = wx.StaticText(self, wx.ID_ANY, _("Switch On:"))
         self.switch_choice = wx.ComboBox(self, wx.ID_ANY, "<SWITCH>",
                                          choices=self.switch_names)
         self.switch_choice.SetValue(self.switch_names[0])
         self.switch_set = wx.CheckBox(self, wx.ID_ANY)
 
         self.text_add_monitor = wx.StaticText(self, wx.ID_ANY,
-                                              "Signal Monitors:")
+                                              _("Signal Monitors:"))
 
-        self.add_monitor_button = wx.Button(self, wx.ID_ANY, "Add")
-        self.remove_monitor_button = wx.Button(self, wx.ID_ANY, "Remove")
-        self.add_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>",
+        self.add_monitor_button = wx.Button(self, wx.ID_ANY, _("Add"))
+        self.remove_monitor_button = wx.Button(self, wx.ID_ANY, _("Remove"))
+        self.add_monitor_choice = wx.ComboBox(self, wx.ID_ANY, _("<SIGNAL>"),
                                               choices=self.sig_n_mons)
-        self.remove_monitor_choice = wx.ComboBox(self, wx.ID_ANY, "<SIGNAL>",
+        self.remove_monitor_choice = wx.ComboBox(self, wx.ID_ANY, _("<SIGNAL>"),
                                                  choices=self.sig_mons)
         if len(self.sig_n_mons):
             self.add_monitor_choice.SetValue(self.sig_n_mons[0])
@@ -599,18 +599,18 @@ class Gui(wx.Frame):
             self.remove_monitor_choice.SetValue(self.sig_mons[0])
 
         self.text_connection_monitor = wx.StaticText(self, wx.ID_ANY,
-                                                     "Circuit Connections:")
+                                                     _("Circuit Connections:"))
 
-        self.add_connection_button = wx.Button(self, wx.ID_ANY, "Add")
-        self.remove_connection_button = wx.Button(self, wx.ID_ANY, "Remove")
+        self.add_connection_button = wx.Button(self, wx.ID_ANY, _("Add"))
+        self.remove_connection_button = wx.Button(self, wx.ID_ANY, _("Remove"))
         self.add_connection_strt_choice = wx.ComboBox(self, wx.ID_ANY,
-                                                      "<CON.STRT>",
+                                                      _("<CON.STRT>"),
                                                       choices=self.con_strts)
         self.add_connection_end_choice = wx.ComboBox(self, wx.ID_ANY,
                                                      "<CON.END>",
                                                      choices=self.con_ends)
         self.remove_connection_choice = wx.ComboBox(self, wx.ID_ANY,
-                                                    "<CON>",
+                                                    _("<CON>"),
                                                     choices=self.con_names)
         if len(self.con_strts):
             self.add_connection_strt_choice.SetValue(self.con_strts[0])
@@ -696,21 +696,21 @@ class Gui(wx.Frame):
     def toolbar_handler(self, event):
         """Handle toolbar presses."""
         if event.GetId() == self.quit_id:
-            canc = wx.MessageBox('Are you sure you would like to quit?',
-                                 'Quit?', wx.ICON_INFORMATION | wx.CANCEL)
+            canc = wx.MessageBox(_('Are you sure you would like to quit?'),
+                                 _('Quit?'), wx.ICON_INFORMATION | wx.CANCEL)
             if canc == 4:
                 self.Close(True)
         elif event.GetId() == self.open_id:
-            openFileDialog = wx.FileDialog(self, "Open txt file", "", "",
+            openFileDialog = wx.FileDialog(self, _("Open txt file"), "", "",
                                            wildcard="TXT files (*.txt)|*.txt",
                                            style=wx.FD_OPEN +
                                                  wx.FD_FILE_MUST_EXIST)
             self.reset_screen()
             if openFileDialog.ShowModal() == wx.ID_CANCEL:
-                print("The user cancelled")
+                print(_("The user cancelled"))
                 return  # the user changed idea...
             new_path = openFileDialog.GetPath()
-            print("File chosen=", new_path)
+            print(_("File chosen="), new_path)
 
             self.Close(True)
             names = Names()
@@ -762,7 +762,7 @@ class Gui(wx.Frame):
     def on_spin(self, event):
         """Handle the event when the user changes the spin control value."""
         spin_value = self.spin.GetValue()
-        text = "".join(["New spin control value: ", str(spin_value)])
+        text = "".join([_("New spin control value: "), str(spin_value)])
         self.canvas.render(text)
 
     def on_run_button(self, event):
@@ -772,7 +772,7 @@ class Gui(wx.Frame):
         self.time_steps = spin_value
         self.run_network_and_get_values()
 
-        text = "Run button pressed. (self.time_steps=%d)" % self.time_steps
+        text = _("Run button pressed. (self.time_steps=%d)") % self.time_steps
         self.canvas.render(text)
 
     def on_continue_button(self, event):
@@ -782,7 +782,7 @@ class Gui(wx.Frame):
         self.time_steps += spin_cont_value
         self.run_network_and_get_values()
 
-        text = "Continue button pressed. (time_steps=%d)" % self.time_steps
+        text = _("Continue button pressed. (time_steps=%d)") % self.time_steps
         self.canvas.render(text)
 
     def run_network_and_get_values(self):
@@ -820,7 +820,7 @@ class Gui(wx.Frame):
 
         if mon_choice_name not in self.sig_n_mons:
             return ''
-        self.canvas.render('Add: ' + str(mon_choice_name))
+        self.canvas.render(_('Add: ') + str(mon_choice_name))
 
         device_id = self.names.query(mon_choice_name_strt)
         self.monitors.make_monitor(device_id, output_id)
@@ -849,7 +849,7 @@ class Gui(wx.Frame):
 
         if mon_choice_name not in self.sig_mons:
             return ''
-        self.canvas.render('Remove: ' + str(mon_choice_name))
+        self.canvas.render(_('Remove: ') + str(mon_choice_name))
 
         device_id = self.names.query(mon_choice_name_strt)
         self.monitors.remove_monitor(device_id, output_id)

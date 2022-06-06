@@ -49,6 +49,19 @@ class Scanner:
     -------------
     get_symbol(self): Translates the next sequence of characters into a symbol
                       and returns the symbol.
+
+    print_location(self, symbol): Prints where on the line a given symbol
+                                  is with a caret.
+
+    Private methods
+    -------------
+    _skip_spaces_and_comments(self): Skips white spaces and comments.
+
+    _get_name(self): Returns the next name in the file as a string.
+
+    _get_number(self): Returns the next number in the file as an integer.
+
+    _advance(self): Reads the next character in the file.
     """
 
     def __init__(self, path, names):
@@ -98,7 +111,7 @@ class Scanner:
         self.last_hash_line =0
         self.last_hash_position_in_line =0
 
-    def skip_spaces_and_comments(self):
+    def _skip_spaces_and_comments(self):
         """Skip white spaces and comments."""
         no_of_hashtags = 0
         while (
@@ -114,29 +127,29 @@ class Scanner:
             
                 
             
-            self.advance()
+            self._advance()
         if self.current_character == '' and no_of_hashtags % 2 != 0:
             return False
         return True
 
-    def get_name(self):
+    def _get_name(self):
         """Return the next name in the file as a string."""
         name = ""
         while (self.current_character.isalnum() or
                 self.current_character == "_"):
             name = name + self.current_character
-            self.advance()
+            self._advance()
         return name
 
-    def get_number(self):
+    def _get_number(self):
         """Return the next number in the file."""
         number = ""
         while self.current_character.isdigit():
             number = number + self.current_character
-            self.advance()
+            self._advance()
         return int(number)
 
-    def advance(self):
+    def _advance(self):
         """Read another character in the file."""
         self.current_character = self.file.read(1)
         self.position_in_line += 1
@@ -147,71 +160,72 @@ class Scanner:
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         symbol = Symbol()
-        if self.skip_spaces_and_comments() == False:  # current character now not whitespace
+        if self._skip_spaces_and_comments() == False:  # current character now not whitespace
             print('here')
             symbol.type = self.UNTERMINATED_COMMENT
             symbol.position_in_line = self.last_hash_position_in_line
             symbol.line = self.last_hash_line
-            self.advance()
+            self._advance()
             return symbol
         symbol.position_in_line = self.position_in_line
         symbol.line = self.line
         if self.current_character.isalpha():  # name
-            name_string = self.get_name()
+            name_string = self._get_name()
             if name_string in self.keywords_list:
                 symbol.type = self.KEYWORD
             else:
                 symbol.type = self.NAME
             [symbol.id] = self.names.lookup([name_string])
         elif self.current_character.isdigit():  # number
-            symbol.id = self.get_number()
+            symbol.id = self._get_number()
             symbol.type = self.NUMBER
         elif self.current_character == "=":  # punctuation
             symbol.type = self.EQUALS
-            self.advance()
+            self._advance()
         elif self.current_character == ",":
             symbol.type = self.COMMA
-            self.advance()
+            self._advance()
         elif self.current_character == ";":
             symbol.type = self.SEMICOLON
-            self.advance()
+            self._advance()
         elif self.current_character == "-":
             symbol.type = self.DASH
-            self.advance()
+            self._advance()
         elif self.current_character == ".":
             symbol.type = self.DOT
-            self.advance()
+            self._advance()
         elif self.current_character == "":  # end of file
             symbol.type = self.EOF
         else:  # not a valid character
-            self.advance()
+            self._advance()
         return symbol
 
     def print_location(self, symbol):
         """Print where the line a symbol is on with a caret."""
         line = symbol.line
-        position_on_line = symbol.position_in_line
+        position_in_line = symbol.position_in_line
         self.position = self.file.tell()
         self.file.seek(0, 0)
         lines=self.file.readlines()
-        if symbol.type == self.EOF:
-            position_in_line -= 1
-            while position_on_line >= len(lines[line] and line!= 0):
-                line -= 1
-                position_on_line=len(lines[line])-1
-            if line == 0:
-                line=None
-                position_on_line = None
+        if len(lines) != 0:
+            if symbol.type == self.EOF:
+                position_in_line -= 1
+                while position_in_line >= len(lines[line]) and line!= 0:
+                    line -= 1
+                    position_in_line=len(lines[line])-1
+                if line == 0:
+                    line=None
+                    position_in_line = None
 
-        if line != None:
-            print("Error on line " + str(line + 1))
-            line_to_print = lines[line]
-            print(line_to_print, end="")
-            if line_to_print[-1] != "\n":
-                print("")
-            string = ""
-            for i in range(position_on_line):
-                string = string + " "
-            string = string + "^"
-            print(string)
+            if line != None:
+                print("Error on line " + str(line + 1))
+                line_to_print = lines[line]
+                print(line_to_print, end="")
+                if line_to_print[-1] != "\n":
+                    print("")
+                string = ""
+                for i in range(position_in_line):
+                    string = string + " "
+                string = string + "^"
+                print(string)
         self.file.seek(self.position)

@@ -31,41 +31,43 @@ class Parser:
 
     Public methods
     --------------
-    copy_symbol(self): Returns a copy Symbol class instance of the
+    parse_network(self): Parses the circuit definition file.
+
+    Private methods
+    --------------
+    _copy_symbol(self): Returns a copy Symbol class instance of the
                        current symbol.
 
-    inline_error_message(self, symbol = None): Calls to the scanner
+    _inline_error_message(self, symbol = None): Calls to the scanner
                         to print an error message at the appropriate
                         location by providing the error symbol.
 
-    display_syntax_error(self,error_id): Prints an error message for
+    _display_syntax_error(self,error_id): Prints an error message for
                                     syntax and parser errors.
 
-    display_devices_error(self,error_id, device_name_symbol,
+    _display_devices_error(self,error_id, device_name_symbol,
                         device_type_symbol, device_parameter_symbol):
                         Prints an error message for 'devices' errors.
 
-    display_connect_error(self, error_id, output_device_symbol,
+    _display_connect_error(self, error_id, output_device_symbol,
                     output_symbol, input_device_symbol, input_symbol):
                     Prints an error message for connection errors.
 
-    display_monitors_error(self,error_id, monitor_symbol,
+    _display_monitors_error(self,error_id, monitor_symbol,
                     monitor_output_symbol): Prints an error message
                                             for 'monitors' errors.
 
-    next_symbol(self): Gets next symbol from scanner.
+    _next_symbol(self): Gets next symbol from scanner.
 
-    next_scan_start(self, in_block = True): Reaches a safe symbol to
+    _next_scan_start(self, in_block = True): Reaches a safe symbol to
                             resume parsing after an error occurs.
 
-    parse_devices(self): Parses the 'DEVICES' block of definition file.
+    _parse_devices(self): Parses the 'DEVICES' block of definition file.
 
-    parse_connections(self): Parses the 'CONNECTIONS' block of
+    _parse_connections(self): Parses the 'CONNECTIONS' block of
                              definition file.
 
-    parse_monitor(self): Parses the 'MONITORS' block of definition file.
-
-    parse_network(self): Parses the circuit definition file.
+    _parse_monitor(self): Parses the 'MONITORS' block of definition file.
     """
 
     def __init__(
@@ -106,15 +108,14 @@ class Parser:
             self.EXPECT_CONNECT,
             self.EXPECT_MONITOR,
             self.NO_MAIN_END,
-            self.NOT_EXPECT_END,
             self.INVALID_INPUTLABEL,
             self.INCOMPLETE_NETWORK,
             self.UNTERMINATED_COMMENT
-        ] = self.names.unique_error_codes(21)
+        ] = self.names.unique_error_codes(20)
 
         self.error_count = 0
 
-    def copy_symbol(self):
+    def _copy_symbol(self):
         """Return a copy Symbol class instance of the current symbol."""
         symbol = Symbol()
         symbol.type = int(self.current_symbol.type)
@@ -123,20 +124,20 @@ class Parser:
         symbol.position_in_line = int(self.current_symbol.position_in_line)
         return symbol
 
-    def inline_error_message(self, symbol=None):
+    def _inline_error_message(self, symbol=None):
         """Call scanner to print an error message at the right location."""
         if not symbol:
             self.scanner.print_location(self.current_symbol)
         else:
             self.scanner.print_location(symbol)
 
-    def display_syntax_error(self, error_id):
+    def _display_syntax_error(self, error_id):
         """Return error messages for syntax and parser errors."""
         self.error_count += 1
         print("Errors found so far :", self.error_count)
-        advance = False  # True if next_symbol needs to be called
-        restart = True   # True if next_scan_start needs to be called
-        in_block = True  # Parameter for next_scan_start
+        advance = False  # True if _next_symbol needs to be called
+        restart = True   # True if _next_scan_start needs to be called
+        in_block = True  # Parameter for _next_scan_start
         if error_id == self.EXTRA_SEMICOLON:
             print("ERROR: Extra semicolons added")
             restart = False
@@ -200,9 +201,6 @@ class Parser:
             print("ERROR : Expected a 'MAIN_END' statement here")
             in_block = False
 
-        elif error_id == self.NOT_EXPECT_END:
-            print("ERROR : Unexpected 'END' statement")
-            advance = True
 
         elif error_id == self.INVALID_INPUTLABEL:
             print("ERROR : Invalid input label")
@@ -219,13 +217,13 @@ class Parser:
             print('Unregistered error id in parser code', error_id)
 
         if not self.test:
-            self.inline_error_message()
+            self._inline_error_message()
         if advance:
-            self.next_symbol()
+            self._next_symbol()
         if restart:
-            self.next_scan_start(in_block=in_block)
+            self._next_scan_start(in_block=in_block)
 
-    def display_devices_error(
+    def _display_devices_error(
         self,
         error_id,
         device_name_symbol,
@@ -237,28 +235,28 @@ class Parser:
         print("Errors found so far :", self.error_count)
         if error_id == self.devices.DEVICE_PRESENT:
             print("ERROR : Device by this name already exists")
-            self.inline_error_message(device_name_symbol)
+            self._inline_error_message(device_name_symbol)
 
         elif error_id == self.devices.NO_QUALIFIER:
             print("ERROR : No qualifier given and device type requires one")
-            self.inline_error_message(device_type_symbol)
+            self._inline_error_message(device_type_symbol)
 
         elif error_id == self.devices.INVALID_QUALIFIER:
             print("ERROR : Qualifier is invalid for device type")
-            self.inline_error_message(device_parameter_symbol)
+            self._inline_error_message(device_parameter_symbol)
 
         elif error_id == self.devices.QUALIFIER_PRESENT:
             print("ERROR : Qualifier not valid with device type")
-            self.inline_error_message(device_parameter_symbol)
+            self._inline_error_message(device_parameter_symbol)
 
         elif error_id == self.devices.BAD_DEVICE:
             print("ERROR : Device Type given is not a valid device type")
-            self.inline_error_message(device_type_symbol)
+            self._inline_error_message(device_type_symbol)
 
         else:
             print("ERROR : Unregistered error id in parser code", error_id)
 
-    def display_connect_error(
+    def _display_connect_error(
         self,
         error_id,
         output_device_symbol,
@@ -271,32 +269,32 @@ class Parser:
         print("Errors found so far :", self.error_count)
         if error_id == self.network.DEVICE_ABSENT_ONE:
             print("ERROR : Device name does not exist")
-            self.inline_error_message(output_device_symbol)
+            self._inline_error_message(output_device_symbol)
 
         elif error_id == self.network.DEVICE_ABSENT_TWO:
             print("ERROR : Device name does not exist")
-            self.inline_error_message(input_device_symbol)
+            self._inline_error_message(input_device_symbol)
 
         elif error_id == self.network.INPUT_CONNECTED:
             print("ERROR : Input is already connected")
-            self.inline_error_message(input_symbol)
+            self._inline_error_message(input_symbol)
 
         elif error_id == self.network.INPUT_TO_INPUT:
             print("ERROR : Cannot connect an input to an input")
-            self.inline_error_message(output_symbol)
+            self._inline_error_message(output_symbol)
 
         elif error_id == self.network.PORT_ABSENT:
             print("ERROR : Port does not exist")
-            self.inline_error_message(output_device_symbol)
+            self._inline_error_message(output_device_symbol)
 
         elif error_id == self.network.OUTPUT_TO_OUTPUT:
             print("ERROR : Cannot Connect output to output")
-            self.inline_error_message(input_device_symbol)
+            self._inline_error_message(input_device_symbol)
 
         else:
             print("ERROR : Unregistered error id in parser code", error_id)
 
-    def display_monitors_error(
+    def _display_monitors_error(
         self,
         error_id,
         monitor_symbol,
@@ -307,123 +305,111 @@ class Parser:
         print("Errors found so far :", self.error_count)
         if error_id == self.monitors.NOT_OUTPUT:
             print("ERROR : Can only monitor outputs")
-            self.inline_error_message(monitor_symbol)
+            self._inline_error_message(monitor_symbol)
 
         elif error_id == self.monitors.MONITOR_PRESENT:
             print("ERROR : Output already being monitored")
-            self.inline_error_message(monitor_symbol)
+            self._inline_error_message(monitor_symbol)
 
         elif error_id == self.monitors.network.DEVICE_ABSENT:
             print("ERROR : Device does not exist")
-            self.inline_error_message(monitor_symbol)
+            self._inline_error_message(monitor_symbol)
 
         else:
             print("Unregistered error id in parser code", error_id)
             print(self.monitors.MONITOR_PRESENT)
 
-    def next_symbol(self):
+    def _next_symbol(self):
         """Change current symbol to next symbol from scanner."""
         self.current_symbol = self.scanner.get_symbol()
         if self.current_symbol.type == self.scanner.UNTERMINATED_COMMENT:
-            self.display_syntax_error(self.UNTERMINATED_COMMENT)
+            self._display_syntax_error(self.UNTERMINATED_COMMENT)
             self.current_symbol = self.scanner.get_symbol()
 
-    def next_scan_start(self, in_block=True):
+    def _next_scan_start(self, in_block=True):
         """Reach a safe symbol to resume parsing after an error.
 
         Keyword Argument
         in_block = True if stopping symbol is mainly semicolon
                    False if stopping symbol is mainly END
         """
-        safe_start = False
-        while not safe_start:
-            if (
-                self.current_symbol.type == self.scanner.SEMICOLON
-                and in_block
-            ):
-                self.next_symbol()
-                while self.current_symbol.type == self.scanner.SEMICOLON:
-                    self.display_syntax_error(self.EXTRA_SEMICOLON)
-                    self.next_symbol()
-                safe_start = True
+        while True:
+            if self.current_symbol.type == self.scanner.EOF:
+                return
 
-            elif self.current_symbol.type == self.scanner.EOF:
-                safe_start = True
-
-            elif self.current_symbol.type == self.scanner.KEYWORD:
-                if (
-                    self.current_symbol.id == self.scanner.END_ID
-                    and not in_block
-                ):
-                    self.display_syntax_error(self.NOT_EXPECT_END)
-
-                elif not in_block:
-                    if self.current_symbol.id == self.scanner.DEVICES_ID:
-                        if not self.parse_completion[0]:
-                            safe_start = True
-                        else:
-                            # SYNTAX ERROR (DEVICES ALREADY CALLED)
-                            self.display_syntax_error(self.EXTRA_DEVICES)
-
-                    elif self.current_symbol.id == self.scanner.CONNECT_ID:
-                        if not self.parse_completion[1]:
-                            safe_start = True
-                        else:
-                            # SYNTAX ERROR (CONNECTIONS ALREADY CALLED)
-                            self.display_syntax_error(self.EXTRA_CONNECT)
-
-                    elif self.current_symbol.id == self.scanner.MONITOR_ID:
-                        if not self.parse_completion[2]:
-                            safe_start = True
-                        else:
-                            # SYNTAX ERROR (MONITOR ALREADY CALLED)
-                            self.display_syntax_error(self.EXTRA_MONITOR)
-
-                    elif self.current_symbol.id == self.scanner.MAIN_END_ID:
-                        safe_start = True
+            elif in_block:
+                if self.current_symbol.type == self.scanner.SEMICOLON:
+                    self._next_symbol()
+                    while self.current_symbol.type == self.scanner.SEMICOLON:
+                        self._display_syntax_error(self.EXTRA_SEMICOLON)
+                        self._next_symbol()
+                    return
 
                 elif (
-                    self.current_symbol.id == self.scanner.END_ID
-                    and in_block
+                    self.current_symbol.type == self.scanner.KEYWORD
+                    and self.current_symbol.id == self.scanner.END_ID
                 ):
-                    safe_start = True
+                    return
 
-                else:
-                    safe_start = True
-                    self.next_symbol()
-            else:
-                self.next_symbol()
-        return
+            elif (
+                not in_block 
+                and self.current_symbol.type == self.scanner.KEYWORD
+            ):
+                if self.current_symbol.id == self.scanner.DEVICES_ID:
+                    if not self.parse_completion[0]:
+                        return
+                    else:
+                        # SYNTAX ERROR (DEVICES ALREADY CALLED)
+                        self._display_syntax_error(self.EXTRA_DEVICES)
 
-    def parse_devices(self):
+                elif self.current_symbol.id == self.scanner.CONNECT_ID:
+                    if not self.parse_completion[1]:
+                        return
+                    else:
+                        # SYNTAX ERROR (CONNECTIONS ALREADY CALLED)
+                        self._display_syntax_error(self.EXTRA_CONNECT)
+
+                elif self.current_symbol.id == self.scanner.MONITOR_ID:
+                    if not self.parse_completion[2]:
+                        return
+                    else:
+                        # SYNTAX ERROR (MONITOR ALREADY CALLED)
+                        self._display_syntax_error(self.EXTRA_MONITOR)
+
+                elif self.current_symbol.id == self.scanner.MAIN_END_ID:
+                    return
+
+            self._next_symbol()
+
+    def _parse_devices(self):
         """Parse the 'DEVICES' block of definition file."""
         self.parse_completion[0] = True
         while self.current_symbol.type == self.scanner.NAME:
-            device_type_symbol = self.copy_symbol()
+            device_type_symbol = self._copy_symbol()
             device_parameter_symbol = Symbol()
-            self.next_symbol()
+            self._next_symbol()
 
             expect_equals = True
             if self.current_symbol.type == self.scanner.COMMA:
                 expect_equals = False
-                self.next_symbol()
+                self._next_symbol()
                 if self.current_symbol.type == self.scanner.NUMBER:
-                    device_parameter_symbol = self.copy_symbol()
-                    self.next_symbol()
+                    device_parameter_symbol = self._copy_symbol()
+                    self._next_symbol()
                     expect_equals = True
                 else:
-                    self.display_syntax_error(self.NO_NUMBER)
+                    self._display_syntax_error(self.NO_NUMBER)
 
             if (
                 self.current_symbol.type == self.scanner.EQUALS
                 and expect_equals
             ):
-                self.next_symbol()
+                self._next_symbol()
                 if self.current_symbol.type == self.scanner.NAME:
-                    device_name_symbol = self.copy_symbol()
-                    self.next_symbol()
+                    device_name_symbol = self._copy_symbol()
+                    self._next_symbol()
                     if self.current_symbol.type == self.scanner.SEMICOLON:
-                        self.next_symbol()
+                        self._next_symbol()
                         if self.error_count == 0 and not self.test:
                             error_type = self.devices.make_device(
                                     device_name_symbol.id,
@@ -433,74 +419,74 @@ class Parser:
                             if error_type == self.devices.NO_ERROR:
                                 pass
                             else:
-                                self.display_devices_error(
+                                self._display_devices_error(
                                                 error_type,
                                                 device_name_symbol,
                                                 device_type_symbol,
                                                 device_parameter_symbol
                                 )
                     else:
-                        self.display_syntax_error(self.NO_SEMICOLON)
+                        self._display_syntax_error(self.NO_SEMICOLON)
                 else:
-                    self.display_syntax_error(self.INVALID_DEVICENAME)
+                    self._display_syntax_error(self.INVALID_DEVICENAME)
             elif not expect_equals:
                 pass
             else:
-                self.display_syntax_error(self.NO_EQUALS)
+                self._display_syntax_error(self.NO_EQUALS)
 
         if self.current_symbol.type == self.scanner.KEYWORD:
             if self.current_symbol.id == self.scanner.END_ID:
-                self.next_symbol()
+                self._next_symbol()
                 return
             else:
-                self.display_syntax_error(self.NO_END)
+                self._display_syntax_error(self.NO_END)
                 return
 
         elif self.current_symbol.type == self.scanner.EOF:
-            self.display_syntax_error(self.NO_END)
+            self._display_syntax_error(self.NO_END)
             return
 
         elif self.current_symbol.type == self.scanner.SEMICOLON:
             while self.current_symbol.type == self.scanner.SEMICOLON:
-                self.display_syntax_error(self.EXTRA_SEMICOLON)
-                self.next_symbol()
-            self.parse_devices()
+                self._display_syntax_error(self.EXTRA_SEMICOLON)
+                self._next_symbol()
+            self._parse_devices()
 
         else:
-            self.display_syntax_error(self.INVALID_DEVICETYPE)
-            self.parse_devices()
+            self._display_syntax_error(self.INVALID_DEVICETYPE)
+            self._parse_devices()
 
-    def parse_connections(self):
+    def _parse_connections(self):
         """Parse the 'CONNECTIONS' block of definition file."""
         self.parse_completion[1] = True
         while self.current_symbol.type == self.scanner.NAME:
-            output_device_symbol = self.copy_symbol()
+            output_device_symbol = self._copy_symbol()
             output_symbol = Symbol()
-            self.next_symbol()
+            self._next_symbol()
 
             expect_dash = True
             if self.current_symbol.type == self.scanner.DOT:
                 expect_dash = False
-                self.next_symbol()
+                self._next_symbol()
                 if self.current_symbol.type == self.scanner.NAME:
-                    output_symbol = self.copy_symbol()
-                    self.next_symbol()
+                    output_symbol = self._copy_symbol()
+                    self._next_symbol()
                     expect_dash = True
                 else:
-                    self.display_syntax_error(self.INVALID_OUTPUTLABEL)
+                    self._display_syntax_error(self.INVALID_OUTPUTLABEL)
 
             if self.current_symbol.type == self.scanner.DASH and expect_dash:
-                self.next_symbol()
+                self._next_symbol()
                 if self.current_symbol.type == self.scanner.NAME:
-                    input_device_symbol = self.copy_symbol()
-                    self.next_symbol()
+                    input_device_symbol = self._copy_symbol()
+                    self._next_symbol()
                     if self.current_symbol.type == self.scanner.DOT:
-                        self.next_symbol()
+                        self._next_symbol()
                         if self.current_symbol.type == self.scanner.NAME:
-                            input_symbol = self.copy_symbol()
-                            self.next_symbol()
+                            input_symbol = self._copy_symbol()
+                            self._next_symbol()
                             if self.current_symbol.type == self.scanner.SEMICOLON:
-                                self.next_symbol()
+                                self._next_symbol()
                                 if self.error_count == 0 and not self.test:
                                     error_type = self.network.make_connection(
                                                     output_device_symbol.id,
@@ -511,7 +497,7 @@ class Parser:
                                     if error_type == self.network.NO_ERROR:
                                         pass
                                     else:
-                                        self.display_connect_error(
+                                        self._display_connect_error(
                                                     error_type,
                                                     output_device_symbol,
                                                     output_symbol,
@@ -519,67 +505,67 @@ class Parser:
                                                     input_symbol
                                         )
                             else:
-                                self.display_syntax_error(self.NO_SEMICOLON)
+                                self._display_syntax_error(self.NO_SEMICOLON)
                         else:
-                            self.display_syntax_error(self.INVALID_INPUTLABEL)
+                            self._display_syntax_error(self.INVALID_INPUTLABEL)
                     else:
-                        self.display_syntax_error(self.NO_DOT)
+                        self._display_syntax_error(self.NO_DOT)
                 else:
-                    self.display_syntax_error(self.INVALID_DEVICENAME)
+                    self._display_syntax_error(self.INVALID_DEVICENAME)
             elif not expect_dash:
                 pass
             else:
-                self.display_syntax_error(self.NO_DASH)
+                self._display_syntax_error(self.NO_DASH)
 
         if self.current_symbol.type == self.scanner.KEYWORD:
             if self.current_symbol.id == self.scanner.END_ID:
                 # Checking if all inputs are connected
-                if not self.network.check_network():
-                    self.display_syntax_error(self.INCOMPLETE_NETWORK)
-                self.next_symbol()
+                if self.error_count == 0 and not self.network.check_network():
+                    self._display_syntax_error(self.INCOMPLETE_NETWORK)
+                self._next_symbol()
                 return
             else:
-                self.display_syntax_error(self.NO_END)
+                self._display_syntax_error(self.NO_END)
                 return
 
         elif self.current_symbol.type == self.scanner.EOF:
-            self.display_syntax_error(self.NO_END)
+            self._display_syntax_error(self.NO_END)
             return
 
         elif self.current_symbol.type == self.scanner.SEMICOLON:
             while self.current_symbol.type == self.scanner.SEMICOLON:
-                self.next_symbol()
-            self.display_syntax_error(self.EXTRA_SEMICOLON)
-            self.parse_devices()
+                self._next_symbol()
+            self._display_syntax_error(self.EXTRA_SEMICOLON)
+            self._parse_devices()
 
         else:
-            self.display_syntax_error(self.INVALID_DEVICENAME)
-            self.parse_connections()
+            self._display_syntax_error(self.INVALID_DEVICENAME)
+            self._parse_connections()
 
-    def parse_monitor(self):
+    def _parse_monitor(self):
         """Parse the 'MONITORS' block of definition file."""
         self.parse_completion[2] = True
         while self.current_symbol.type == self.scanner.NAME:
-            monitor_symbol = self.copy_symbol()
+            monitor_symbol = self._copy_symbol()
             monitor_output_symbol = Symbol()
-            self.next_symbol()
+            self._next_symbol()
 
             expect_semicolon = True
             if self.current_symbol.type == self.scanner.DOT:
                 expect_semicolon = False
-                self.next_symbol()
+                self._next_symbol()
                 if self.current_symbol.type == self.scanner.NAME:
-                    monitor_output_symbol = self.copy_symbol()
-                    self.next_symbol()
+                    monitor_output_symbol = self._copy_symbol()
+                    self._next_symbol()
                     expect_semicolon = True
                 else:
-                    self.display_syntax_error(self.INVALID_OUTPUTLABEL)
+                    self._display_syntax_error(self.INVALID_OUTPUTLABEL)
 
             if (
                 self.current_symbol.type == self.scanner.SEMICOLON
                 and expect_semicolon
             ):
-                self.next_symbol()
+                self._next_symbol()
                 if self.error_count == 0 and not self.test:
                     error_type = self.monitors.make_monitor(
                                                 monitor_symbol.id,
@@ -588,86 +574,86 @@ class Parser:
                     if error_type == self.monitors.NO_ERROR:
                         pass
                     else:
-                        self.display_monitors_error(error_type,
+                        self._display_monitors_error(error_type,
                                                     monitor_symbol,
                                                     monitor_output_symbol)
             elif not expect_semicolon:
                 pass
             else:
-                self.display_syntax_error(self.NO_SEMICOLON)
+                self._display_syntax_error(self.NO_SEMICOLON)
 
         if self.current_symbol.type == self.scanner.KEYWORD:
             if self.current_symbol.id == self.scanner.END_ID:
-                self.next_symbol()
+                self._next_symbol()
                 return
             else:
-                self.display_syntax_error(self.NO_END)
+                self._display_syntax_error(self.NO_END)
                 return
 
         elif self.current_symbol.type == self.scanner.EOF:
-            self.display_syntax_error(self.NO_END)
+            self._display_syntax_error(self.NO_END)
             return
 
         elif self.current_symbol.type == self.scanner.SEMICOLON:
             while self.current_symbol.type == self.scanner.SEMICOLON:
-                self.next_symbol()
-            self.display_syntax_error(self.EXTRA_SEMICOLON)
-            self.parse_devices()
+                self._next_symbol()
+            self._display_syntax_error(self.EXTRA_SEMICOLON)
+            self._parse_devices()
 
         else:
-            self.display_syntax_error(self.INVALID_DEVICENAME)
-            self.parse_monitor()
+            self._display_syntax_error(self.INVALID_DEVICENAME)
+            self._parse_monitor()
 
     def parse_network(self):
         """Parse the circuit definition file.
 
         Returns True if no errors found.
         """
-        self.next_symbol()
+        self._next_symbol()
         if(
             self.current_symbol.type == self.scanner.KEYWORD
             and self.current_symbol.id == self.scanner.DEVICES_ID
         ):
-            self.next_symbol()
-            self.parse_devices()
+            self._next_symbol()
+            self._parse_devices()
         else:
-            self.display_syntax_error(self.EXPECT_DEVICES)
+            self._display_syntax_error(self.EXPECT_DEVICES)
             if (
                 self.current_symbol.type == self.scanner.KEYWORD
                 and self.current_symbol.id == self.scanner.DEVICES_ID
             ):
-                self.next_symbol()
-                self.parse_devices()
+                self._next_symbol()
+                self._parse_devices()
 
         if (
             self.current_symbol.type == self.scanner.KEYWORD
             and self.current_symbol.id == self.scanner.CONNECT_ID
         ):
-            self.next_symbol()
-            self.parse_connections()
+            self._next_symbol()
+            self._parse_connections()
         else:
-            self.display_syntax_error(self.EXPECT_CONNECT)
+            self._display_syntax_error(self.EXPECT_CONNECT)
             if (
                 self.current_symbol.type == self.scanner.KEYWORD
                 and self.current_symbol.id == self.scanner.CONNECT_ID
             ):
-                self.next_symbol()
-                self.parse_connections()
+                self._next_symbol()
+                self._parse_connections()
 
         if (
             self.current_symbol.type == self.scanner.KEYWORD
             and self.current_symbol.id == self.scanner.MONITOR_ID
         ):
-            self.next_symbol()
-            self.parse_monitor()
+            self._next_symbol()
+            self._parse_monitor()
         else:
-            self.display_syntax_error(self.EXPECT_MONITOR)
+            self._display_syntax_error(self.EXPECT_MONITOR)
             if (
                 self.current_symbol.type == self.scanner.KEYWORD
                 and self.current_symbol.id == self.scanner.MONITOR_ID
             ):
-                self.next_symbol()
-                self.parse_monitor()
+                self._next_symbol()
+                self._parse_monitor()
 
         if (
             self.current_symbol.type == self.scanner.KEYWORD
@@ -675,7 +661,7 @@ class Parser:
         ):
             pass
         else:
-            self.display_syntax_error(self.NO_MAIN_END)
+            self._display_syntax_error(self.NO_MAIN_END)
 
         if self.error_count > 0:
             return False

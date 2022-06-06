@@ -21,18 +21,27 @@ class Translation(wx.Frame):
         panel = wx.Panel(self, -1)
 
         mylocale = wx.Locale()
-        print(mylocale.Init(language=wx.LANGUAGE_SPANISH))
-        mylocale.AddCatalogLookupPathPrefix('')
-        print(mylocale.AddCatalog('messages-le_ES.po'))
-
+        mylocale.AddCatalogLookupPathPrefix('.')
+        print(mylocale.AddCatalog('tester'))
+        #wx.Translations.SetLanguage=wx.LANGUAGE_SPANISH
         _ = wx.GetTranslation
-
+        
         wx.StaticText(panel, -1, _("hello"), (10, 10))
         #wx.StaticText(panel, -1, wx.GetTranslation('hello'), (10, 10))
-
+        print(_("hello"))
         self.Centre()
         self.Show(True)
-
+import builtins
 app = wx.App()
+
+builtins._ = wx.GetTranslation
+
+locale = wx.Locale()
+
+locale.Init(wx.LANGUAGE_DEFAULT)
+
+locale.AddCatalogLookupPathPrefix('./locale')
+
+locale.AddCatalog('gui')
 Translation(None, -1, 'Translation')
 app.MainLoop()
