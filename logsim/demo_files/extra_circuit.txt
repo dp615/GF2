@@ -1,7 +1,7 @@
 DEVICES
 SWITCH, 0 = Sw1;
 SWITCH, 1 = Sw2;
-NAND, 2 = Nand1;
+NAND, 2 = Nand1; #This is a comment#
 NOT = Not1;
 NOR, 2 = Nor1;
 END

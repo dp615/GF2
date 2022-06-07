@@ -5,7 +5,7 @@ from parse import Parser
 from devices import Device, Devices
 from network import Network
 from monitors import Monitors
-
+import sys
 
 def test_parser(capsys):
     """Test if correct syntax errors are printed"""
@@ -36,10 +36,16 @@ def test_parser(capsys):
 
     for i in range(1):
         if i not in [1, 2, 3]:
-            file_path = "".join([
-                            'parser_tests\parser_test_file',
-                            str(i+1), '.txt'
-            ])
+            if sys.platform.startswith('linux'):
+                file_path = "".join([
+                                'parser_tests/parser_test_file',
+                                str(i+1), '.txt'
+                ])
+            else:
+                file_path = "".join([
+                                'parser_tests\parser_test_file',
+                                str(i+1), '.txt'
+                ])
             scanner = Scanner(file_path, names)
             parser = Parser(
                         names,
