@@ -160,7 +160,7 @@ class Scanner:
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         symbol = Symbol()
-        if self._skip_spaces_and_comments() == False:  # current character now not whitespace
+        if self._skip_spaces_and_comments() == False:  
             print('here')
             symbol.type = self.UNTERMINATED_COMMENT
             symbol.position_in_line = self.last_hash_position_in_line
@@ -169,17 +169,17 @@ class Scanner:
             return symbol
         symbol.position_in_line = self.position_in_line
         symbol.line = self.line
-        if self.current_character.isalpha():  # name
+        if self.current_character.isalpha():  
             name_string = self._get_name()
             if name_string in self.keywords_list:
                 symbol.type = self.KEYWORD
             else:
                 symbol.type = self.NAME
             [symbol.id] = self.names.lookup([name_string])
-        elif self.current_character.isdigit():  # number
+        elif self.current_character.isdigit():  
             symbol.id = self._get_number()
             symbol.type = self.NUMBER
-        elif self.current_character == "=":  # punctuation
+        elif self.current_character == "=":  
             symbol.type = self.EQUALS
             self._advance()
         elif self.current_character == ",":
