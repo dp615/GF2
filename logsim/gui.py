@@ -415,7 +415,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glFlush()
         self.SwapBuffers()
 
-    def _build_logic_file(self):
+    def build_logic_file(self):
         """Build new logic description file."""
         device_ids = self.parent.devices.find_devices()
         device_print = ''
@@ -457,7 +457,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-        self.render_text(self._build_logic_file(), 10, self.canvas_size[1] - 20)
+        self.render_text(self.build_logic_file(), 10, self.canvas_size[1] - 20)
         GL.glFlush()
         self.SwapBuffers()
 
@@ -516,6 +516,7 @@ class Gui(wx.Frame):
         self.home_id = 996
         self.cnf_id = 995
         self.logic_id = 994
+        self.save_id = 993
 
         # Canvas for drawing signals
         self.canvas = MyGLCanvas(self, devices, monitors)
@@ -568,6 +569,8 @@ class Gui(wx.Frame):
         toolbar.AddTool(self.cnf_id, _("CNF"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR)
         toolbar.AddTool(self.open_id, _("Open file"), myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE, wx.ART_TOOLBAR)
+        toolbar.AddTool(self.save_id, _("Save file"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_HELP, wx.ART_TOOLBAR)
         toolbar.AddTool(self.help_id, _("Help"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_QUIT, wx.ART_TOOLBAR)
@@ -717,7 +720,7 @@ class Gui(wx.Frame):
                 print(_("The user cancelled"))
                 return  # the user changed idea...
             new_path = openFileDialog.GetPath()
-            print(_("File chosen="), new_path)
+            print(_("File chosen: "), new_path)
 
             self.Close(True)
             names = Names()
@@ -730,6 +733,21 @@ class Gui(wx.Frame):
                 gui = Gui("Logic Simulator", new_path, names, devices, network,
                           monitors)
                 gui.Show(True)
+
+        elif event.GetId() == self.save_id:
+            openFileDialog = wx.FileDialog(self, _("Save txt file"), "", "",
+                                           wildcard="TXT files (*.txt)|*.txt",
+                                           style=wx.FD_SAVE)
+            self.reset_screen()
+            if openFileDialog.ShowModal() == wx.ID_CANCEL:
+                print(_("The user cancelled"))
+                return  # the user changed idea...
+            new_path = openFileDialog.GetPath()
+            print(_("File saved at: "), new_path)
+
+            with open(new_path, 'w') as f:
+                f.write(self.canvas.build_logic_file())
+
         elif event.GetId() == self.help_id:
             self.reset_screen()
             self.canvas.screen_type = (0, 1, 0, 0)
