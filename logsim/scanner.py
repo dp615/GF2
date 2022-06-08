@@ -161,7 +161,6 @@ class Scanner:
         """Translate the next sequence of characters into a symbol."""
         symbol = Symbol()
         if self._skip_spaces_and_comments() == False:  
-            print('here')
             symbol.type = self.UNTERMINATED_COMMENT
             symbol.position_in_line = self.last_hash_position_in_line
             symbol.line = self.last_hash_line
