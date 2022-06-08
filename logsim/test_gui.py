@@ -34,7 +34,6 @@ def test1():
         app = wx.App()
         import builtins
 
-
         builtins._ = wx.GetTranslation
 
         locale = wx.Locale()
