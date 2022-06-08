@@ -319,7 +319,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.render_text(_('Help Page:'), 10, self.canvas_size[1] - 20, True)
-        self.render_text("".join(_(self.help_text)), 10, self.canvas_size[1] - 30)
+        self.render_text(_("".join(self.help_text)), 10, self.canvas_size[1] - 30)
         GL.glFlush()
         self.SwapBuffers()
 
@@ -415,7 +415,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glFlush()
         self.SwapBuffers()
 
-    def build_logic_file(self):
+    def _build_logic_file(self):
         """Build new logic description file."""
         device_ids = self.parent.devices.find_devices()
         device_print = ''
@@ -437,9 +437,13 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         out_string += device_print
         out_string += '\nCONNECTIONS\n'
         out_string += ';\n'.join(self.parent.con_names)
-        out_string += ';\nEND\n\nMONITOR\n'
+        if len(self.parent.con_names):
+            out_string += ';\n'
+        out_string += 'END\n\nMONITOR\n'
         out_string += ';\n'.join(self.parent.sig_mons)
-        out_string += ';\nEND\n\nMAIN_END'
+        if len(self.parent.sig_mons):
+            out_string += ';\n'
+        out_string += 'END\n\nMAIN_END'
         return out_string
 
     def render_logic(self):
@@ -453,7 +457,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-        self.render_text(self.build_logic_file(), 10, self.canvas_size[1] - 20)
+        self.render_text(self._build_logic_file(), 10, self.canvas_size[1] - 20)
         GL.glFlush()
         self.SwapBuffers()
 
@@ -873,6 +877,9 @@ class Gui(wx.Frame):
         """Handle the event when user wants to add a connection."""
         out_name = self.add_connection_strt_choice.GetValue()
         in_name = self.add_connection_end_choice.GetValue()
+        if in_name not in self.all_input_names:
+            return ''
+
         if '.' in out_name:
             dot_index = out_name.index('.')
             out_dev_id = self.names.query(out_name[:dot_index])
@@ -914,6 +921,9 @@ class Gui(wx.Frame):
     def on_remove_connection_button(self, event):
         """Handle the event when the user wants to remove a connection."""
         con_name = self.remove_connection_choice.GetValue()
+
+        if con_name not in self.con_names:
+            return ''
 
         con_id = self.con_ids[self.con_names.index(con_name)][1]
 
