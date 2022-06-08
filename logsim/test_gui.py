@@ -32,6 +32,18 @@ def test1():
     parser = Parser(names, devices, network, monitors, scanner)
     if parser.parse_network():
         app = wx.App()
+        import builtins
+
+
+        builtins._ = wx.GetTranslation
+
+        locale = wx.Locale()
+
+        locale.Init(wx.LANGUAGE_DEFAULT)
+
+        locale.AddCatalogLookupPathPrefix('./locale')
+
+        locale.AddCatalog('gui')
         gui = Gui("Logic Simulator Test 1", path, names, devices, network,
                   monitors)
         gui.Show(True)
