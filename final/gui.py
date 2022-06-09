@@ -319,7 +319,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.render_text(_('Help Page:'), 10, self.canvas_size[1] - 20, True)
-        self.render_text("".join(_(self.help_text)), 10, self.canvas_size[1] - 30)
+        self.render_text(_("".join(self.help_text)), 10, self.canvas_size[1] - 30)
         GL.glFlush()
         self.SwapBuffers()
 
