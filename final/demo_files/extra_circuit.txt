@@ -1,0 +1,21 @@
+DEVICES
+SWITCH, 0 = Sw1;
+SWITCH, 1 = Sw2;
+NAND, 2 = Nand1; #This is a comment#
+NOT = Not1;
+NOR, 2 = Nor1;
+END
+
+CONNECTIONS
+Sw1 - Nand1.I1;
+Sw2 - Nand1.I2;
+Sw2 - Not1.I1;
+Nand1 - Nor1.I1;
+Not1 - Nor1.I2;
+END
+
+MONITOR
+Nor1;
+END
+
+MAIN_END

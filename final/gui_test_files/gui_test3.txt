@@ -1,0 +1,28 @@
+DEVICES
+SWITCH, 0 = A0;
+SWITCH, 1 = A1;
+DTYPE = FF;
+XOR = G1;
+AND, 2 = G2;
+OR, 2 = G3;
+END
+
+CONNECTIONS
+A0 - G1.I1 ;
+A1 - FF.CLK ;
+A0 - FF.DATA ;
+A1 - FF.SET ;
+A0 - FF.CLEAR ;
+FF.Q - G2.I1 ;
+FF.QBAR - G1.I2 ;
+A0 - G2.I2 ;
+G1 - G3.I1 ;
+G2 - G3.I2 ;
+END
+
+MONITOR
+FF.Q ;
+FF.QBAR ;
+END
+
+MAIN_END
