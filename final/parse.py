@@ -201,7 +201,6 @@ class Parser:
             print("ERROR : Expected a 'MAIN_END' statement here")
             in_block = False
 
-
         elif error_id == self.INVALID_INPUTLABEL:
             print("ERROR : Invalid input label")
 
@@ -352,7 +351,7 @@ class Parser:
                     return
 
             elif (
-                not in_block 
+                not in_block
                 and self.current_symbol.type == self.scanner.KEYWORD
             ):
                 if self.current_symbol.id == self.scanner.DEVICES_ID:
@@ -575,8 +574,8 @@ class Parser:
                         pass
                     else:
                         self._display_monitors_error(error_type,
-                                                    monitor_symbol,
-                                                    monitor_output_symbol)
+                                                     monitor_symbol,
+                                                     monitor_output_symbol)
             elif not expect_semicolon:
                 pass
             else:
