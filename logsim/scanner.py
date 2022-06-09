@@ -70,7 +70,8 @@ class Scanner:
             self.file = open(path, "r")
             self.file.seek(0, 0)
         except FileNotFoundError:
-            print('File not found: please enter a valid file path. Use "logsim.py -h" for help.')
+            print('File not found: please enter a valid file path.'
+                  '  Use "logsim.py -h" for help.')
             sys.exit()
 
         self.names = names
@@ -108,25 +109,23 @@ class Scanner:
         self.position = 0
         self.line = 0
         self.position_in_line = 0
-        self.last_hash_line =0
-        self.last_hash_position_in_line =0
+        self.last_hash_line = 0
+        self.last_hash_position_in_line = 0
 
     def _skip_spaces_and_comments(self):
         """Skip white spaces and comments."""
         no_of_hashtags = 0
         while (
             (self.current_character.isspace()
-            or no_of_hashtags % 2 != 0
-            or self.current_character == "#" ) 
-            and self.current_character!= ''
+                or no_of_hashtags % 2 != 0
+                or self.current_character == "#")
+                and self.current_character != ''
         ):
             if self.current_character == "#":
                 no_of_hashtags += 1
-                self.last_hash_line=self.line
-                self.last_hash_position_in_line=self.position_in_line
-            
-                
-            
+                self.last_hash_line = self.line
+                self.last_hash_position_in_line = self.position_in_line
+
             self._advance()
         if self.current_character == '' and no_of_hashtags % 2 != 0:
             return False
@@ -160,8 +159,7 @@ class Scanner:
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         symbol = Symbol()
-        if self._skip_spaces_and_comments() == False:  # current character now not whitespace
-            print('here')
+        if self._skip_spaces_and_comments() is False:
             symbol.type = self.UNTERMINATED_COMMENT
             symbol.position_in_line = self.last_hash_position_in_line
             symbol.line = self.last_hash_line
@@ -169,17 +167,17 @@ class Scanner:
             return symbol
         symbol.position_in_line = self.position_in_line
         symbol.line = self.line
-        if self.current_character.isalpha():  # name
+        if self.current_character.isalpha():
             name_string = self._get_name()
             if name_string in self.keywords_list:
                 symbol.type = self.KEYWORD
             else:
                 symbol.type = self.NAME
             [symbol.id] = self.names.lookup([name_string])
-        elif self.current_character.isdigit():  # number
+        elif self.current_character.isdigit():
             symbol.id = self._get_number()
             symbol.type = self.NUMBER
-        elif self.current_character == "=":  # punctuation
+        elif self.current_character == "=":
             symbol.type = self.EQUALS
             self._advance()
         elif self.current_character == ",":
@@ -206,18 +204,18 @@ class Scanner:
         position_in_line = symbol.position_in_line
         self.position = self.file.tell()
         self.file.seek(0, 0)
-        lines=self.file.readlines()
+        lines = self.file.readlines()
         if len(lines) != 0:
             if symbol.type == self.EOF:
                 position_in_line -= 1
-                while position_in_line >= len(lines[line]) and line!= 0:
+                while position_in_line >= len(lines[line]) and line != 0:
                     line -= 1
-                    position_in_line=len(lines[line])-1
+                    position_in_line = len(lines[line])-1
                 if line == 0:
-                    line=None
+                    line = None
                     position_in_line = None
 
-            if line != None:
+            if line is not None:
                 print("Error on line " + str(line + 1))
                 line_to_print = lines[line]
                 print(line_to_print, end="")

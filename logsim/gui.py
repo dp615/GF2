@@ -319,7 +319,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         self.render_text(_('Help Page:'), 10, self.canvas_size[1] - 20, True)
-        self.render_text("".join(_(self.help_text)), 10, self.canvas_size[1] - 30)
+        self.render_text(_("".join(self.help_text)), 10, self.canvas_size[1] - 30)
         GL.glFlush()
         self.SwapBuffers()
 
@@ -437,9 +437,13 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         out_string += device_print
         out_string += '\nCONNECTIONS\n'
         out_string += ';\n'.join(self.parent.con_names)
-        out_string += ';\nEND\n\nMONITOR\n'
+        if len(self.parent.con_names):
+            out_string += ';\n'
+        out_string += 'END\n\nMONITOR\n'
         out_string += ';\n'.join(self.parent.sig_mons)
-        out_string += ';\nEND\n\nMAIN_END'
+        if len(self.parent.sig_mons):
+            out_string += ';\n'
+        out_string += 'END\n\nMAIN_END'
         return out_string
 
     def render_logic(self):
@@ -512,6 +516,7 @@ class Gui(wx.Frame):
         self.home_id = 996
         self.cnf_id = 995
         self.logic_id = 994
+        self.save_id = 993
 
         # Canvas for drawing signals
         self.canvas = MyGLCanvas(self, devices, monitors)
@@ -564,6 +569,8 @@ class Gui(wx.Frame):
         toolbar.AddTool(self.cnf_id, _("CNF"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR)
         toolbar.AddTool(self.open_id, _("Open file"), myimage)
+        myimage = wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE, wx.ART_TOOLBAR)
+        toolbar.AddTool(self.save_id, _("Save file"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_HELP, wx.ART_TOOLBAR)
         toolbar.AddTool(self.help_id, _("Help"), myimage)
         myimage = wx.ArtProvider.GetBitmap(wx.ART_QUIT, wx.ART_TOOLBAR)
@@ -713,7 +720,7 @@ class Gui(wx.Frame):
                 print(_("The user cancelled"))
                 return  # the user changed idea...
             new_path = openFileDialog.GetPath()
-            print(_("File chosen="), new_path)
+            print(_("File chosen: "), new_path)
 
             self.Close(True)
             names = Names()
@@ -726,6 +733,21 @@ class Gui(wx.Frame):
                 gui = Gui("Logic Simulator", new_path, names, devices, network,
                           monitors)
                 gui.Show(True)
+
+        elif event.GetId() == self.save_id:
+            openFileDialog = wx.FileDialog(self, _("Save txt file"), "", "",
+                                           wildcard="TXT files (*.txt)|*.txt",
+                                           style=wx.FD_SAVE)
+            self.reset_screen()
+            if openFileDialog.ShowModal() == wx.ID_CANCEL:
+                print(_("The user cancelled"))
+                return  # the user changed idea...
+            new_path = openFileDialog.GetPath()
+            print(_("File saved at: "), new_path)
+
+            with open(new_path, 'w') as f:
+                f.write(self.canvas.build_logic_file())
+
         elif event.GetId() == self.help_id:
             self.reset_screen()
             self.canvas.screen_type = (0, 1, 0, 0)
@@ -873,6 +895,9 @@ class Gui(wx.Frame):
         """Handle the event when user wants to add a connection."""
         out_name = self.add_connection_strt_choice.GetValue()
         in_name = self.add_connection_end_choice.GetValue()
+        if in_name not in self.all_input_names:
+            return ''
+
         if '.' in out_name:
             dot_index = out_name.index('.')
             out_dev_id = self.names.query(out_name[:dot_index])
@@ -914,6 +939,9 @@ class Gui(wx.Frame):
     def on_remove_connection_button(self, event):
         """Handle the event when the user wants to remove a connection."""
         con_name = self.remove_connection_choice.GetValue()
+
+        if con_name not in self.con_names:
+            return ''
 
         con_id = self.con_ids[self.con_names.index(con_name)][1]
 

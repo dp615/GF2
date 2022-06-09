@@ -75,7 +75,6 @@ def main(arg_list):
             app = wx.App()
             import builtins
 
-
             builtins._ = wx.GetTranslation
 
             locale = wx.Locale()

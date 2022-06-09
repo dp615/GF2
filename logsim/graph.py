@@ -88,11 +88,10 @@ class Graph:
 
         def dfs(dev, dfs_calls):
             """Recursively build boolean expression from monitor position."""
-
             # Make sure it doesn't get caught in a loop (circular
             # definition)
             dfs_calls += 1
-            if dfs_calls > 200:
+            if dfs_calls > 20:
                 return '@'
 
             # Otherwise recursively build boolean expression string from
