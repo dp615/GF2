@@ -7,6 +7,7 @@ from network import Network
 from monitors import Monitors
 import sys
 
+
 def test_parser(capsys):
     """Test if correct syntax errors are printed"""
     names = Names()
